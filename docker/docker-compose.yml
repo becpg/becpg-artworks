@@ -1,0 +1,60 @@
+version: '3.4'
+services:
+  becpg-artworks-share:
+    image: alfresco-share-becpg-artworks:development
+    build:
+      dockerfile: ./Dockerfile
+      context: ../../../becpg-artworks-share-docker/target
+    environment:
+      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:8888"
+      REPO_HOST: becpg-artworks-acs
+      REPO_PORT: 8080
+    ports:
+      - "${share.port}:8080"
+      - "${share.debug.port}:8888"
+  becpg-artworks-acs:
+    image: alfresco-content-services-becpg-artworks:development
+    build:
+      dockerfile: ./Dockerfile
+      context: ../../../becpg-artworks-platform-docker/target
+    environment:
+      JAVA_TOOL_OPTIONS: "${keystore.settings}"
+      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:8888"
+    ports:
+      - "${acs.port}:8080"
+      - "${acs.debug.port}:8888"
+    volumes:
+      - becpg-artworks-acs-volume:/usr/local/tomcat/alf_data
+    depends_on:
+      - becpg-artworks-postgres
+  becpg-artworks-postgres:
+    image: postgres:9.6
+    environment:
+      POSTGRES_DB: alfresco
+      POSTGRES_USER: alfresco
+      POSTGRES_PASSWORD: alfresco
+    command: postgres -c max_connections=300 -c log_min_messages=LOG
+    ports:
+      - "${postgres.port}:5432"
+    volumes:
+      - becpg-artworks-db-volume:/var/lib/postgresql/data
+  becpg-artworks-ass:
+    image: alfresco/alfresco-search-services:1.2.0
+    environment:
+      SOLR_ALFRESCO_HOST: becpg-artworks-acs
+      SOLR_ALFRESCO_PORT: 8080
+      SOLR_SOLR_HOST: becpg-artworks-ass
+      SOLR_SOLR_PORT: 8983
+      SOLR_CREATE_ALFRESCO_DEFAULTS: alfresco,archive
+    ports:
+      - "8983:8983"
+    volumes:
+      - becpg-artworks-ass-volume:/opt/alfresco-search-services/contentstore
+      - becpg-artworks-ass-volume:/opt/alfresco-search-services/data
+volumes:
+  becpg-artworks-acs-volume:
+    external: true
+  becpg-artworks-db-volume:
+    external: true
+  becpg-artworks-ass-volume:
+    external: true

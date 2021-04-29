@@ -1,3 +1,6 @@
+**.log*
+
+# Maven
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -7,5 +10,29 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
+
+# Eclipse
+.metadata
+.project
+.classpath
+bin/
+tmp/
+*.tmp
+.settings/
+.loadpath
+.recommenders
+
+# IntelliJ IDEA
+**.idea
+**.iml
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# macOS
+*.DS_Store
