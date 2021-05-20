@@ -12,20 +12,20 @@ start() {
     docker volume create becpg-artworks-acs-volume
     docker volume create becpg-artworks-db-volume
     docker volume create becpg-artworks-ass-volume
-    docker-compose -f "$COMPOSE_FILE_PATH" up --build -d
+    docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml up --build -d
 }
 
 start_share() {
-    docker-compose -f "$COMPOSE_FILE_PATH" up --build -d becpg-artworks-share
+    docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml up --build -d becpg-artworks-share
 }
 
 start_acs() {
-    docker-compose -f "$COMPOSE_FILE_PATH" up --build -d becpg-artworks-acs
+    docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml up --build -d becpg-artworks-acs
 }
 
 down() {
     if [ -f "$COMPOSE_FILE_PATH" ]; then
-        docker-compose -f "$COMPOSE_FILE_PATH" down
+        docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml down
     fi
 }
 
@@ -40,23 +40,23 @@ build() {
 }
 
 build_share() {
-    docker-compose -f "$COMPOSE_FILE_PATH" kill becpg-artworks-share
-    yes | docker-compose -f "$COMPOSE_FILE_PATH" rm -f becpg-artworks-share
+    docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml kill becpg-artworks-share
+    yes | docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml rm -f becpg-artworks-share
     $MVN_EXEC clean package -pl becpg-artworks-share,becpg-artworks-share-docker
 }
 
 build_acs() {
-    docker-compose -f "$COMPOSE_FILE_PATH" kill becpg-artworks-acs
-    yes | docker-compose -f "$COMPOSE_FILE_PATH" rm -f becpg-artworks-acs
+    docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml kill becpg-artworks-acs
+    yes | docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml rm -f becpg-artworks-acs
     $MVN_EXEC clean package -pl becpg-artworks-integration-tests,becpg-artworks-platform,becpg-artworks-platform-docker
 }
 
 tail() {
-    docker-compose -f "$COMPOSE_FILE_PATH" logs -f
+    docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml logs -f
 }
 
 tail_all() {
-    docker-compose -f "$COMPOSE_FILE_PATH" logs --tail="all"
+    docker-compose -f "$COMPOSE_FILE_PATH" -f docker-compose.override.yml logs --tail="all"
 }
 
 prepare_test() {

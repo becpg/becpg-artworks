@@ -19,8 +19,12 @@
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans
           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
-	<bean id="webscript.alfresco.tutorials.helloworld.get"
-		  class="fr.becpg.artworks.platformsample.HelloWorldWebScript"
-		  parent="webscript">
+	
+	<bean id="webscript.fr.becpg.document.compareDocument.get" class="fr.becpg.artworks.web.scripts.document.CompareDocumentWebScript" parent="webscript"/>
+	
+	<bean id="webscript.fr.becpg.document.annotation.get" class="fr.becpg.artworks.web.scripts.document.AnnotationWebScript" parent="webscript">
+		<property name="annotationService" ref="annotationService" />
+		<property name="nodeService" ref="NodeService" />
+		<property name="lockService" ref="lockService" />
 	</bean>
 </beans>

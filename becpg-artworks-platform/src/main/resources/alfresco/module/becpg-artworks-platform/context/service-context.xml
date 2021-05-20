@@ -15,27 +15,44 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd
+            http://www.springframework.org/schema/util
+            http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
-    <!-- A simple class that is initialized by Spring -->
-    <bean id="fr.becpg.artworks.Demo" class="fr.becpg.artworks.platformsample.Demo" init-method="init" />
+	<context:component-scan base-package="fr.becpg" />
 
-    <!-- A simple module component that will be executed once.
-         Note. this module component will only be executed once, and then there will be an entry for it in the Repo DB.
-         So doing for example $ mvn clean install alfresco:run twice will only execute this component the first time.
-         You need to remove /alf_data_dev for it to be executed again. -->
-    <bean id="fr.becpg.artworks.DemoComponent" class="fr.becpg.artworks.platformsample.DemoComponent" parent="module.baseComponent" >
-        <property name="moduleId" value="becpg-artworks-platform" />  <!-- See module.properties -->
-        <property name="name" value="DemoComponent" />
-        <property name="description" value="A demonstration component" />
-        <property name="sinceVersion" value="1.0" />
-        <property name="appliesFromVersion" value="0.99" /> <!-- 1.0 would not work here when using SNAPSHOT version in project  -->
-        <property name="nodeService" ref="NodeService" />
-        <property name="nodeLocatorService" ref="nodeLocatorService" />
-    </bean>
+	<bean id="compareDocumentService" class="fr.becpg.artworks.compare.CompareDocumentServiceImpl" />
+
+	<bean id="annotationService" class="fr.becpg.artworks.annotation.AnnotationServiceImpl">
+		<property name="nodeService" ref="nodeService" />
+		<property name="contentService" ref="contentService" />
+		<property name="personService" ref="personService" />
+		<property name="checkOutCheckInService" ref="checkOutCheckInService" />
+		<property name="annotationAuthorization" value="${beCPG.annotationAuthorization}" />
+	</bean>
+
+	<bean id="annotationScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.annotation.jscript.AnnotationScriptHelper">
+		<property name="extensionName">
+			<value>annotation</value>
+		</property>
+		<property name="annotationService" ref="annotationService" />
+	</bean>
 
 
+	<bean id="doclibCustomAnnotation" class="fr.becpg.artworks.annotation.jscript.app.AnnotationCustomResponse">
+		<property name="annotationAuthorization">
+			<value>${beCPG.annotationAuthorization}</value>
+		</property>
+	</bean>
+
+	<util:map id="slingshotDocLibCustomResponsesMap">
+		<entry key="annotation">
+			<ref bean="doclibCustomAnnotation" />
+		</entry>
+	</util:map>
 </beans>

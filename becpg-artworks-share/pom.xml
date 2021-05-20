@@ -3,10 +3,29 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>becpg-artworks-share</artifactId>
-    <name>Alfresco Share JAR Module</name>
+    <name>beCPG Artworks Share JAR Module</name>
     <packaging>jar</packaging>
-    <description>Sample Share JAR Module (to be included in the share.war) - part of AIO - SDK 4.2</description>
-
+    <description>beCPG Artworks Share Module</description>
+    
+	<licenses>
+		<license>
+			<name>GNU LESSER GENERAL PUBLIC LICENSE</name>
+			<url>http://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+			<comments>Copyright (C) 2010-2021 beCPG. 
+  
+			  beCPG is free software: you can redistribute it and/or modify 
+			  it under the terms of the GNU Lesser General Public License as published by 
+			  the Free Software Foundation, either version 3 of the License, or 
+			  (at your option) any later version. 
+			   
+			  beCPG is distributed in the hope that it will be useful, 
+			  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+			  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+			  GNU Lesser General Public License for more details. 
+			 </comments>
+		</license>
+	</licenses>
+	
     <parent>
         <groupId>fr.becpg.artworks</groupId>
         <artifactId>becpg-artworks</artifactId>

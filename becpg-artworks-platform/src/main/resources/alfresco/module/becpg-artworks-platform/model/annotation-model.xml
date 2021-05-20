@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="annotation:annotationModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>Annotation Model</description>
+    
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <!-- Import Alfresco Content Domain Model Definitions -->
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <!-- Import Alfresco System Model Definitions -->
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.becpg.fr/annotation/1.0" prefix="annotation"/>
+    </namespaces>
+
+
+    <aspects>
+      
+		<aspect name="annotation:annotationAspect">
+			<properties>
+				<property name="annotation:annotationDocumentIdentifier">
+				  <type>d:text</type>
+				</property>
+			</properties>
+		</aspect>
+	</aspects>
+
+</model>

@@ -4,14 +4,77 @@
     <groupId>fr.becpg.artworks</groupId>
     <artifactId>becpg-artworks</artifactId>
     <version>3.2.0</version>
-    <name>AIO - SDK 4.2</name>
-    <description>All-In-One (AIO) project for SDK 4.2</description>
+    <name>beCPG Artworks</name>
+    <description>beCPG Artworks parent project</description>
     <packaging>pom</packaging>
-
+    
+	<organization>
+		<name>BeCPG</name>
+		<url>http://www.becpg.fr</url>
+	</organization>
+	
     <prerequisites>
         <maven>3.3.0</maven>
     </prerequisites>
-
+    
+	<mailingLists>
+		<mailingList>
+			<name>becpg</name>
+			<post>support@becpg.fr</post>
+		</mailingList>
+	</mailingLists>
+	
+	<issueManagement>
+		<system>RedMine</system>
+		<url>https://support.becpg.fr</url>
+	</issueManagement>
+	
+	<licenses>
+		<license>
+			<name>GNU LESSER GENERAL PUBLIC LICENSE</name>
+			<url>http://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+			<comments>Copyright (C) 2010-2021 beCPG. 
+  
+			  beCPG is free software: you can redistribute it and/or modify 
+			  it under the terms of the GNU Lesser General Public License as published by 
+			  the Free Software Foundation, either version 3 of the License, or 
+			  (at your option) any later version. 
+			   
+			  beCPG is distributed in the hope that it will be useful, 
+			  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+			  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+			  GNU Lesser General Public License for more details. 
+			 </comments>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<id>matthieu.laborie</id>
+			<name>Matthieu Laborie</name>
+			<email>matthieu.laborie@becpg.fr</email>
+			<timezone>1</timezone>
+			<organization>beCPG</organization>
+			<organizationUrl>http://www.becpg.fr</organizationUrl>
+		</developer>
+		<developer>
+			<id>philippe.quere</id>
+			<name>Philippe Quéré</name>
+			<email>philippe.quere@becpg.fr</email>
+			<timezone>1</timezone>
+			<organization>beCPG</organization>
+			<organizationUrl>http://www.becpg.fr</organizationUrl>
+		</developer>
+		<developer>
+			<id>valentin.leblanc</id>
+			<name>Valentin Leblanc</name>
+			<email>valentin.leblanc@becpg.fr</email>
+			<timezone>1</timezone>
+			<organization>beCPG</organization>
+			<organizationUrl>http://www.becpg.fr</organizationUrl>
+		</developer>
+	</developers>
+	
     <properties>
         <!-- Alfresco Maven Plugin version to use -->
         <alfresco.sdk.version>4.2.0</alfresco.sdk.version>
@@ -151,7 +214,7 @@
                     the layout of your AMP. The end result is that Maven will produce both a JAR file and an AMP with your
                     module.
                 -->
-                <!--
+                
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -177,7 +240,7 @@
                         </dependency>
                     </dependencies>
                 </plugin>
-                -->
+               
 
                 <!-- Filter resources in any sub-project with this config -->
                 <plugin>

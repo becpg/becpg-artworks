@@ -44,3 +44,6 @@ All the services of the project are now run as docker containers. The run script
 
   * Abstract assembly into a dependency so we don't have to ship the assembly in the archetype
   * Functional/remote unit tests
+  
+# Annotation feature
+  * In order to use the pdf file annotation feature, you need to provide a Kami license key by setting the property "beCPG.annotationAuthorization" under docker-compose.override.yml (sample file provided)

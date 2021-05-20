@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>becpg-artworks-share-docker</artifactId>
-    <name>Alfresco Share Docker Module</name>
+    <name>beCPG Artworks Share Docker Module</name>
     <description>Share Docker Module to generate the final Docker image</description>
     <packaging>jar</packaging>
 
@@ -20,7 +20,8 @@
         <dependency>
             <groupId>fr.becpg.artworks</groupId>
             <artifactId>becpg-artworks-share</artifactId>
-            <version>3.2.0</version>
+            <type>amp</type>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 

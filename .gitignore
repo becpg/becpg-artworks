@@ -36,3 +36,4 @@ tmp/
 
 # macOS
 *.DS_Store
+/docker-compose.override.yml

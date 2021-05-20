@@ -2,11 +2,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>becpg-artworks-platform</artifactId>
-    <name>Alfresco Platform/Repository JAR Module</name>
-    <description>Platform/Repo JAR Module (to be included in the alfresco.war) - part of AIO - SDK 4.2
-    </description>
+    <name>beCPG Artworks platform</name>
+    <description>beCPG Artworks Repo AMP Module </description>
     <packaging>jar</packaging>
-
+    
+	<licenses>
+		<license>
+			<name>GNU LESSER GENERAL PUBLIC LICENSE</name>
+			<url>http://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+			<comments>Copyright (C) 2010-2021 beCPG. 
+  
+			  beCPG is free software: you can redistribute it and/or modify 
+			  it under the terms of the GNU Lesser General Public License as published by 
+			  the Free Software Foundation, either version 3 of the License, or 
+			  (at your option) any later version. 
+			   
+			  beCPG is distributed in the hope that it will be useful, 
+			  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+			  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+			  GNU Lesser General Public License for more details. 
+			 </comments>
+		</license>
+	</licenses>
+	
     <parent>
         <groupId>fr.becpg.artworks</groupId>
         <artifactId>becpg-artworks</artifactId>
@@ -17,6 +35,12 @@
     </properties>
 
     <dependencies>
+ 
+		<dependency>
+			<groupId>com.github.romankh3</groupId>
+			<artifactId>image-comparison</artifactId>
+			<version>4.4.0</version>
+		</dependency>
     </dependencies>
 
     <build>
@@ -26,6 +50,35 @@
                 <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
         </plugins>
+        <pluginManagement>
+        	<plugins>
+        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        		<plugin>
+        			<groupId>org.eclipse.m2e</groupId>
+        			<artifactId>lifecycle-mapping</artifactId>
+        			<version>1.0.0</version>
+        			<configuration>
+        				<lifecycleMappingMetadata>
+        					<pluginExecutions>
+        						<pluginExecution>
+        							<pluginExecutionFilter>
+        								<groupId>org.zeroturnaround</groupId>
+        								<artifactId>jrebel-maven-plugin</artifactId>
+        								<versionRange>[1.1.8,)</versionRange>
+        								<goals>
+        									<goal>generate</goal>
+        								</goals>
+        							</pluginExecutionFilter>
+        							<action>
+        								<ignore></ignore>
+        							</action>
+        						</pluginExecution>
+        					</pluginExecutions>
+        				</lifecycleMappingMetadata>
+        			</configuration>
+        		</plugin>
+        	</plugins>
+        </pluginManagement>
     </build>
 
 </project>

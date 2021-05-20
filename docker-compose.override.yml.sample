@@ -1,0 +1,5 @@
+version: '3.4'
+services:
+  becpg-artworks-acs:
+    environment:
+      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:8888 -DbeCPG.annotationAuthorization="
