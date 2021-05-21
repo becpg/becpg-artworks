@@ -1,5 +1,23 @@
 # becpg-artworks
 
+Provides two additional features to your Alfresco Content Service. This addon was created by beCPG : https://www.becpg.fr/
+
+# Annotation feature : provides an annotation tool for PDF files
+  * In order to use the pdf file annotation feature, you need to provide a Kami license key by setting the property "beCPG.annotationAuthorization" under docker-compose.override.yml (sample file provided)
+  
+![](doc-images/annotation.png) ![](doc-images/annotation2.png)
+
+# Comparison feature : enables comparison button in document version view
+
+![](doc-images/comparison.png) ![](doc-images/comparison2.png)
+
+# Setup
+ * download the two AMPs provided by the becpg-artworks release
+ * install the two AMPs into your content service by running "java -jar /root/alfresco-mmt.jar install /root/amp/ webapps/alfresco -nobackup -directory -force" in your Dockerfile
+ 
+ 
+# Build
+
 This is an All-In-One (AIO) project for Alfresco SDK 4.2.
 
 Run with `./run.sh build_start` or `./run.bat build_start` and verify that it
@@ -26,24 +44,3 @@ All the services of the project are now run as docker containers. The run script
  `integration-tests` module and stop the environment.
  * `test`. Execute the integration tests (the environment must be already started).
 
-# Few things to notice
-
- * No parent pom
- * No WAR projects, the jars are included in the custom docker images
- * No runner project - the Alfresco environment is now managed through [Docker](https://www.docker.com/)
- * Standard JAR packaging and layout
- * Works seamlessly with Eclipse and IntelliJ IDEA
- * JRebel for hot reloading, JRebel maven plugin for generating rebel.xml [JRebel integration documentation]
- * AMP as an assembly
- * Persistent test data through restart thanks to the use of Docker volumes for ACS, ASS and database data
- * Integration tests module to execute tests against the final environment (dockerised)
- * Resources loaded from META-INF
- * Web Fragment (this includes a sample servlet configured via web fragment)
-
-# TODO
-
-  * Abstract assembly into a dependency so we don't have to ship the assembly in the archetype
-  * Functional/remote unit tests
-  
-# Annotation feature
-  * In order to use the pdf file annotation feature, you need to provide a Kami license key by setting the property "beCPG.annotationAuthorization" under docker-compose.override.yml (sample file provided)
