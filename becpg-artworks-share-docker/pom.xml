@@ -21,7 +21,7 @@
             <groupId>fr.becpg.artworks</groupId>
             <artifactId>becpg-artworks-share</artifactId>
             <type>amp</type>
-            <version>1.0.0</version>
+            <version>3.2.0.0</version>
         </dependency>
     </dependencies>
 

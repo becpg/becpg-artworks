@@ -21,12 +21,12 @@
             <groupId>fr.becpg.artworks</groupId>
             <artifactId>becpg-artworks-platform</artifactId>
             <type>amp</type>
-            <version>1.0.0</version>
+            <version>3.2.0.0</version>
         </dependency>
         <dependency>
             <groupId>fr.becpg.artworks</groupId>
             <artifactId>becpg-artworks-integration-tests</artifactId>
-            <version>1.0.0</version>
+            <version>3.2.0.0</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
