@@ -13,7 +13,10 @@ https://www.becpg.fr/
 
 # Comparison feature : enables comparison button in document version view
 
-![](doc-images/comparison.png) ![](doc-images/comparison2.png)
+This enables image and PDF comparison between 2 versions of a document.
+
+![](doc-images/comparison.png) ![](doc-images/comparison2.png) ![](doc-images/comparison3.png)
+
 
 # Setup
  
