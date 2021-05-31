@@ -1,6 +1,10 @@
-# becpg-artworks
+# beCPG Artworks
 
-Provides two additional features to your Alfresco Content Service. This addon was created by beCPG : https://www.becpg.fr/
+This addon provides two additional features to your Alfresco Content Service.
+
+It can be use standalone or included in beCPG PLM.
+beCPG is an open source Product Lifecycle Management (PLM) software designed to manage food, cosmetics and CPG products. It helps to accelerate innovation and reduce time-to-market while improving product quality.
+https://www.becpg.fr/
 
 # Annotation feature : provides an annotation tool for PDF files
   * In order to use the pdf file annotation feature, you need to provide a Kami license key by setting the property "beCPG.annotationAuthorization" under docker-compose.override.yml (sample file provided)
@@ -12,6 +16,7 @@ Provides two additional features to your Alfresco Content Service. This addon wa
 ![](doc-images/comparison.png) ![](doc-images/comparison2.png)
 
 # Setup
+ 
  * download the two AMPs provided by the becpg-artworks release
  * install the two AMPs into your content service by running "java -jar /root/alfresco-mmt.jar install /root/amp/ webapps/alfresco -nobackup -directory -force" in your Dockerfile
  
