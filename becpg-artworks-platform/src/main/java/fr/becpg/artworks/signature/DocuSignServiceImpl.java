@@ -73,15 +73,6 @@ import fr.becpg.artworks.signature.model.SignatureModel;
 @Service
 public final class DocuSignServiceImpl implements SignatureService {
 
-	// Tuto pour obtenir son acccess_token :
-	// créer une nouvelle app sur docusign avec integration key et secret key et url de redirection : http://localhost
-	// exécuter dans une console javascript : btoa('iKey:secKey'); => encodedKeys
-	// aller sur https://account-d.docusign.com/password?response_type=code&scope=signature&client_id=iKey&redirect_uri=http://localhost
-	// récupérer le code de l'url => codeFromUrl
-	// renseigner codeFromUrl et encodedKeys dans Postman
-	// exécuter la requete d'authentification dans Postman
-	// récupérer le access_token
-	
 	private static final String DOCUSIGN_BASE_URL = "https://demo.docusign.net/restapi/v2.1/accounts/";
 	
 	private static final String ENVELOPES = "/envelopes/";
