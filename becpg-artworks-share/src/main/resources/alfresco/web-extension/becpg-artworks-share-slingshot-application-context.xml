@@ -47,4 +47,25 @@
 			</list>
 		</property>
 	</bean>
+	
+   <bean id="evaluator.becpg.doclib.action.signature.isEnabled" parent="evaluator.doclib.action.metadataValue">
+      <property name="accessor" value="custom.signature.enabled"/>
+      <property name="comparator">
+         <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
+            <property name="value" value="true" />
+         </bean>
+      </property>
+   </bean>
+   
+   <bean id="evaluator.becpg.doclib.action.signature.hasSignatureAspect" parent="evaluator.doclib.metadata.hasAspect">
+      <property name="aspects">
+         <list>
+            <value>sign:signatureAspect</value>
+         </list>
+      </property>
+	</bean>
+	
+   <bean id="evaluator.becpg.doclib.action.signature.isSentForSignature" class="org.alfresco.web.evaluator.PropertyNotNullEvaluator">
+   <property name="property" value="sign:signatureDocumentIdentifier"/>
+	</bean>
 </beans>

@@ -43,16 +43,42 @@
 		<property name="annotationService" ref="annotationService" />
 	</bean>
 
-
 	<bean id="doclibCustomAnnotation" class="fr.becpg.artworks.annotation.jscript.app.AnnotationCustomResponse">
 		<property name="annotationAuthorization">
 			<value>${beCPG.annotationAuthorization}</value>
 		</property>
 	</bean>
 
+	<bean id="signatureService" class="fr.becpg.artworks.signature.DocuSignServiceImpl">
+		<property name="nodeService" ref="nodeService" />
+		<property name="contentService" ref="contentService" />
+		<property name="personService" ref="personService" />
+		<property name="checkOutCheckInService" ref="checkOutCheckInService" />
+		<property name="signatureAuthorization" value="${beCPG.signatureAuthorization}" />
+		<property name="mimetypeService" ref="mimetypeService" />
+	</bean>
+	
+	<bean id="doclibCustomSignature" class="fr.becpg.artworks.signature.jscript.app.SignatureCustomResponse">
+		<property name="signatureAuthorization">
+			<value>${beCPG.signatureAuthorization}</value>
+		</property>
+	</bean>
+	
+	<bean id="beCPGArtworksScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.jscript.BeCPGArtworksScriptHelper">
+		<property name="extensionName">
+			<value>bcpgArtworks</value>
+		</property>
+		<property name="signatureService" ref="signatureService"/>
+	</bean>
+	
+	
 	<util:map id="slingshotDocLibCustomResponsesMap">
 		<entry key="annotation">
 			<ref bean="doclibCustomAnnotation" />
 		</entry>
+		<entry key="signature">
+			<ref bean="doclibCustomSignature" />
+		</entry>
 	</util:map>
+
 </beans>

@@ -27,4 +27,12 @@
 		<property name="nodeService" ref="NodeService" />
 		<property name="lockService" ref="lockService" />
 	</bean>
+	
+	<bean id="webscript.fr.becpg.document.signature.get" class="fr.becpg.artworks.web.scripts.document.SignatureWebScript" parent="webscript">
+		<property name="signatureService" ref="signatureService" />
+		<property name="nodeService" ref="NodeService" />
+		<property name="lockService" ref="lockService" />
+	</bean>
+	
+	
 </beans>

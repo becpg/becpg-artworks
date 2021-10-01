@@ -11,9 +11,108 @@
      -->
 <alfresco-config>
 
+	<config evaluator="model-type" condition="cm:content">
+		<forms>
+         <form>
+            <field-visibility>
+               <show id="cm:name" />
+               <show id="cm:title" force="true" />
+               <show id="cm:description" force="true" />
+               <show id="cm:content" force="true" />
+               <show id="mimetype" />
+               <show id="app:editInline" force="true" />
+               <show id="sign:recipients" />
+            </field-visibility>
+            <appearance>
+               <field id="cm:name">
+                 <control>
+                    <control-param name="maxLength">255</control-param>
+                 </control>
+               </field>
+               <field id="cm:title">
+                  <control template="/org/alfresco/components/form/controls/textfield.ftl" />
+               </field>
+               <field id="cm:content">
+                  <control>
+                     <control-param name="editorAppearance">explorer</control-param>
+                  </control>
+               </field>
+               <field id="mimetype">
+                  <control template="/org/alfresco/components/form/controls/hidden.ftl">
+                     <control-param name="contextProperty">mimeType</control-param>
+                  </control>
+               </field>
+               <field id="app:editInline">
+                  <control template="/org/alfresco/components/form/controls/hidden.ftl">
+                     <control-param name="contextProperty">editInline</control-param>
+                  </control>
+               </field>
+               <field id="sign:recipients" />
+            </appearance>
+         </form>
+		</forms>
+	</config>
+
+	<config evaluator="node-type" condition="cm:content">
+		<forms>
+         <form>
+            <field-visibility>
+               <show id="cm:name" />
+               <show id="cm:title" force="true" />
+               <show id="cm:description" force="true" />
+               <show id="cm:content" force="true" />
+               <show id="mimetype" />
+               <show id="app:editInline" force="true" />
+               <show id="sign:recipients" />
+            </field-visibility>
+            <appearance>
+               <field id="cm:name">
+                 <control>
+                    <control-param name="maxLength">255</control-param>
+                 </control>
+               </field>
+               <field id="cm:title">
+                  <control template="/org/alfresco/components/form/controls/textfield.ftl" />
+               </field>
+               <field id="cm:content">
+                  <control>
+                     <control-param name="editorAppearance">explorer</control-param>
+                  </control>
+               </field>
+               <field id="mimetype">
+                  <control template="/org/alfresco/components/form/controls/hidden.ftl">
+                     <control-param name="contextProperty">mimeType</control-param>
+                  </control>
+               </field>
+               <field id="app:editInline">
+                  <control template="/org/alfresco/components/form/controls/hidden.ftl">
+                     <control-param name="contextProperty">editInline</control-param>
+                  </control>
+               </field>
+               	<field id="sign:recipients" />
+            </appearance>
+         </form>
+		</forms>
+	</config>
+
+	<config evaluator="string-compare" condition="DocumentLibrary">
+		<aspects>
+			<visible>
+				<aspect name="sign:signatureAspect" />
+			</visible>
+			<!-- Aspects that a user can add. Same as "visible" if left empty -->
+			<addable>
+			</addable>
+			<!-- Aspects that a user can remove. Same as "visible" if left empty -->
+			<removeable>
+			</removeable>
+		</aspects>
+	</config>
+
 	<config evaluator="string-compare" condition="DocLibCustom">
 		<dependencies>
 			<js src="/components/annotation/annotation-docLibAction.js" />
+			<js src="/components/signature/signature-docLibAction.js" />
 		</dependencies>
 	</config>
 
@@ -83,6 +182,26 @@
 				<override>document-manage-aspects</override>
 				<override>document-change-type</override>
 			</action>
+    
+    <!-- Signature -->
+			<action id="signature-checkout" type="javascript" icon="document-edit-properties" label="actions.document.signature-checkout">
+				<param name="function">onActionCheckOutSignature</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isSentForSignature</evaluator>
+			</action>
+			<action id="signature-checkin" type="javascript" icon="document-upload-new-version" label="actions.document.signature-checkin">
+				<param name="function">onActionCheckInSignature</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.isSentForSignature</evaluator>
+			</action>
 		</actions>
 		<actionGroups>
 			<actionGroup id="document-details">
@@ -98,7 +217,18 @@
 				<action index="143"  id="annotation-checkin" />
 				<action index="144"  id="annotation-cancel" />
 			</actionGroup>
+			
+			<actionGroup id="document-details">
+				<action index="421" subgroup="40" id="signature-checkout" />
+				<action index="422" subgroup="40" id="signature-checkin" />
+			</actionGroup>
+
+			<actionGroup id="document-browse">
+				<action index="141"  id="signature-checkout" />
+				<action index="142"  id="signature-checkin" />
+			</actionGroup>
 		</actionGroups>	
+
 	</config>
 
 </alfresco-config>
