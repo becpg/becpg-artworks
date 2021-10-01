@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.becpg.artworks</groupId>
     <artifactId>becpg-artworks</artifactId>
-    <version>3.2.0.0</version>
+    <version>4.0.0.0</version>
     <name>beCPG Artworks</name>
     <description>beCPG Artworks parent project</description>
     <packaging>pom</packaging>
