@@ -334,32 +334,69 @@ public final class DocuSignServiceImpl implements SignatureService {
 		
 		ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
 
-		byte[] ret = response.getBody();
+		byte[] signedDocumentBytes = response.getBody();
 		
-		if (ret != null) {
+		if (signedDocumentBytes != null) {
 			
 			NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(nodeRef);
 			Map<String, Serializable> versionProperties = new HashMap<>();
 			versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
 			checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
-			ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-			
-			try (InputStream targetStream = new ByteArrayInputStream(ret)) {
-			
-				String mimetype = mimetypeService.guessMimetype(null, targetStream);
-				ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-				Charset charset = charsetFinder.getCharset(targetStream, mimetype);
-				String encoding = charset.name();
-				
-				writer.setEncoding(encoding);
-				writer.setMimetype(mimetype);
-				writer.putContent(targetStream);
-			
-			} catch (ContentIOException | IOException e) {
-				logger.error("Failed to write content to node", e);
-			}
+			writeContent(nodeRef, signedDocumentBytes);
 		} else {
-			throw new WebScriptException("File url is null so checkin signature is not done.");
+			throw new WebScriptException("Signed document could not be retrieved from DocuSign");
+		}
+		
+		url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId + "/documents/certificate";
+		
+		ResponseEntity<byte[]> certificateResponse = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
+		
+		byte[] certficateBytes = certificateResponse.getBody();
+		
+		if (certficateBytes != null) {
+			
+			String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME) + " - Signature Certificate";
+			
+			NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+			
+			NodeRef certificateNode = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, name);
+			
+			if (certificateNode == null) {
+				Map<QName, Serializable> props = new HashMap<>();
+				props.put(ContentModel.PROP_NAME, name);
+				certificateNode = nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, props).getChildRef();
+				nodeService.addAspect(certificateNode, ContentModel.ASPECT_VERSIONABLE, null);
+			} else {
+				NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(certificateNode);
+				Map<String, Serializable> versionProperties = new HashMap<>();
+				versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
+				checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
+			}
+			
+			writeContent(certificateNode, certficateBytes);
+			
+		} else {
+			throw new WebScriptException("Signature Certificate could not be retrieved from DocuSign");
+		}
+		
+	}
+
+	private void writeContent(NodeRef nodeRef, byte[] ret) {
+		ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+		
+		try (InputStream targetStream = new ByteArrayInputStream(ret)) {
+		
+			String mimetype = mimetypeService.guessMimetype(null, targetStream);
+			ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+			Charset charset = charsetFinder.getCharset(targetStream, mimetype);
+			String encoding = charset.name();
+			
+			writer.setEncoding(encoding);
+			writer.setMimetype(mimetype);
+			writer.putContent(targetStream);
+		
+		} catch (ContentIOException | IOException e) {
+			logger.error("Failed to write content to node", e);
 		}
 	}
 
