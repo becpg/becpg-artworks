@@ -56,6 +56,7 @@
 		<property name="checkOutCheckInService" ref="checkOutCheckInService" />
 		<property name="signatureAuthorization" value="${beCPG.signatureAuthorization}" />
 		<property name="mimetypeService" ref="mimetypeService" />
+		<property name="sysAdminParams" ref="sysAdminParams" />
 	</bean>
 	
 	<bean id="doclibCustomSignature" class="fr.becpg.artworks.signature.jscript.app.SignatureCustomResponse">

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,6 +48,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.UrlUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -101,6 +103,8 @@ public final class DocuSignServiceImpl implements SignatureService {
 	
 	private MimetypeService mimetypeService;
 	
+	private SysAdminParams sysAdminParams;
+	
 	
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
@@ -124,6 +128,10 @@ public final class DocuSignServiceImpl implements SignatureService {
 	
 	public void setMimetypeService(MimetypeService mimetypeService) {
 		this.mimetypeService = mimetypeService;
+	}
+	
+	public void setSysAdminParams(SysAdminParams sysAdminParams) {
+		this.sysAdminParams = sysAdminParams;
 	}
 	
 	@Override
@@ -256,7 +264,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 	}
 	
 	@Override
-	public String getSignatureView(NodeRef nodeRef, NodeRef recipient) {
+	public String getSignatureView(NodeRef nodeRef, NodeRef recipient, NodeRef task) {
 		
 		String accountId = signatureAuthorization.split(";")[0];
 
@@ -274,8 +282,10 @@ public final class DocuSignServiceImpl implements SignatureService {
 				+ nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
 		String email = (String) nodeService.getProperty(recipient, ContentModel.PROP_EMAIL);
 
+		String returnUrl = UrlUtil.getAlfrescoUrl(sysAdminParams) + "/service/becpg/remote/task-edit-url?nodeRef=" + task.toString();
+		
 		JSONObject body = new JSONObject();
-		body.put("returnUrl", "http://localhost");
+		body.put("returnUrl", returnUrl);
 		body.put("userName", userDisplayName);
 		body.put("authenticationMethod", "email");
 		body.put("email", email);

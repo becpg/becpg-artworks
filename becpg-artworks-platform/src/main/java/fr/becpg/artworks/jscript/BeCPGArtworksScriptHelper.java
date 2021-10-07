@@ -19,6 +19,7 @@ package fr.becpg.artworks.jscript;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 import fr.becpg.artworks.signature.SignatureService;
 
@@ -36,8 +37,8 @@ public final class BeCPGArtworksScriptHelper extends BaseScopableProcessorExtens
 		this.signatureService = signatureService;
 	}
 	
-	public String getSignatureViewUrl(ScriptNode document, ScriptNode recipient) {
-		return signatureService.getSignatureView(document.getNodeRef(), recipient.getNodeRef());
+	public String getSignatureViewUrl(ScriptNode document, ScriptNode recipient, NodeRef task) {
+		return signatureService.getSignatureView(document.getNodeRef(), recipient.getNodeRef(), task);
 	}
 	
 	public String sendForSignature(ScriptNode document) {
