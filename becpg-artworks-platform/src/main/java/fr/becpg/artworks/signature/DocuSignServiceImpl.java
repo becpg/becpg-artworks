@@ -282,7 +282,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 				+ nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
 		String email = (String) nodeService.getProperty(recipient, ContentModel.PROP_EMAIL);
 
-		String returnUrl = UrlUtil.getAlfrescoUrl(sysAdminParams) + "/service/becpg/remote/task-edit-url?nodeRef=" + task.toString();
+		String returnUrl = UrlUtil.getAlfrescoUrl(sysAdminParams) + "/service/becpg/project/task-edit-url?nodeRef=" + task.toString();
 		
 		JSONObject body = new JSONObject();
 		body.put("returnUrl", returnUrl);
