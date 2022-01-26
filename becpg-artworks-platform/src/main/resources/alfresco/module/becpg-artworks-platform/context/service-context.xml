@@ -44,9 +44,8 @@
 	</bean>
 
 	<bean id="doclibCustomAnnotation" class="fr.becpg.artworks.annotation.jscript.app.AnnotationCustomResponse">
-		<property name="annotationAuthorization">
-			<value>${beCPG.annotationAuthorization}</value>
-		</property>
+		<property name="annotationAuthorization" value="${beCPG.annotationAuthorization}" />
+		<property name="annotationViewerLicenseKey" value="${beCPG.annotationViewerLicenseKey}" />
 	</bean>
 
 	<bean id="signatureService" class="fr.becpg.artworks.signature.DocuSignServiceImpl">
@@ -59,6 +58,7 @@
 		<property name="sysAdminParams" ref="sysAdminParams" />
 	</bean>
 	
+
 	<bean id="doclibCustomSignature" class="fr.becpg.artworks.signature.jscript.app.SignatureCustomResponse">
 		<property name="signatureAuthorization">
 			<value>${beCPG.signatureAuthorization}</value>

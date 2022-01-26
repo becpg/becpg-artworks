@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>artworks-viewer</shortname>
+  <description>Artworks Viewer Component</description>
+  <url>/components/artworks-viewer/artworks-viewer</url>
+</webscript>

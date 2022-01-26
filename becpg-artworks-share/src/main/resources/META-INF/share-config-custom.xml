@@ -183,7 +183,17 @@
 				<override>document-change-type</override>
 			</action>
     
-    <!-- Signature -->
+    		<action id="annotation-viewer" type="pagelink" icon="document-edit-properties" label="actions.document.annotation-viewer">
+				<param name="page">artworks-viewer?nodeRef={node.nodeRef}</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.mimetype</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
+				<evaluator negate="true">evaluator.doclib.action.notEditable</evaluator>
+			</action>
+    
+   			 <!-- Signature -->
 			<action id="signature-checkout" type="javascript" icon="document-edit-properties" label="actions.document.signature-checkout">
 				<param name="function">onActionCheckOutSignature</param>
 				<permissions>
@@ -206,27 +216,24 @@
 		<actionGroups>
 			<actionGroup id="document-details">
 				<action index="421" subgroup="40" id="annotation-checkout" />
-				<action index="422" subgroup="40" id="annotation-create-session" />
-				<action index="423" subgroup="40" id="annotation-checkin" />
-				<action index="424" subgroup="40" id="annotation-cancel" />
+				<action index="422" subgroup="40" id="annotation-viewer" />
+				<action index="423" subgroup="40" id="annotation-create-session" />
+				<action index="424" subgroup="40" id="annotation-checkin" />
+				<action index="425" subgroup="40" id="annotation-cancel" />
+				<action index="426" subgroup="40" id="signature-checkout" />
+				<action index="427" subgroup="40" id="signature-checkin" />
 			</actionGroup>
 
 			<actionGroup id="document-browse">
 				<action index="141"  id="annotation-checkout" />
-				<action index="142"  id="annotation-create-session" />
-				<action index="143"  id="annotation-checkin" />
-				<action index="144"  id="annotation-cancel" />
+				<action index="142"  id="annotation-viewer" />
+				<action index="143"  id="annotation-create-session" />
+				<action index="144"  id="annotation-checkin" />
+				<action index="145"  id="annotation-cancel" />
+				<action index="146"  id="signature-checkout" />
+				<action index="147"  id="signature-checkin" />
 			</actionGroup>
 			
-			<actionGroup id="document-details">
-				<action index="421" subgroup="40" id="signature-checkout" />
-				<action index="422" subgroup="40" id="signature-checkin" />
-			</actionGroup>
-
-			<actionGroup id="document-browse">
-				<action index="141"  id="signature-checkout" />
-				<action index="142"  id="signature-checkin" />
-			</actionGroup>
 		</actionGroups>	
 
 	</config>

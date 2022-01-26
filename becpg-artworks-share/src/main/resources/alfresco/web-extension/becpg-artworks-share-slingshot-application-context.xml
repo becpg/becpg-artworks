@@ -22,9 +22,18 @@
          </list>
       </property>
    </bean>
+   
+   <bean id="evaluator.becpg.doclib.action.annotation.viewer.isEnabled" parent="evaluator.doclib.action.metadataValue">
+      <property name="accessor" value="custom.annotation.viewer"/>
+      <property name="comparator">
+         <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
+            <property name="value" value="true" />
+         </bean>
+      </property>
+   </bean>
 	
    <bean id="evaluator.becpg.doclib.action.annotation.isEnabled" parent="evaluator.doclib.action.metadataValue">
-      <property name="accessor" value="custom.annotation.enabled"/>
+      <property name="accessor" value="custom.annotation.external"/>
       <property name="comparator">
          <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
             <property name="value" value="true" />
@@ -41,6 +50,14 @@
 	</bean>
 
 	<bean id="evaluator.becpg.doclib.action.annotation.mimetype" parent="evaluator.doclib.action.isMimetype">
+		<property name="mimetypes">
+			<list>
+				<value>application/pdf</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="evaluator.becpg.doclib.action.annotation.viewer.mimetype" parent="evaluator.doclib.action.isMimetype">
 		<property name="mimetypes">
 			<list>
 				<value>application/pdf</value>

@@ -379,6 +379,8 @@
                             <sourceDirectory>${project.basedir}/src/main/assembly/web</sourceDirectory>
                             <outputDirectory>${project.basedir}/src/main/assembly/web</outputDirectory>
                             <excludes>
+                            	<exclude>**/artworks-viewer/**</exclude>
+                                <exclude>**/pdftron/**</exclude>
                                 <exclude>**/webscripts/**</exclude>
                                 <exclude>**/site-webscripts/**</exclude>
                                 <exclude>**/META-INF/**</exclude>
@@ -399,6 +401,8 @@
                         </goals>
                         <configuration>
                             <excludes>
+                                <exclude>**/artworks-viewer/**</exclude>
+                                 <exclude>**/pdftron/**</exclude>
                                 <exclude>**/webscripts/**</exclude>
                                 <exclude>**/site-webscripts/**</exclude>
                                 <exclude>**/*.lib.js</exclude>

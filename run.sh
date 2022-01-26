@@ -29,6 +29,18 @@ down() {
     fi
 }
 
+
+deploy_fast(){
+
+	#becpg-share
+	docker cp becpg-artworks-share/src/main/assembly/web/. docker_becpg-artworks-share_1:/usr/local/tomcat/webapps/share/
+	#docker cp becpg-artworks-share/src/main/resources/alfresco/. docker_becpg-artworks-share_1:/usr/local/tomcat/webapps/share/WEB-INF/classes/alfresco/
+
+	#wget --delete-after --http-user=admin --http-password=admin --header=Accept-Charset:iso-8859-1,utf-8 --header=Accept-Language:en-us --post-data reset=on http://localhost:8180/share/page/index
+
+}
+
+
 purge() {
     docker volume rm -f becpg-artworks-acs-volume
     docker volume rm -f becpg-artworks-db-volume
@@ -95,6 +107,9 @@ case "$1" in
   tail)
     tail
     ;;
+  deploy_fast)
+    deploy_fast
+    ;;  
   reload_share)
     build_share
     start_share

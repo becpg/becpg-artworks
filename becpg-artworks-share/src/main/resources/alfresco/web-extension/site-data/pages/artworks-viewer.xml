@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<page>
+   <title>Artworks Viewer</title>
+   <title-id>page.artworks-viewer.title</title-id>
+   <description>Artworks Viewer</description>
+   <description-id>page.artworks-viewer.description</description-id>
+   <template-instance>artworks-viewer</template-instance>
+   <authentication>user</authentication>
+</page>
