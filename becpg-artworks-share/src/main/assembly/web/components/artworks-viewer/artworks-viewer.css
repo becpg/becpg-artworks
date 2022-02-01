@@ -1,4 +1,4 @@
-.yui-skin-lightTheme .yui-button .first-child .should-save {
+.yui-button .first-child .should-save {
    animation-duration: 1s;
    animation-name: clignoter;
    animation-iteration-count: infinite;

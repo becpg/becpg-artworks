@@ -69,13 +69,13 @@ import fr.becpg.artworks.annotation.model.AnnotationModel;
  * @author Philippe
  *
  */
-public final class AnnotationServiceImpl implements AnnotationService {
+public final class KamiServiceImpl implements AnnotationService {
 
 	private static final String FAIL_TO_PARSE_JSON = "Fail to parse JSON";
 
 	private static final String AUTHORIZATION = "Authorization";
 
-	private static Log logger = LogFactory.getLog(AnnotationServiceImpl.class);
+	private static Log logger = LogFactory.getLog(KamiServiceImpl.class);
 
 	private NodeService nodeService;
 
@@ -86,6 +86,8 @@ public final class AnnotationServiceImpl implements AnnotationService {
 	private CheckOutCheckInService checkOutCheckInService;
 
 	private String annotationAuthorization;
+
+	private Integer sessionDurationInDays = 1;
 
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
@@ -107,13 +109,17 @@ public final class AnnotationServiceImpl implements AnnotationService {
 		this.annotationAuthorization = annotationAuthorization;
 	}
 
+	public void setSessionDurationInDays(Integer sessionDurationInDays) {
+		this.sessionDurationInDays = sessionDurationInDays;
+	}
+
 	/**
 	 * Upload a document to Kami
 	 * @param scriptNode
 	 * @return documentIdentifier
 	 */
 	@Override
-	public String uploadDocument(NodeRef nodeRef) {
+	public String checkoutDocument(NodeRef nodeRef) {
 		logger.debug("uploadDocument");
 		String documentIdentifier = null;
 		ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
@@ -179,7 +185,8 @@ public final class AnnotationServiceImpl implements AnnotationService {
 	 * @return
 	 */
 	@Override
-	public String createSession(NodeRef nodeRef, String userId, int sessionDurationInDays) {
+	public String getDocumentView(NodeRef nodeRef,String userId, String returnUrl) {
+
 
 		String userDisplayName = "";
 		NodeRef personNodeRef = personService.getPerson(userId);
@@ -225,10 +232,10 @@ public final class AnnotationServiceImpl implements AnnotationService {
 	 * Export and delete document from Kami
 	 * @param scriptNode
 	 * @return
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 	@Override
-	public void exportDocument(NodeRef nodeRef) {
+	public void checkinDocument(NodeRef nodeRef) {
 		logger.debug("exportDocument");
 		String documentIdentifier = (String) nodeService.getProperty(nodeRef, AnnotationModel.PROP_ANNOTATION_DOCUMENT_IDENTIFIER);
 
@@ -303,6 +310,8 @@ public final class AnnotationServiceImpl implements AnnotationService {
 		} else {
 			throw new WebScriptException("File url is null so checkin annotation is not done.");
 		}
+		
+		cancelDocument(nodeRef);
 	}
 
 	private void copyContent(String fileUrl, ContentWriter writer) throws MalformedURLException {
@@ -319,7 +328,7 @@ public final class AnnotationServiceImpl implements AnnotationService {
 	}
 
 	@Override
-	public void deleteDocument(NodeRef nodeRef) {
+	public void cancelDocument(NodeRef nodeRef) {
 		logger.debug("deleteDocument");
 		String documentIdentifier = (String) nodeService.getProperty(nodeRef, AnnotationModel.PROP_ANNOTATION_DOCUMENT_IDENTIFIER);
 		String url = "https://api.notablepdf.com/embed/documents/" + documentIdentifier;

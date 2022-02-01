@@ -28,7 +28,7 @@
 
 	<bean id="compareDocumentService" class="fr.becpg.artworks.compare.CompareDocumentServiceImpl" />
 
-	<bean id="annotationService" class="fr.becpg.artworks.annotation.AnnotationServiceImpl">
+	<bean id="annotationService" class="fr.becpg.artworks.annotation.KamiServiceImpl">
 		<property name="nodeService" ref="nodeService" />
 		<property name="contentService" ref="contentService" />
 		<property name="personService" ref="personService" />
@@ -55,7 +55,7 @@
 		<property name="checkOutCheckInService" ref="checkOutCheckInService" />
 		<property name="signatureAuthorization" value="${beCPG.signatureAuthorization}" />
 		<property name="mimetypeService" ref="mimetypeService" />
-		<property name="sysAdminParams" ref="sysAdminParams" />
+		
 	</bean>
 	
 
@@ -65,11 +65,12 @@
 		</property>
 	</bean>
 	
-	<bean id="beCPGArtworksScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.jscript.BeCPGArtworksScriptHelper">
+	<bean id="signatureScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.signature.jscript.SignatureScriptHelper">
 		<property name="extensionName">
-			<value>bcpgArtworks</value>
+			<value>signature</value>
 		</property>
 		<property name="signatureService" ref="signatureService"/>
+		<property name="sysAdminParams" ref="sysAdminParams" />
 	</bean>
 	
 	

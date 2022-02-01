@@ -77,12 +77,11 @@ public class AnnotationServiceIT extends AbstractAlfrescoIT  {
 				}
 								
 				ScriptNode scriptNode = new ScriptNode(nodeRef,getServiceRegistry());
-				String documentIdentifier = annotationScriptHelper.uploadDocument(scriptNode);
+				String documentIdentifier = annotationScriptHelper.checkoutDocument(scriptNode);
 				assertNotNull(documentIdentifier);
-				String sessionUrl = annotationScriptHelper.createSession(scriptNode, "admin", 1);
+				String sessionUrl = annotationScriptHelper.getOrCreateRemoteView(scriptNode);
 				assertNotNull(sessionUrl);
-				annotationScriptHelper.exportDocument(scriptNode);
-				annotationScriptHelper.deleteDocument(scriptNode);
+				annotationScriptHelper.checkinDocument(scriptNode);
 				return null;
 			}
 		}, false, true);

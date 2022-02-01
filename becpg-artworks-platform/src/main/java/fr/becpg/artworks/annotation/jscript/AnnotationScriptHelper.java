@@ -19,6 +19,7 @@ package fr.becpg.artworks.annotation.jscript;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 import fr.becpg.artworks.annotation.AnnotationService;
 
@@ -31,24 +32,25 @@ import fr.becpg.artworks.annotation.AnnotationService;
 public final class AnnotationScriptHelper extends BaseScopableProcessorExtension {
 
 	private AnnotationService annotationService;
-		
+
 	public void setAnnotationService(AnnotationService annotationService) {
 		this.annotationService = annotationService;
 	}
-
-	public String uploadDocument(ScriptNode scriptNode){
-		return annotationService.uploadDocument(scriptNode.getNodeRef());
-	}
-
-	public String createSession(ScriptNode scriptNode, String userId, int sessionDurationInDays){
-		return annotationService.createSession(scriptNode.getNodeRef(), userId, sessionDurationInDays);
-	}
 	
-	public void exportDocument(ScriptNode scriptNode){
-		annotationService.exportDocument(scriptNode.getNodeRef());
+	
+	public String checkoutDocument(ScriptNode scriptNode) {
+		return annotationService.checkoutDocument(scriptNode.getNodeRef());
 	}
 
-	public void deleteDocument(ScriptNode scriptNode){
-		annotationService.deleteDocument(scriptNode.getNodeRef());
+	public String getOrCreateRemoteView(ScriptNode scriptNode) {
+		return annotationService.getDocumentView(scriptNode.getNodeRef(), AuthenticationUtil.getFullyAuthenticatedUser(),null);
+	}
+
+	public void checkinDocument(ScriptNode scriptNode) {
+		annotationService.checkinDocument(scriptNode.getNodeRef());
+	}
+
+	public void cancelDocument(ScriptNode scriptNode) {
+		annotationService.cancelDocument(scriptNode.getNodeRef());
 	}
 }

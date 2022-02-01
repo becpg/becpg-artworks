@@ -40,11 +40,11 @@
     <!--
         Disable CSRF completely for now
         It seems Share has issues on 4.2.x with the embedded tomcat and CSRFPolicy
-        -->
+      
     <config evaluator="string-compare" condition="CSRFPolicy" replace="true">
         <filter/>
     </config>
-
+  -->
 
     <!--
         Change so it is picked up from property where the Alfresco Repo Webapp is running

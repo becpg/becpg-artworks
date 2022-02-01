@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -48,7 +47,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.UrlUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,7 +74,7 @@ import fr.becpg.artworks.signature.model.SignatureModel;
 public final class DocuSignServiceImpl implements SignatureService {
 
 	private static final String DOCUSIGN_BASE_URL = "https://demo.docusign.net/restapi/v2.1/accounts/";
-	
+
 	private static final String ENVELOPES = "/envelopes/";
 
 	private static final String ENVELOPE_ID = "envelopeId";
@@ -84,11 +82,11 @@ public final class DocuSignServiceImpl implements SignatureService {
 	private static final String BEARER = "Bearer ";
 
 	private static final String FAIL_TO_PARSE_JSON = "Fail to parse JSON";
-	
+
 	private static final String AUTHORIZATION = "Authorization";
-	
+
 	private static final String EMAIL_SUBJECT = "beCPG Document signing";
-	
+
 	private static Log logger = LogFactory.getLog(DocuSignServiceImpl.class);
 
 	private NodeService nodeService;
@@ -100,12 +98,9 @@ public final class DocuSignServiceImpl implements SignatureService {
 	private CheckOutCheckInService checkOutCheckInService;
 
 	private String signatureAuthorization;
-	
+
 	private MimetypeService mimetypeService;
-	
-	private SysAdminParams sysAdminParams;
-	
-	
+
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
@@ -125,28 +120,29 @@ public final class DocuSignServiceImpl implements SignatureService {
 	public void setSignatureAuthorization(String signatureAuthorization) {
 		this.signatureAuthorization = signatureAuthorization;
 	}
-	
+
 	public void setMimetypeService(MimetypeService mimetypeService) {
 		this.mimetypeService = mimetypeService;
 	}
-	
-	public void setSysAdminParams(SysAdminParams sysAdminParams) {
-		this.sysAdminParams = sysAdminParams;
-	}
-	
+
 	@Override
-	public String sendForSignature(NodeRef nodeRef, boolean notifyByMail) {
-		
+	public String checkoutDocument(NodeRef nodeRef) {
+		return prepareForSignature(nodeRef, true);
+	}
+
+	@Override
+	public String prepareForSignature(NodeRef nodeRef, boolean notifyByMail) {
+
 		logger.debug("sendForSignature");
-		
+
 		String accountId = signatureAuthorization.split(";")[0];
-		
+
 		String accessToken = signatureAuthorization.split(";")[1];
-		
+
 		String envelopeId = null;
-		
+
 		ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-		
+
 		if (contentReader.exists()) {
 			HttpHeaders headers = new HttpHeaders();
 			headers.add(AUTHORIZATION, BEARER + accessToken);
@@ -167,45 +163,47 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 			try {
 				headers.setContentType(MediaType.APPLICATION_JSON);
-				
+
 				byte[] bytes = FileUtils.readFileToByteArray(contentFile);
-				
+
 				String encodedFile = Base64.getEncoder().encodeToString(bytes);
-				
-				String fileExtension = mimetypeService.getExtension(mimetypeService.guessMimetype((String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME)));
-				
+
+				String fileExtension = mimetypeService
+						.getExtension(mimetypeService.guessMimetype((String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME)));
+
 				List<NodeRef> recipientsNodeRefs = new ArrayList<>();
-				
-				nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_SIGNATURE_RECIPIENTS).forEach(assoc -> recipientsNodeRefs.add(assoc.getTargetRef()));
-				
+
+				nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_SIGNATURE_RECIPIENTS)
+						.forEach(assoc -> recipientsNodeRefs.add(assoc.getTargetRef()));
+
 				if (recipientsNodeRefs.isEmpty()) {
 					recipientsNodeRefs.add(personService.getPerson(AuthenticationUtil.getFullyAuthenticatedUser()));
 				}
-				
+
 				JSONObject body = new JSONObject();
-				
+
 				JSONArray documents = new JSONArray();
-				
+
 				JSONObject document = new JSONObject();
-				
+
 				document.put("documentBase64", encodedFile);
 				document.put("documentId", "1");
 				document.put("fileExtension", fileExtension);
 				document.put("name", nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
-				
+
 				documents.put(document);
-				
+
 				body.put("documents", documents);
-				
+
 				body.put("emailSubject", EMAIL_SUBJECT);
-				
+
 				JSONObject recipients = new JSONObject();
 				JSONArray signers = new JSONArray();
-				
+
 				int clientUserId = 1;
 
 				JSONObject clientUserIds = new JSONObject();
-				
+
 				for (NodeRef recipient : recipientsNodeRefs) {
 					String userDisplayName = nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME) + " "
 							+ nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
@@ -219,22 +217,22 @@ public final class DocuSignServiceImpl implements SignatureService {
 					if (!notifyByMail) {
 						signer.put("clientUserId", clientUserId);
 					}
-					
+
 					signers.put(signer);
 					clientUserIds.put(recipient.toString(), clientUserId);
-					
+
 					clientUserId++;
 				}
-				
-				nodeService.setProperty(nodeRef, SignatureModel.PROP_SIGNATURE_CLIENT_USER_IDS, clientUserIds.toString());					
-				
+
+				nodeService.setProperty(nodeRef, SignatureModel.PROP_SIGNATURE_CLIENT_USER_IDS, clientUserIds.toString());
+
 				recipients.put("signers", signers);
 
 				body.put("recipients", recipients);
 				body.put("status", "sent");
-				
+
 				HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
-				
+
 				String ret = restTemplate.postForObject(DOCUSIGN_BASE_URL + accountId + ENVELOPES, entity, String.class);
 
 				JSONObject jsonObject = new JSONObject(ret);
@@ -262,35 +260,38 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 		return envelopeId;
 	}
-	
+
 	@Override
-	public String getSignatureView(NodeRef nodeRef, NodeRef recipient, NodeRef task) {
-		
+	public String getDocumentView(NodeRef nodeRef, String userId, String returnUrl) {
+
 		String accountId = signatureAuthorization.split(";")[0];
 
 		String accessToken = signatureAuthorization.split(";")[1];
 
 		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_DOCUMENT_IDENTIFIER);
-		
+		String userDisplayName = userId;
+		String email = "no-reply@becpg.fr";
+		NodeRef personNodeRef = personService.getPerson(userId);
+		if (personNodeRef != null) {
+			userDisplayName = nodeService.getProperty(personNodeRef, ContentModel.PROP_FIRSTNAME) + " "
+					+ nodeService.getProperty(personNodeRef, ContentModel.PROP_LASTNAME);
+			email = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL);
+		}
+
 		String url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId + "/views/recipient";
-		
+
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(AUTHORIZATION, BEARER + accessToken);
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		
-		String userDisplayName = nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME) + " "
-				+ nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
-		String email = (String) nodeService.getProperty(recipient, ContentModel.PROP_EMAIL);
 
-		String returnUrl = UrlUtil.getAlfrescoUrl(sysAdminParams) + "/service/becpg/project/task-edit-url?nodeRef=" + task.toString();
-		
 		JSONObject body = new JSONObject();
 		body.put("returnUrl", returnUrl);
 		body.put("userName", userDisplayName);
 		body.put("authenticationMethod", "email");
 		body.put("email", email);
-		body.put("clientUserId", new JSONObject((String)nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_CLIENT_USER_IDS)).get(recipient.toString()));
-		
+		body.put("clientUserId",
+				new JSONObject((String) nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_CLIENT_USER_IDS)).get(userId));
+
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
@@ -300,44 +301,44 @@ public final class DocuSignServiceImpl implements SignatureService {
 		if (jsonObject.has("url")) {
 			return jsonObject.getString("url");
 		}
-		
+
 		return "null";
 	}
 
 	@Override
-	public void retrieveSignedDocument(NodeRef nodeRef) {
-		
+	public void checkinDocument(NodeRef nodeRef) {
+
 		String accountId = signatureAuthorization.split(";")[0];
 
 		String accessToken = signatureAuthorization.split(";")[1];
 
 		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_DOCUMENT_IDENTIFIER);
-		
+
 		String url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId;
-		
+
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(AUTHORIZATION, BEARER + accessToken);
-		
+
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpEntity<String> entity = new HttpEntity<>(headers);
-		
+
 		ResponseEntity<String> statusResponse = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-		
+
 		String status = new JSONObject(statusResponse.getBody()).getString("status");
-		
+
 		if (!"completed".equalsIgnoreCase(status)) {
 			throw new WebScriptException("Document signature is not completed");
 		}
-		
+
 		url += "/documents/1/";
-		
+
 		ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
 
 		byte[] signedDocumentBytes = response.getBody();
-		
+
 		if (signedDocumentBytes != null) {
-			
+
 			NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(nodeRef);
 			Map<String, Serializable> versionProperties = new HashMap<>();
 			versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
@@ -346,25 +347,26 @@ public final class DocuSignServiceImpl implements SignatureService {
 		} else {
 			throw new WebScriptException("Signed document could not be retrieved from DocuSign");
 		}
-		
+
 		url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId + "/documents/certificate";
-		
+
 		ResponseEntity<byte[]> certificateResponse = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
-		
+
 		byte[] certficateBytes = certificateResponse.getBody();
-		
+
 		if (certficateBytes != null) {
-			
+
 			String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME) + " - Signature Certificate";
-			
+
 			NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-			
+
 			NodeRef certificateNode = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, name);
-			
+
 			if (certificateNode == null) {
 				Map<QName, Serializable> props = new HashMap<>();
 				props.put(ContentModel.PROP_NAME, name);
-				certificateNode = nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, props).getChildRef();
+				certificateNode = nodeService
+						.createNode(parent, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, props).getChildRef();
 				nodeService.addAspect(certificateNode, ContentModel.ASPECT_VERSIONABLE, null);
 			} else {
 				NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(certificateNode);
@@ -372,43 +374,45 @@ public final class DocuSignServiceImpl implements SignatureService {
 				versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
 				checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
 			}
-			
+
 			writeContent(certificateNode, certficateBytes);
-			
+
 		} else {
 			throw new WebScriptException("Signature Certificate could not be retrieved from DocuSign");
 		}
+
+		cancelDocument(nodeRef);
 		
 	}
 
 	private void writeContent(NodeRef nodeRef, byte[] ret) {
 		ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-		
+
 		try (InputStream targetStream = new ByteArrayInputStream(ret)) {
-		
+
 			String mimetype = mimetypeService.guessMimetype(null, targetStream);
 			ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
 			Charset charset = charsetFinder.getCharset(targetStream, mimetype);
 			String encoding = charset.name();
-			
+
 			writer.setEncoding(encoding);
 			writer.setMimetype(mimetype);
 			writer.putContent(targetStream);
-		
+
 		} catch (ContentIOException | IOException e) {
 			logger.error("Failed to write content to node", e);
 		}
 	}
 
 	@Override
-	public void deleteDocument(NodeRef nodeRef) {
-		
+	public void cancelDocument(NodeRef nodeRef) {
+
 		String accountId = signatureAuthorization.split(";")[0];
-		
+
 		String accessToken = signatureAuthorization.split(";")[1];
 
 		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_DOCUMENT_IDENTIFIER);
-		
+
 		String url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId + "/documents/";
 
 		HttpHeaders headers = new HttpHeaders();
@@ -417,25 +421,21 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 		RestTemplate restTemplate = new RestTemplate();
 
-		String body = "{"
-				+ "  \"textCustomFields\": ["
-				+ "  ],"
-				+ "  \"listCustomFields\": ["
-				+ "  ]"
-				+ "}";
-		
+		String body = "{" + "  \"textCustomFields\": [" + "  ]," + "  \"listCustomFields\": [" + "  ]" + "}";
+
 		HttpEntity<String> entity = new HttpEntity<>(body, headers);
-		
+
 		Map<String, String> uriParam = new HashMap<>();
 		uriParam.put("accountId", accountId);
 		uriParam.put(ENVELOPE_ID, envelopeId);
-		
+
 		try {
 			restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class, uriParam).getBody();
 		} catch (RestClientException e) {
 			logger.info("Could not delete envelope " + envelopeId);
 		}
-		
+
 		nodeService.removeAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE);
 	}
+
 }

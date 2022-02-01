@@ -15,11 +15,14 @@
  *
  * You should have received a copy of the GNU Lesser General Public License along with beCPG. If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package fr.becpg.artworks.jscript;
+package fr.becpg.artworks.signature.jscript;
 
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.UrlUtil;
 
 import fr.becpg.artworks.signature.SignatureService;
 
@@ -29,24 +32,33 @@ import fr.becpg.artworks.signature.SignatureService;
  * @author valentin.leblanc
  * @version $Id: $Id
  */
-public final class BeCPGArtworksScriptHelper extends BaseScopableProcessorExtension {
-	
+public final class SignatureScriptHelper extends BaseScopableProcessorExtension {
+
 	private SignatureService signatureService;
-	
+
+	private SysAdminParams sysAdminParams;
+
 	public void setSignatureService(SignatureService signatureService) {
 		this.signatureService = signatureService;
 	}
-	
-	public String getSignatureViewUrl(ScriptNode document, ScriptNode recipient, NodeRef task) {
-		return signatureService.getSignatureView(document.getNodeRef(), recipient.getNodeRef(), task);
+
+	public void setSysAdminParams(SysAdminParams sysAdminParams) {
+		this.sysAdminParams = sysAdminParams;
 	}
-	
-	public String sendForSignature(ScriptNode document) {
-		return signatureService.sendForSignature(document.getNodeRef(), false);
+
+	public String getSignatureViewUrl(ScriptNode document, NodeRef task) {
+
+		String returnUrl = UrlUtil.getShareUrl(sysAdminParams) + "/service/becpg/project/task-edit-url?nodeRef=" + task.toString();
+
+		return signatureService.getDocumentView(document.getNodeRef(), AuthenticationUtil.getFullyAuthenticatedUser(), returnUrl);
 	}
-	
-	public void checkinSignature(ScriptNode document) {
-		signatureService.retrieveSignedDocument(document.getNodeRef());
+
+	public String prepareForSignature(ScriptNode document) {
+		return signatureService.prepareForSignature(document.getNodeRef(), false);
 	}
-	
+
+	public void checkinAndSign(ScriptNode document) {
+		signatureService.checkinDocument(document.getNodeRef());
+	}
+
 }

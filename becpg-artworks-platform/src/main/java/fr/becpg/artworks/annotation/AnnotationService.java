@@ -1,11 +1,9 @@
 package fr.becpg.artworks.annotation;
 
-import org.alfresco.service.cmr.repository.NodeRef;
+import fr.becpg.artworks.ArtworksDocumentHandler;
 
-public interface AnnotationService {
+public interface AnnotationService extends ArtworksDocumentHandler{
 
-	public String uploadDocument(NodeRef nodeRef);
-	public String createSession(NodeRef nodeRef, String userId, int sessionDurationInDays);
-	public void exportDocument(NodeRef nodeRef);
-	public void deleteDocument(NodeRef nodeRef);
+	
+	
 }

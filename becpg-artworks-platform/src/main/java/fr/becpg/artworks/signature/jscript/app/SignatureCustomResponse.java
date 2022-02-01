@@ -5,8 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.repo.jscript.app.CustomResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Return current state of Signature module
@@ -15,7 +13,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SignatureCustomResponse implements CustomResponse{
 	
-	private static Log logger = LogFactory.getLog(SignatureCustomResponse.class);
 	private String signatureAuthorization;
 	
 	public void setSignatureAuthorization(String signatureAuthorization) {
@@ -28,7 +25,6 @@ public class SignatureCustomResponse implements CustomResponse{
 		if(signatureAuthorization != null && !signatureAuthorization.isEmpty()){
 			isEnabled = true;
 		}
-		logger.debug("signatureAuthorization " + signatureAuthorization + " isEnabled: " + isEnabled);
 		Map<String, Serializable> jsonObj = new LinkedHashMap<>(1);
 		jsonObj.put("enabled", isEnabled);
 		return (Serializable)jsonObj;

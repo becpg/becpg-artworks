@@ -27,6 +27,20 @@
    <@inlineScript group="artworks-viewer">
        var URL_CONTEXT = "${url.context}";
 	   var PROXY_URI = "${url.context}/proxy/alfresco/";
+	   var CSRF_POLICY = {
+         enabled: ${((config.scoped["CSRFPolicy"]["filter"].getChildren("rule")?size > 0)?string)!false},
+         cookie: "${config.scoped["CSRFPolicy"]["client"].getChildValue("cookie")!""}",
+         header: "${config.scoped["CSRFPolicy"]["client"].getChildValue("header")!""}",
+         parameter: "${config.scoped["CSRFPolicy"]["client"].getChildValue("parameter")!""}",
+         properties: {}
+      };
+      <#if config.scoped["CSRFPolicy"]["properties"]??>
+         <#assign csrfProperties = (config.scoped["CSRFPolicy"]["properties"].children)![]>
+         <#list csrfProperties as csrfProperty>
+        CSRF_POLICY.properties["${csrfProperty.name?js_string}"] = "${(csrfProperty.value!"")?js_string}";
+         </#list>
+      </#if>
+	   
 	   var JS_LOCALE =  "${locale}";
 	   var USERNAME_DISPLAYNAME = "${user.properties["firstName"]?html} <#if user.properties["lastName"]??>${user.properties["lastName"]?html}</#if>";
    </@>

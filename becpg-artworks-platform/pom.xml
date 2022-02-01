@@ -30,6 +30,14 @@
         <artifactId>becpg-artworks</artifactId>
         <version>4.0.0.0</version>
     </parent>
+    
+    <repositories>
+	    <repository>
+	        <id>pdftron</id>
+	        <name>PDFNet Maven</name>
+	        <url>https://pdftron.com/maven/release</url>
+	    </repository>
+	</repositories>
 
     <properties>
     </properties>
@@ -41,6 +49,12 @@
 			<artifactId>image-comparison</artifactId>
 			<version>4.4.0</version>
 		</dependency>
+		
+		 <dependency>
+	        <groupId>com.pdftron</groupId>
+	        <artifactId>PDFNet</artifactId>
+	        <version>9.2.0</version>
+	    </dependency>
     </dependencies>
 
     <build>
