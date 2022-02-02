@@ -38,7 +38,7 @@
 
 	<bean id="annotationScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.annotation.jscript.AnnotationScriptHelper">
 		<property name="extensionName">
-			<value>annotation</value>
+			<value>bAnnot</value>
 		</property>
 		<property name="annotationService" ref="annotationService" />
 	</bean>
@@ -67,7 +67,7 @@
 	
 	<bean id="signatureScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.signature.jscript.SignatureScriptHelper">
 		<property name="extensionName">
-			<value>signature</value>
+			<value>bSign</value>
 		</property>
 		<property name="signatureService" ref="signatureService"/>
 		<property name="sysAdminParams" ref="sysAdminParams" />

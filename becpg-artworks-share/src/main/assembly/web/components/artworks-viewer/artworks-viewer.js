@@ -50,7 +50,7 @@
 			var me = this;
 
 			this.viewer = WebViewer({
-				path: URL_CONTEXT + '/res/components/artworks-viewer/pdftron/lib',
+				path: URL_CONTEXT + 'res/components/artworks-viewer/pdftron/lib',
 				documentId: me.options.nodeRef,
 				fullAPI: true,
 				initialDoc: me.options.compareContentURL == null ? PROXY_URI + me.options.contentURL : null,
@@ -238,7 +238,7 @@
 										token = token.replace(/"/g, '');
 									}
 
-									url += "?" + CSRF_POLICY.properties["token"] + "=" + encodeURIComponent(token);
+									url += "?" + CSRF_POLICY.properties["token"] + "=" + token;
 								
 							}
 
@@ -249,7 +249,7 @@
 							formData.append("overwrite", "false");
 							formData.append("updatenameandmimetype", "false")
 							formData.append("updateNodeRef", me.options.nodeRef);
-							formData.append("description", this.msg["label.newVersion.message"]);
+							formData.append("description", me.msg["label.newVersion.message"]);
 
 							request.open("POST", url, true);
 							request.send(formData);

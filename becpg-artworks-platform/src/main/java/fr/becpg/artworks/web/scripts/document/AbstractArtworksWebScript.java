@@ -21,7 +21,7 @@ import fr.becpg.artworks.ArtworksDocumentHandler;
 
 public abstract class AbstractArtworksWebScript extends AbstractWebScript {
 
-	private static final Log logger = LogFactory.getLog(AnnotationWebScript.class);
+	private static final Log logger = LogFactory.getLog(AbstractArtworksWebScript.class);
 
 	private static final String ACTION_CHECKOUT = "checkout";
 	private static final String ACTION_CHECKIN = "checkin";

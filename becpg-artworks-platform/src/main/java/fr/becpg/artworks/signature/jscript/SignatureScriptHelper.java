@@ -20,7 +20,6 @@ package fr.becpg.artworks.signature.jscript;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.UrlUtil;
 
@@ -46,11 +45,11 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 		this.sysAdminParams = sysAdminParams;
 	}
 
-	public String getSignatureViewUrl(ScriptNode document, NodeRef task) {
+	public String getSignatureViewUrl(ScriptNode document, String userName, NodeRef task) {
 
 		String returnUrl = UrlUtil.getShareUrl(sysAdminParams) + "/service/becpg/project/task-edit-url?nodeRef=" + task.toString();
 
-		return signatureService.getDocumentView(document.getNodeRef(), AuthenticationUtil.getFullyAuthenticatedUser(), returnUrl);
+		return signatureService.getDocumentView(document.getNodeRef(), userName, returnUrl);
 	}
 
 	public String prepareForSignature(ScriptNode document) {

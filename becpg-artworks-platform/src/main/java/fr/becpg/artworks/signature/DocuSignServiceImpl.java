@@ -302,7 +302,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 			return jsonObject.getString("url");
 		}
 
-		return "null";
+		return null;
 	}
 
 	@Override
