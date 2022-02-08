@@ -50,7 +50,7 @@
 			var me = this;
 
 			this.viewer = WebViewer({
-				path: URL_CONTEXT + 'res/components/artworks-viewer/pdftron/lib',
+				path: URL_CONTEXT + '/res/components/artworks-viewer/pdftron/lib',
 				documentId: me.options.nodeRef,
 				fullAPI: true,
 				initialDoc: me.options.compareContentURL == null ? PROXY_URI + me.options.contentURL : null,
