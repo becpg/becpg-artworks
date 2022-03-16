@@ -17,7 +17,12 @@
             	Alfresco.util.PopupManager.displayMessage({
                      text : this.msg("message.signature-checkout.success")
 				  });
-				location.reload();
+		
+				  if (data.json && data.json.viewerUrl) {
+               		 setTimeout(function() {window.open(data.json.viewerUrl,"_blank"); location.reload();},1000);
+                  } else {
+	 				location.reload();
+				  }
                },
                scope : this
             },

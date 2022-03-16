@@ -185,7 +185,7 @@ public final class KamiServiceImpl implements AnnotationService {
 	 * @return
 	 */
 	@Override
-	public String getDocumentView(NodeRef nodeRef,String userId, String returnUrl) {
+	public String getDocumentView(NodeRef nodeRef,String userId, NodeRef task) {
 
 
 		String userDisplayName = "";

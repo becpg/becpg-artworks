@@ -17,11 +17,12 @@
  ******************************************************************************/
 package fr.becpg.artworks.signature.jscript;
 
-import org.alfresco.repo.admin.SysAdminParams;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.UrlUtil;
 
 import fr.becpg.artworks.signature.SignatureService;
 
@@ -35,29 +36,31 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 
 	private SignatureService signatureService;
 
-	private SysAdminParams sysAdminParams;
-
 	public void setSignatureService(SignatureService signatureService) {
 		this.signatureService = signatureService;
 	}
 
-	public void setSysAdminParams(SysAdminParams sysAdminParams) {
-		this.sysAdminParams = sysAdminParams;
+	public String getSignatureView(ScriptNode document, String userName, NodeRef task) {
+		return signatureService.getDocumentView(document.getNodeRef(), userName, task);
 	}
 
-	public String getSignatureViewUrl(ScriptNode document, String userName, NodeRef task) {
-
-		String returnUrl = UrlUtil.getShareUrl(sysAdminParams) + "/service/becpg/project/task-edit-url?nodeRef=" + task.toString();
-
-		return signatureService.getDocumentView(document.getNodeRef(), userName, returnUrl);
+	public String prepareForSignature(ScriptNode document, ScriptNode[] recipients, String... params) {
+		
+		List<NodeRef> recipientNodes = new ArrayList<>();
+			
+		for (ScriptNode recipient : recipients) {
+			recipientNodes.add(recipient.getNodeRef());
+		}
+		
+		return signatureService.prepareForSignature(document.getNodeRef(), recipientNodes, false, params);
 	}
 
-	public String prepareForSignature(ScriptNode document) {
-		return signatureService.prepareForSignature(document.getNodeRef(), false);
-	}
-
-	public void checkinAndSign(ScriptNode document) {
+	public void checkinDocument(ScriptNode document) {
 		signatureService.checkinDocument(document.getNodeRef());
+	}
+	
+	public void signDocument(ScriptNode document, ScriptNode recipient) {
+		signatureService.sign(document.getNodeRef(), recipient.getNodeRef());
 	}
 
 }

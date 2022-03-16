@@ -1,7 +1,10 @@
 package fr.becpg.artworks;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rad.test.AbstractAlfrescoIT;
@@ -14,7 +17,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -29,6 +34,7 @@ public abstract class RepoBaseTest extends AbstractAlfrescoIT {
 	protected RetryingTransactionHelper transactionHelper;
 	protected NodeRef testFolder;
 	protected MimetypeService mimetypeService;
+	protected PersonService personService;
 
 	@Rule
 	public TestName name = new TestName();
@@ -49,6 +55,12 @@ public abstract class RepoBaseTest extends AbstractAlfrescoIT {
 		transactionHelper = getServiceRegistry().getRetryingTransactionHelper();
 		
 		mimetypeService = getServiceRegistry().getMimetypeService();
+		
+		Object personServiceBean = getApplicationContext().getBean("personService");
+		
+		if (personServiceBean instanceof PersonService) {
+			personService = (PersonService) personServiceBean;
+		}
 		
 		NodeRef parentFolder = transactionHelper.doInTransaction(() -> {
 			
@@ -100,5 +112,20 @@ public abstract class RepoBaseTest extends AbstractAlfrescoIT {
 		contentWriter.putContent(resource.getInputStream());
 		
 		return contentNode;
+	}
+	
+	protected NodeRef getOrCreatePerson(String username) {
+		NodeRef person = personService.getPerson(username);
+		
+		if (person == null) {
+			Map<QName, Serializable> propMap = new HashMap<>();
+			propMap.put(ContentModel.PROP_USERNAME, username);
+			propMap.put(ContentModel.PROP_LASTNAME, username);
+			propMap.put(ContentModel.PROP_FIRSTNAME, username);
+			propMap.put(ContentModel.PROP_EMAIL, username + "@becpg.fr");
+			person = personService.createPerson(propMap);
+		}
+		
+		return person;
 	}
 }

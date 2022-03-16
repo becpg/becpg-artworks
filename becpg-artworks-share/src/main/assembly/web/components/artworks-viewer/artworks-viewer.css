@@ -20,3 +20,8 @@
 .document-versions .actions a.compare-overlay {
   background-image: url("../images/search-16.png");
 }
+
+.yui-button-disabled a {
+	pointer-events: none;
+  	cursor: default;
+}

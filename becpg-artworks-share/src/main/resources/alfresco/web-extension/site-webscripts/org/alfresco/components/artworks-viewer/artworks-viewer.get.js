@@ -15,6 +15,8 @@ function main() {
 	AlfrescoUtil.param('nodeRef', null);
 	AlfrescoUtil.param('compareTo', null);
 	AlfrescoUtil.param('mode', null);
+	AlfrescoUtil.param('returnUrl', null);
+	AlfrescoUtil.param('taskId', null);
 	model.linkButtons = [];
 
 	if (model.nodeRef) {
@@ -30,12 +32,15 @@ function main() {
 
 
 			model.contentURL = documentDetails.item.node.contentURL;
-			model.linkButtons.push({
-				id: "back-button",
-				onclick : "history.back()",
-				label: (user && user.isGuest) ? msg.get("button.login") : msg.get("button.back"),
-				cssClass: "brand-bgcolor-2"
-			});
+			
+			if (model.mode != "sign") {
+				model.linkButtons.push({
+					id: "back-button",
+					href : model.returnUrl ? model.returnUrl : "#",
+					label: (user && user.isGuest) ? msg.get("button.login") : msg.get("button.back"),
+					cssClass: "brand-bgcolor-2"
+				});
+			}
 		}
 
 	    model.versions = [];
@@ -68,7 +73,9 @@ function main() {
          mode :  (page.url.args.mode != null) ? page.url.args.mode : "annotation",
          compareContentURL : model.compareContentURL!=null ? model.compareContentURL : null,
 		 contentURL : model.contentURL!=null ? model.contentURL : null,
-	     fileName : model.displayName
+	     fileName : model.displayName,
+		 userId : user.id,
+		 returnUrl : model.returnUrl
       }
    };
    model.widgets = [widget];

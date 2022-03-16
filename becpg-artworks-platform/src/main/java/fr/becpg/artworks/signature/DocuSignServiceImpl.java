@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,6 +48,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.UrlUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -100,7 +102,13 @@ public final class DocuSignServiceImpl implements SignatureService {
 	private String signatureAuthorization;
 
 	private MimetypeService mimetypeService;
+	
+	private SysAdminParams sysAdminParams;
 
+	public void setSysAdminParams(SysAdminParams sysAdminParams) {
+		this.sysAdminParams = sysAdminParams;
+	}
+	
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
@@ -127,11 +135,11 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
-		return prepareForSignature(nodeRef, true);
+		return prepareForSignature(nodeRef, null, true);
 	}
 
 	@Override
-	public String prepareForSignature(NodeRef nodeRef, boolean notifyByMail) {
+	public String prepareForSignature(NodeRef nodeRef, List<NodeRef> recipients, boolean notifyByMail, String... params) {
 
 		logger.debug("sendForSignature");
 
@@ -173,7 +181,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 				List<NodeRef> recipientsNodeRefs = new ArrayList<>();
 
-				nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_SIGNATURE_RECIPIENTS)
+				nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_RECIPIENTS)
 						.forEach(assoc -> recipientsNodeRefs.add(assoc.getTargetRef()));
 
 				if (recipientsNodeRefs.isEmpty()) {
@@ -197,17 +205,17 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 				body.put("emailSubject", EMAIL_SUBJECT);
 
-				JSONObject recipients = new JSONObject();
+				JSONObject recs = new JSONObject();
 				JSONArray signers = new JSONArray();
 
 				int clientUserId = 1;
 
 				JSONObject clientUserIds = new JSONObject();
 
-				for (NodeRef recipient : recipientsNodeRefs) {
-					String userDisplayName = nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME) + " "
-							+ nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
-					String email = (String) nodeService.getProperty(recipient, ContentModel.PROP_EMAIL);
+				for (NodeRef rec : recipientsNodeRefs) {
+					String userDisplayName = nodeService.getProperty(rec, ContentModel.PROP_FIRSTNAME) + " "
+							+ nodeService.getProperty(rec, ContentModel.PROP_LASTNAME);
+					String email = (String) nodeService.getProperty(rec, ContentModel.PROP_EMAIL);
 
 					JSONObject signer = new JSONObject();
 
@@ -219,16 +227,16 @@ public final class DocuSignServiceImpl implements SignatureService {
 					}
 
 					signers.put(signer);
-					clientUserIds.put(recipient.toString(), clientUserId);
+					clientUserIds.put(rec.toString(), clientUserId);
 
 					clientUserId++;
 				}
 
-				nodeService.setProperty(nodeRef, SignatureModel.PROP_SIGNATURE_CLIENT_USER_IDS, clientUserIds.toString());
+				nodeService.setProperty(nodeRef, SignatureModel.PROP_RECIPIENTS_DATA, clientUserIds.toString());
 
-				recipients.put("signers", signers);
+				recs.put("signers", signers);
 
-				body.put("recipients", recipients);
+				body.put("recipients", recs);
 				body.put("status", "sent");
 
 				HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
@@ -253,7 +261,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 			// Store documentIdentifier on document
 			Map<QName, Serializable> annotationProperties = new HashMap<>();
-			annotationProperties.put(SignatureModel.PROP_SIGNATURE_DOCUMENT_IDENTIFIER, envelopeId);
+			annotationProperties.put(SignatureModel.PROP_DOCUMENT_IDENTIFIER, envelopeId);
 			nodeService.addAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE, annotationProperties);
 
 		}
@@ -262,13 +270,15 @@ public final class DocuSignServiceImpl implements SignatureService {
 	}
 
 	@Override
-	public String getDocumentView(NodeRef nodeRef, String userId, String returnUrl) {
+	public String getDocumentView(NodeRef nodeRef, String userId, NodeRef task) {
+
+		String returnUrl = UrlUtil.getShareUrl(sysAdminParams) + "/service/becpg/project/task-edit-url?nodeRef=" + task.toString();
 
 		String accountId = signatureAuthorization.split(";")[0];
 
 		String accessToken = signatureAuthorization.split(";")[1];
 
-		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_DOCUMENT_IDENTIFIER);
+		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_DOCUMENT_IDENTIFIER);
 		String userDisplayName = userId;
 		String email = "no-reply@becpg.fr";
 		NodeRef personNodeRef = personService.getPerson(userId);
@@ -289,8 +299,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 		body.put("userName", userDisplayName);
 		body.put("authenticationMethod", "email");
 		body.put("email", email);
-		body.put("clientUserId",
-				new JSONObject((String) nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_CLIENT_USER_IDS)).get(userId));
+		body.put("clientUserId", new JSONObject((String) nodeService.getProperty(nodeRef, SignatureModel.PROP_RECIPIENTS_DATA)).get(userId));
 
 		RestTemplate restTemplate = new RestTemplate();
 
@@ -312,7 +321,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 		String accessToken = signatureAuthorization.split(";")[1];
 
-		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_DOCUMENT_IDENTIFIER);
+		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_DOCUMENT_IDENTIFIER);
 
 		String url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId;
 
@@ -411,7 +420,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 		String accessToken = signatureAuthorization.split(";")[1];
 
-		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_SIGNATURE_DOCUMENT_IDENTIFIER);
+		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_DOCUMENT_IDENTIFIER);
 
 		String url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId + "/documents/";
 
@@ -436,6 +445,11 @@ public final class DocuSignServiceImpl implements SignatureService {
 		}
 
 		nodeService.removeAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE);
+	}
+
+	@Override
+	public void sign(NodeRef nodeRef, NodeRef recipient) {
+		throw new IllegalStateException("Not supported");
 	}
 
 }

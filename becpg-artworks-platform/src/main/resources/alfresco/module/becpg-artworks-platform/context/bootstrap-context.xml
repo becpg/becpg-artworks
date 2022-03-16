@@ -28,4 +28,24 @@
 			</list>
 		</property>
 	</bean>
+	
+    <bean id="becpg-signature-BootstrapMessages" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+		<property name="resourceBundles">
+			<list>
+				<value>alfresco/module/${project.artifactId}/messages/signature-messages</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- beCPG Artworks configuration files -->
+	<bean name="beCPGArtworksPlaceholderConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="ignoreResourceNotFound" value="true"></property>
+		<property name="locations">
+			<list>
+				<value>classpath:alfresco/module/${project.artifactId}/becpg-artworks-config.properties</value>
+			</list>
+		</property>
+	</bean>
 </beans>

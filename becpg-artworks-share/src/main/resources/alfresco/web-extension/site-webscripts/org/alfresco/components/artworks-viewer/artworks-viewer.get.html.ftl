@@ -72,7 +72,7 @@
 	            <div class="quickshare-header-right">
 	               <@markup id="linkButtons">
 	                  <#list linkButtons as linkButton>
-	                     <a href="#" onclick="${linkButton.onclick}" class="brand-button ${linkButton.cssClass!""}" tabindex="0">${linkButton.label?html}</a>
+	                     <a href="${linkButton.href}" class="brand-button ${linkButton.cssClass!""}" tabindex="0">${linkButton.label?html}</a>
 	                  </#list>
 	               </@markup>
 	            </div>
@@ -103,6 +103,14 @@
 				-->
 	               </div>
 	               <div class="yui-u quickshare-node-action"> 
+	               <#if mode?? && mode == "sign">
+	                  <!-- Cancel Button -->
+	                  <span class="yui-button yui-link-button">
+	                     <span class="first-child">
+	                        <a href="${returnUrl}" id="${el}-cancelButton" tabindex="1">${msg("button.cancel")}</a>
+	                     </span>
+	                  </span>
+	               </#if>
 	                  <!-- Download Button -->
 	                  <span class="yui-button yui-link-button yui-button-disabled onDownloadDocumentClick">
 	                     <span class="first-child">
@@ -117,86 +125,90 @@
 		 <div id="bd">
 			   <div id="yui-main">
 			         <div class="yui-b">
-			          <div class="yui-ge">
-       					 <div class="yui-u first">
+				    	 <#if mode?? && mode == "sign">
 						   <div id="${el}-viewer" style="width: 100%; height: 600px; margin: 0 auto;"></div>
-				    	 </div>
-						 <div class="yui-u document-versions">
-						   <div class="document-details-panel document-versions">
-							    <#if versions??>
-							       <h2 id="${el}-heading" class="thin dark">${msg("header.versionHistory")}</h2>
-				                  <div class="panel-body">
-				                  	<h3 class="thin dark">${msg("section.latestVersion")}</h3>
-				                     <div id="${el}-latestVersion" class="current-version version-list">
-				                     	<#list versions as version>
-									        <div class="version-panel-left">
-									           <span class="document-version">${version.label}</span>
-									        </div>
-									        <div class="version-panel-right">
-									           <h3 class="thin dark" > <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}" >${version.name}</a></h3>
-									           <div class="clear"></div>
-									           <div class="version-details">
-									              <div class="version-details-left">
-									                <img class="icon" src ="${url.context}/proxy/alfresco/slingshot/profile/avatar/${version.creator.userName}/thumbnail/avatar32">
-									              </div>
-									              <div class="version-details-right">
-										              <#assign modifyUser = node.properties["cm:modifier"]>
-		             								  <#assign modifyDate = node.properties["cm:modified"]>
-		             								  <#assign modifierLink = userProfileLink(version.creator.userName,version.creator.firstName+" "+version.creator.lastName, 'class="theme-color-1"', modifyUser.isDeleted!false) >
-		                              					${msg("label.modified-by-user-on-date", modifierLink, "<span id='${el}-modifyDate'>${modifyDate.iso8601}</span>")} <br/>
-														<#if version.description??>
-															${version.description}
-														<#else>
-															<span class="faded">( ${msg("label.noComment")})</span>
-														</#if>
-									              </div>
-									           </div>
-									        </div>
-									        <div class="clear"></div>
-				   						 <#break>
-									   </#list>
-				                     </div>
-				                     <hr />
-				                     <h3 class="thin dark">${msg("section.olderVersion")}</h3>
-				                     <div id="${el}-olderVersions" class="version-list">
-									   	<#list versions as version>
-									   	   <#if version?counter!=1 >
-									        <div class="version-panel-left">
-									           <span class="document-version">${version.label}</span>
-									        </div>
-									        <div class="version-panel-right">
-									           <h3 class="thin dark" >${version.name}</h3>
-									           <span class="actions">
-									             <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}&compareTo=${version.nodeRef}&mode=text" class="compare" title="${msg("label.compare.text")}">&nbsp;</a>
-									             <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}&compareTo=${version.nodeRef}&mode=overlay"  class="compare-overlay" title="${msg("label.compare")}">&nbsp;</a>
-									           </span>
-									           <div class="clear"></div>
-									           <div class="version-details">
-									              <div class="version-details-left">
-									                <img class="icon" src ="${url.context}/proxy/alfresco/slingshot/profile/avatar/${version.creator.userName}/thumbnail/avatar32">
-									              </div>
-									              <div class="version-details-right">
-										              <#assign modifyUser = node.properties["cm:modifier"]>
-		             								  <#assign modifyDate = node.properties["cm:modified"]>
-		             								  <#assign modifierLink = userProfileLink(version.creator.userName,version.creator.firstName+" "+version.creator.lastName, 'class="theme-color-1"', modifyUser.isDeleted!false) >
-		                              				  ${msg("label.modified-by-user-on-date", modifierLink, "<span id='${el}-modifyDate'>${modifyDate.iso8601}</span>")} <br/>
-														<#if version.description??>
-															${version.description}
-														<#else>
-															<span class="faded">( ${msg("label.noComment")})</span>
-														</#if>
-									              </div>
-									           </div>
-									        </div>				
-									        <div class="clear"></div>
-										  </#if>
-									   </#list>
-									  </div>
-				                  </div>
-								</#if>
-					       </div>
-				        </div>
-			         </div>
+				    	 <#else>
+			         		 <div class="yui-ge">
+	       					 <div class="yui-u first">
+							   <div id="${el}-viewer" style="width: 100%; height: 600px; margin: 0 auto;"></div>
+					    	 </div>
+							 <div class="yui-u document-versions">
+							   <div class="document-details-panel document-versions">
+								    <#if versions??>
+								       <h2 id="${el}-heading" class="thin dark">${msg("header.versionHistory")}</h2>
+					                  <div class="panel-body">
+					                  	<h3 class="thin dark">${msg("section.latestVersion")}</h3>
+					                     <div id="${el}-latestVersion" class="current-version version-list">
+					                     	<#list versions as version>
+										        <div class="version-panel-left">
+										           <span class="document-version">${version.label}</span>
+										        </div>
+										        <div class="version-panel-right">
+										           <h3 class="thin dark" > <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}" >${version.name}</a></h3>
+										           <div class="clear"></div>
+										           <div class="version-details">
+										              <div class="version-details-left">
+										                <img class="icon" src ="${url.context}/proxy/alfresco/slingshot/profile/avatar/${version.creator.userName}/thumbnail/avatar32">
+										              </div>
+										              <div class="version-details-right">
+											              <#assign modifyUser = node.properties["cm:modifier"]>
+			             								  <#assign modifyDate = node.properties["cm:modified"]>
+			             								  <#assign modifierLink = userProfileLink(version.creator.userName,version.creator.firstName+" "+version.creator.lastName, 'class="theme-color-1"', modifyUser.isDeleted!false) >
+			                              					${msg("label.modified-by-user-on-date", modifierLink, "<span id='${el}-modifyDate'>${modifyDate.iso8601}</span>")} <br/>
+															<#if version.description??>
+																${version.description}
+															<#else>
+																<span class="faded">( ${msg("label.noComment")})</span>
+															</#if>
+										              </div>
+										           </div>
+										        </div>
+										        <div class="clear"></div>
+					   						 <#break>
+										   </#list>
+					                     </div>
+					                     <hr />
+					                     <h3 class="thin dark">${msg("section.olderVersion")}</h3>
+					                     <div id="${el}-olderVersions" class="version-list">
+										   	<#list versions as version>
+										   	   <#if version?counter!=1 >
+										        <div class="version-panel-left">
+										           <span class="document-version">${version.label}</span>
+										        </div>
+										        <div class="version-panel-right">
+										           <h3 class="thin dark" >${version.name}</h3>
+										           <span class="actions">
+										             <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}&compareTo=${version.nodeRef}&mode=text" class="compare" title="${msg("label.compare.text")}">&nbsp;</a>
+										             <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}&compareTo=${version.nodeRef}&mode=overlay"  class="compare-overlay" title="${msg("label.compare")}">&nbsp;</a>
+										           </span>
+										           <div class="clear"></div>
+										           <div class="version-details">
+										              <div class="version-details-left">
+										                <img class="icon" src ="${url.context}/proxy/alfresco/slingshot/profile/avatar/${version.creator.userName}/thumbnail/avatar32">
+										              </div>
+										              <div class="version-details-right">
+											              <#assign modifyUser = node.properties["cm:modifier"]>
+			             								  <#assign modifyDate = node.properties["cm:modified"]>
+			             								  <#assign modifierLink = userProfileLink(version.creator.userName,version.creator.firstName+" "+version.creator.lastName, 'class="theme-color-1"', modifyUser.isDeleted!false) >
+			                              				  ${msg("label.modified-by-user-on-date", modifierLink, "<span id='${el}-modifyDate'>${modifyDate.iso8601}</span>")} <br/>
+															<#if version.description??>
+																${version.description}
+															<#else>
+																<span class="faded">( ${msg("label.noComment")})</span>
+															</#if>
+										              </div>
+										           </div>
+										        </div>				
+										        <div class="clear"></div>
+											  </#if>
+										   </#list>
+										  </div>
+					                  </div>
+									</#if>
+						       </div>
+					        </div>
+				         </div>
+			    	 </#if>
 	               </div>
 	           </div>
 	        </div>

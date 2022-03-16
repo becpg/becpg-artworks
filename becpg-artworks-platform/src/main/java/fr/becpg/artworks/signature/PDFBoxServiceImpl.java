@@ -1,19 +1,80 @@
 package fr.becpg.artworks.signature;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
-import org.alfresco.encryption.AlfrescoKeyStore;
+import javax.xml.bind.DatatypeConverter;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.InvalidTypeException;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.ExternalSigningSupport;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTerminalField;
+import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.tsp.TSPException;
+import org.bouncycastle.tsp.TimeStampToken;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.stereotype.Service;
+
+import com.github.openjson.JSONArray;
+import com.github.openjson.JSONException;
+import com.github.openjson.JSONObject;
+
+import fr.becpg.artworks.signature.model.SignatureContext;
+import fr.becpg.artworks.signature.model.SignatureModel;
 
 /**
  * 
@@ -23,330 +84,775 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * MetadataEncryptor d'alfresco + iTEXT: 
  * https://github.com/rouxemmanuel/DigitalSigning/blob/master/DigitalSigningAlfresco/src/main/java/org/alfresco/plugin/digitalSigning/service/SigningService.java
  */
-public class PDFBoxServiceImpl implements SignatureService{
+@Service
+public class PDFBoxServiceImpl implements SignatureService {
 	
-	@Autowired
-	@Qualifier("keyStore")
-	private AlfrescoKeyStore mainKeyStore;
-	
-	
-	
-	private String signatureLocationInfo;
-	private String signatureReasonInfo;
-	private String signatureContactInfo;
-	
-	private String signatureAnnotationFieldName;
-	
-//	
-//	private SignatureOptions signatureOptions;
-//    private PDVisibleSignDesigner visibleSignDesigner;
-//    private final PDVisibleSigProperties visibleSignatureProperties = new PDVisibleSigProperties();
-//    private boolean lateExternalSigning = false;
-//    private MemoryUsageSetting memoryUsageSetting = MemoryUsageSetting.setupMainMemoryOnly();
-//    private PDDocument doc = null;
-//    
-//    
-//    private Certificate[] certificateChain;
-//    private String tsaUrl;
-//    private boolean externalSigning;
-    
-    
-    
+	private static final String NODE_REF = "nodeRef";
 
-//    @Override
-//    public byte[] sign(InputStream content) throws IOException
-//    {
-//    	
-//        Key privateKey = mainKeyStore.getKey("signature");
-//      //  Certificate[] certChain = mainKeyStore.get.getCertificateChain("signature");
-//    	
-//        // cannot be done private (interface)
-////        try
-////        {
-////            CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-////            X509Certificate cert = (X509Certificate) certificateChain[0];
-////            ContentSigner sha1Signer = new JcaContentSignerBuilder("SHA256WithRSA").build((PrivateKey) privateKey);
-////            gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build()).build(sha1Signer, cert));
-////            gen.addCertificates(new JcaCertStore(Arrays.asList(certificateChain)));
-////            CMSProcessableInputStream msg = new CMSProcessableInputStream(content);
-////            CMSSignedData signedData = gen.generate(msg, false);
-////            if (tsaUrl != null && tsaUrl.length() > 0)
-////            {
-////                ValidationTimeStamp validation = new ValidationTimeStamp(tsaUrl);
-////                signedData = validation.addSignedTimeStamp(signedData);
-////            }
-////            return signedData.getEncoded();
-////        }
-////        catch (GeneralSecurityException | CMSException | OperatorCreationException e)
-////        {
-////            throw new IOException(e);
-////        }
-//        
-//        return null;
-//    }
-    
-    
-    
+	private static final String RECIPIENTS = "recipients";
+
+	private static final Log logger = LogFactory.getLog(PDFBoxServiceImpl.class);
+
+	private static final int RIGHT_DIRECTION = 1;
+	private static final int LEFT_DIRECTION = 2;
+	private static final int UP_DIRECTION = 3;
+	private static final int DOWN_DIRECTION = 4;
+	
+	private static final int LEFT_POSITION = 0;
+	private static final int MIDDLE_POSITION = 1;
+	private static final int RIGHT_POSITION = 2;
+	private static final int BOTTOM_POSITION = 0;
+	private static final int TOP_POSITION = 2;
+
+	private CheckOutCheckInService checkOutCheckInService;
+	
+	private ContentService contentService;
+	
+	private MimetypeService mimetypeService;
+	
+	private NodeService nodeService;
+	
+	private BehaviourFilter policyBehaviourFilter;
+	
+	@Value("${beCPG.signature.reasonInfo}")
+	private String signatureReasonInfo;
+	
+	@Value("${beCPG.signature.tsaUrl}")
+	private String tsaUrl;
+
+	// width,height,direction(1=right,2=left,3=up,4=down),gap,rightMargin,bottomMargin
+	private String defaultSignatureDimensions = "100,50,1,150,300,300";
+	
+	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
+	private String defaultSignatureAnchorInfo = "signature,2,0";
+	
+	// width,height,direction(1=right,2=left,3=up,4=down),gap,rightMargin,bottomMargin
+	private String defaultInitialsDimensions = "50,25,3,30,150,150";
+	
+	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
+	private String defaultInitialsAnchorInfo = "Page,0,2";
+	
+	// ex: "0","3","last","last-1"
+	private String defaultSignaturePage = "last";
+	
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
+		this.checkOutCheckInService = checkOutCheckInService;
+	}
+
+	public void setContentService(ContentService contentService) {
+		this.contentService = contentService;
+	}
+
+	public void setMimetypeService(MimetypeService mimetypeService) {
+		this.mimetypeService = mimetypeService;
+	}
+	
+	public void setNodeService(NodeService nodeService) {
+		this.nodeService = nodeService;
+	}
+	
+	public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter) {
+		this.policyBehaviourFilter = policyBehaviourFilter;
+	}
 	
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
-		return prepareForSignature(nodeRef, false);
+		return prepareForSignature(nodeRef, new ArrayList<>(), false);
 	}
-	
+
 	@Override
-	public void checkinDocument(NodeRef nodeRef) {
+	public String prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params) {
 		
+		logger.debug("prepareForSignature : originalNode = " + originalNode + ", recipients = " + recipients + ", params = " + (params == null ? params : Arrays.asList(params)));
 		
-//		File inputFile; File signedFile; String tsaUrl; String signatureFieldName;
-//		
-//		if (inputFile == null || !inputFile.exists())
-//        {
-//            throw new IOException("Document for signing does not exist");
-//        }
-//
-//        setTsaUrl(tsaUrl);
-//
-//        // creating output document and prepare the IO streams.
-//        if (doc == null)
-//        {
-//            doc = Loader.loadPDF(inputFile, memoryUsageSetting);
-//        }
-//        
-//        try (FileOutputStream fos = new FileOutputStream(signedFile))
-//        {
-//            int accessPermissions = SigUtils.getMDPPermission(doc);
-//            if (accessPermissions == 1)
-//            {
-//                throw new IllegalStateException("No changes to the document are permitted due to DocMDP transform parameters dictionary");
-//            }
-//            // Note that PDFBox has a bug that visual signing on certified files with permission 2
-//            // doesn't work properly, see PDFBOX-3699. As long as this issue is open, you may want to
-//            // be careful with such files.
-//
-//            PDSignature signature;
-//
-//            // sign a PDF with an existing empty signature, as created by the CreateEmptySignatureForm example.
-//            signature = findExistingSignature(doc, signatureFieldName);
-//
-//            if (signature == null)
-//            {
-//                // create signature dictionary
-//                signature = new PDSignature();
-//            }
-//
-//            // Optional: certify
-//            // can be done only if version is at least 1.5 and if not already set
-//            // doing this on a PDF/A-1b file fails validation by Adobe preflight (PDFBOX-3821)
-//            // PDF/A-1b requires PDF version 1.4 max, so don't increase the version on such files.
-//            if (doc.getVersion() >= 1.5f && accessPermissions == 0)
-//            {
-//                SigUtils.setMDPPermission(doc, signature, 2);
-//            }
-//
-//            PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm(null);
-//            if (acroForm != null && acroForm.getNeedAppearances())
-//            {
-//                // PDFBOX-3738 NeedAppearances true results in visible signature becoming invisible 
-//                // with Adobe Reader
-//                if (acroForm.getFields().isEmpty())
-//                {
-//                    // we can safely delete it if there are no fields
-//                    acroForm.getCOSObject().removeItem(COSName.NEED_APPEARANCES);
-//                    // note that if you've set MDP permissions, the removal of this item
-//                    // may result in Adobe Reader claiming that the document has been changed.
-//                    // and/or that field content won't be displayed properly.
-//                    // ==> decide what you prefer and adjust your code accordingly.
-//                }
-//                else
-//                {
-//                    System.out.println("/NeedAppearances is set, signature may be ignored by Adobe Reader");
-//                }
-//            }
-//
-//            // default filter
-//            signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
-//
-//            // subfilter for basic and PAdES Part 2 signatures
-//            signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
-//
-//            // this builds the signature structures in a separate document
-//            visibleSignatureProperties.buildSignature();
-//
-//            signature.setName(visibleSignatureProperties.getSignerName());
-//            signature.setLocation(visibleSignatureProperties.getSignerLocation());
-//            signature.setReason(visibleSignatureProperties.getSignatureReason());
-//            
-//            // the signing date, needed for valid signature
-//            signature.setSignDate(Calendar.getInstance());
-//
-//            // do not set SignatureInterface instance, if external signing used
-//            SignatureInterface signatureInterface = isExternalSigning() ? null : this;
-//
-//            // register signature dictionary and sign interface
-//            if (visibleSignatureProperties.isVisualSignEnabled())
-//            {
-//                signatureOptions = new SignatureOptions();
-//                signatureOptions.setVisualSignature(visibleSignatureProperties.getVisibleSignature());
-//                signatureOptions.setPage(visibleSignatureProperties.getPage() - 1);
-//                doc.addSignature(signature, signatureInterface, signatureOptions);
-//            }
-//            else
-//            {
-//                doc.addSignature(signature, signatureInterface);
-//            }
-//
-//            if (isExternalSigning())
-//            {
-//                ExternalSigningSupport externalSigning = doc.saveIncrementalForExternalSigning(fos);
-//                // invoke external signature service
-//                byte[] cmsSignature = sign(externalSigning.getContent());
-//
-//                // Explanation of late external signing (off by default):
-//                // If you want to add the signature in a separate step, then set an empty byte array
-//                // and call signature.getByteRange() and remember the offset signature.getByteRange()[1]+1.
-//                // you can write the ascii hex signature at a later time even if you don't have this
-//                // PDDocument object anymore, with classic java file random access methods.
-//                // If you can't remember the offset value from ByteRange because your context has changed,
-//                // then open the file with PDFBox, find the field with findExistingSignature() or
-//                // PDDocument.getLastSignatureDictionary() and get the ByteRange from there.
-//                // Close the file and then write the signature as explained earlier in this comment.
-//                if (isLateExternalSigning())
-//                {
-//                    // this saves the file with a 0 signature
-//                    externalSigning.setSignature(new byte[0]);
-//
-//                    // remember the offset (add 1 because of "<")
-//                    int offset = signature.getByteRange()[1] + 1;
-//
-//                    // now write the signature at the correct offset without any PDFBox methods
-//                    try (RandomAccessFile raf = new RandomAccessFile(signedFile, "rw"))
-//                    {
-//                        raf.seek(offset);
-//                        raf.write(Hex.getBytes(cmsSignature));
-//                    }
-//                }
-//                else
-//                {
-//                    // set signature bytes received from the service and save the file
-//                    externalSigning.setSignature(cmsSignature);
-//                }
-//            }
-//            else
-//            {
-//                // write incremental (only for signing purpose)
-//                doc.saveIncremental(fos);
-//            }
-//        }
-//        
-//        // Do not close signatureOptions before saving, because some COSStream objects within
-//        // are transferred to the signed document.
-//        // Do not allow signatureOptions get out of scope before saving, because then the COSDocument
-//        // in signature options might by closed by gc, which would close COSStream objects prematurely.
-//        // See https://issues.apache.org/jira/browse/PDFBOX-3743
-//        IOUtils.closeQuietly(signatureOptions);
-//        IOUtils.closeQuietly(doc);
+		List<NodeRef> nodeRecipients = new ArrayList<>();
 		
+		nodeService.getTargetAssocs(originalNode, SignatureModel.ASSOC_RECIPIENTS)
+		.forEach(assoc -> nodeRecipients.add(assoc.getTargetRef()));
 		
+		// if no recipient set : take all the recipients from node aspect
+		if (recipients.isEmpty()) {
+			recipients.addAll(nodeRecipients);
+		}
+		
+		SignatureContext context = buildSignatureContext(nodeRecipients, recipients, params);
+		
+		logger.debug(context.toString());
+		
+		try {
+			NodeRef workingCopyNode = checkOutCheckInService.checkout(originalNode);
+			
+			InputStream originalContentInputStream = contentService.getReader(originalNode, ContentModel.PROP_CONTENT).getContentInputStream();
+			
+			byte[] preparedSignature = prepareForSignature(originalContentInputStream, context);
+			
+			writeNodeContent(workingCopyNode, preparedSignature);
+			
+			updatePreparationInformation(originalNode, context, workingCopyNode);
+			
+			return workingCopyNode.toString();
+		} catch (IOException e) {
+			String documentName = (String) nodeService.getProperty(originalNode, ContentModel.PROP_NAME);
+			throw new SignatureException("Error while preparing signature for '" + documentName + "' : " + e.getMessage());
+		}
+	    
 	}
-	
-	
-	 // Find an existing signature (assumed to be empty). You will usually not need this.
-    private PDSignature findExistingSignature(PDDocument doc, String sigFieldName)
-    {
-//        PDSignature signature = null;
-//        PDSignatureField signatureField;
-//        PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm(null);
-//        if (acroForm != null)
-//        {
-//            signatureField = (PDSignatureField) acroForm.getField(sigFieldName);
-//            if (signatureField != null)
-//            {
-//                // retrieve signature dictionary
-//                signature = signatureField.getSignature();
-//                if (signature == null)
-//                {
-//                    signature = new PDSignature();
-//                    // after solving PDFBOX-3524
-//                    // signatureField.setValue(signature)
-//                    // until then:
-//                    signatureField.getCOSObject().setItem(COSName.V, signature);
-//                }
-//                else
-//                {
-//                    throw new IllegalStateException("The signature field " + sigFieldName + " is already signed.");
-//                }
-//            }
-//        }
-//        return signature;
-    	return null;
-    }
+
+	@Override
+	public void checkinDocument(NodeRef checkedOutNode) {
+
+		logger.debug("checkinDocument : checkedOutNode = " + checkedOutNode);
+
+		checkOutCheckInService.checkin(checkedOutNode, null);
+
+	}
 	
 	@Override
 	public void cancelDocument(NodeRef nodeRef) {
-		//TODO Cancel checkout
 		
+		logger.debug("cancelDocument : nodeRef = " + nodeRef);
+
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
+        
+        if (!assocs.isEmpty()) {
+        	checkOutCheckInService.cancelCheckout(assocs.get(0).getTargetRef());
+        }
+        
+        nodeService.removeAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE);
+	}
+
+	@Override
+	public String getDocumentView(NodeRef nodeRef, String userId, NodeRef task) {
+		
+		logger.debug("getDocumentView : nodeRef = " + nodeRef + ", userId = " + userId + ", task = " + task);
+
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
+        
+        String returnUrl = "/share/page/context/mine/document-details?nodeRef=" + nodeRef;
+        
+        if (task != null) {
+        	returnUrl = "/share/page/task-edit?taskId={task|pjt:tlWorkflowTaskInstance}";
+        }
+        
+        if (!assocs.isEmpty()) {
+        	return "artworks-viewer?nodeRef=" + assocs.get(0).getTargetRef() + "&mode=sign&returnUrl=" + returnUrl;
+        }
+        
+		throw new SignatureException("The node has no working copy link reference");
+	}
+				
+	@Override
+	public void sign(NodeRef nodeRef, NodeRef recipient) {
+
+		logger.debug("sign : nodeRef = " + nodeRef + ", recipient = " + recipient);
+
+		try {
+
+			policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+
+			try {
+				signContent(nodeRef, recipient);
+			} catch (IOException e) {
+				throw new SignatureException("Failed to create signature", e);
+			}
+			
+			try {
+				updateSignatureInformation(nodeRef, recipient);
+			} catch (InvalidTypeException | ContentIOException | InvalidNodeRefException | IOException e) {
+				throw new SignatureException("Failed to update signature information", e);
+			}
+			
+		} finally {
+			policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+		}
+	}
+
+	private void updatePreparationInformation(NodeRef originalNode, SignatureContext context, NodeRef workingCopyNode) {
+		JSONObject recipientDataJson = new JSONObject();
+	
+		Object recipientData = nodeService.getProperty(originalNode, SignatureModel.PROP_RECIPIENTS_DATA);
+				
+		if (recipientData instanceof String && !((String) recipientData).isBlank()) {
+			recipientDataJson = new JSONObject((String) recipientData);
+		}
+		
+		JSONArray recipientsArray = new JSONArray();
+		
+		if (recipientDataJson.has(RECIPIENTS)) {
+			recipientsArray = recipientDataJson.getJSONArray(RECIPIENTS);
+		}
+		
+		for (NodeRef recipient : context.getRecipients()) {
+			if (context.getNodeRecipients().contains(recipient)) {
+				JSONObject recipientJson = new JSONObject();
+				
+				int indexToRemove = -1;
+		    	
+		    	for (int i = 0; i < recipientsArray.length(); i++) {
+					if (recipientsArray.getJSONObject(i).get(NODE_REF).toString().equals(recipient.toString())) {
+						recipientJson = recipientsArray.getJSONObject(i);
+						indexToRemove = i;
+						break;
+					}
+				}
+		    	
+		    	if (indexToRemove != -1) {
+		    		recipientsArray.remove(indexToRemove);
+		    	}
+				
+				recipientJson.put(NODE_REF, recipient);
+		    	recipientJson.put("username", nodeService.getProperty(recipient, ContentModel.PROP_USERNAME));
+				recipientJson.put("preparationDate", Calendar.getInstance().getTime());
+				
+				recipientsArray.put(recipientJson);
+				
+				recipientDataJson.put(RECIPIENTS, recipientsArray);
+			}
+		}
+		
+		nodeService.setProperty(workingCopyNode, SignatureModel.PROP_RECIPIENTS_DATA, recipientDataJson.toString());
+		nodeService.setProperty(workingCopyNode, SignatureModel.PROP_STATUS, I18NUtil.getMessage("message.signature-status.inprogress"));
+	}
+
+	private void updateSignatureInformation(NodeRef nodeRef, NodeRef recipient) throws InvalidTypeException, ContentIOException, InvalidNodeRefException, IOException {
+		
+		byte[] signedContent = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
+	    
+	    JSONObject recipientDataJson = new JSONObject();
+
+	    Object recipientData = nodeService.getProperty(nodeRef, SignatureModel.PROP_RECIPIENTS_DATA);
+	    		
+	    if (recipientData instanceof String) {
+	    	recipientDataJson = new JSONObject((String) recipientData);
+	    }
+	    
+	    JSONArray recipientsArray = new JSONArray();
+    	
+    	if (recipientDataJson.has(RECIPIENTS)) {
+    		recipientsArray = recipientDataJson.getJSONArray(RECIPIENTS);
+    	}
+    	
+    	JSONObject recipientJson = new JSONObject();
+    	
+    	int indexToRemove = -1;
+    	
+    	for (int i = 0; i < recipientsArray.length(); i++) {
+			if (recipientsArray.getJSONObject(i).get(NODE_REF).toString().equals(recipient.toString())) {
+				recipientJson = recipientsArray.getJSONObject(i);
+				indexToRemove = i;
+				break;
+			}
+		}
+    	
+    	if (indexToRemove != -1) {
+    		recipientsArray.remove(indexToRemove);
+    	}
+    	
+    	String userDisplayName = nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME) + " " + nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
+    	
+    	PDSignature signature = extractSignature(signedContent, userDisplayName);
+    	
+    	try {
+    		recipientJson.put("signatureDate", extractTimeStampDate(signedContent, signature));
+    		
+    		String contentThumbprint = DatatypeConverter.printHexBinary(MessageDigest.getInstance("SHA256").digest(signature.getContents(signedContent))).toLowerCase();
+
+    		recipientJson.put("contentThumbprint", contentThumbprint);
+    	} catch (JSONException | IOException | CMSException | TSPException | NoSuchAlgorithmException e) {
+    		throw new SignatureException("Failed to extract time stamp date from signature");
+		}
+    	
+    	recipientsArray.put(recipientJson);
+    	
+    	recipientDataJson.put(RECIPIENTS, recipientsArray);
+	    
+    	nodeService.setProperty(nodeRef, SignatureModel.PROP_RECIPIENTS_DATA, recipientDataJson.toString());
+    	
+    	if (allSigned(nodeRef, recipientsArray)) {
+    		nodeService.setProperty(nodeRef, SignatureModel.PROP_STATUS, I18NUtil.getMessage("message.signature-status.signed"));
+    	}
 	}
 	
-	@Override
-	public String getDocumentView(NodeRef nodeRef, String userId, String returnUrl) {
+	private PDSignature extractSignature(byte[] signedContent, String userDisplayName) throws IOException {
+		try (PDDocument document = PDDocument.load(signedContent)) {
+
+			for (PDSignature signature : document.getSignatureDictionaries()) {
+
+				if (signature.getName().equals(userDisplayName)) {
+					return signature;
+				}
+			}
+		}
 		return null;
 	}
 	
-	@Override
-	public String prepareForSignature(NodeRef nodeRef, boolean notifyByMail) {
+	private Date extractTimeStampDate(byte[] signedFile, PDSignature signature) throws IOException, CMSException, TSPException {
+		
+		try (PDDocument document = PDDocument.load(signedFile)) {
 
-        // Create a new document with an empty page.
-        try (PDDocument document = new PDDocument())
-        {
-            PDPage page = new PDPage(PDRectangle.A4);
-            document.addPage(page);
+			COSString contents = (COSString) signature.getCOSObject().getDictionaryObject(COSName.CONTENTS);
 
-            // Adobe Acrobat uses Helvetica as a default font and
-            // stores that under the name '/Helv' in the resources dictionary
-          //  PDFont font = new PDType1Font(FontNam.HELVETICA);
-            PDResources resources = new PDResources();
-           // resources.put(COSName.HELV, font);
+			byte[] buf;
 
-            // Add a new AcroForm and add that to the document
-            PDAcroForm acroForm = new PDAcroForm(document);
-            document.getDocumentCatalog().setAcroForm(acroForm);
+			try (ByteArrayInputStream fis = new ByteArrayInputStream(signedFile)) {
+				buf = signature.getSignedContent(fis);
+			}
 
-            // Add and set the resources and default appearance at the form level
-            acroForm.setDefaultResources(resources);
+			CMSSignedData signedData = new CMSSignedData(new CMSProcessableByteArray(buf), contents.getBytes());
+			Collection<SignerInformation> signers = signedData.getSignerInfos().getSigners();
+			SignerInformation signerInformation = signers.iterator().next();
 
-            // Acrobat sets the font size on the form level to be
-            // auto sized as default. This is done by setting the font size to '0'
-            String defaultAppearanceString = "/Helv 0 Tf 0 g";
-            acroForm.setDefaultAppearance(defaultAppearanceString);
-            // --- end of general AcroForm stuff ---
+			TimeStampToken timeStampToken = SignatureUtils
+					.extractTimeStampTokenFromSignerInformation(signerInformation);
 
-            // Create empty signature field, it will get the name "Signature1"
-            PDSignatureField signatureField = new PDSignatureField(acroForm);
-            PDAnnotationWidget widget = signatureField.getWidgets().get(0);
-            PDRectangle rect = new PDRectangle(50, 650, 200, 50);
-            widget.setRectangle(rect);
-            widget.setPage(page);
+			return timeStampToken.getTimeStampInfo().getGenTime();
+		}
+	}
 
-            // see thread from PDFBox users mailing list 17.2.2021 - 19.2.2021
-            // https://mail-archives.apache.org/mod_mbox/pdfbox-users/202102.mbox/thread
-            widget.setPrinted(true);
+	private boolean allSigned(NodeRef nodeRef, JSONArray recipientsArray) {
+    	
+		List<NodeRef> nodeRecipients = new ArrayList<>();
+		
+		nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_RECIPIENTS)
+				.forEach(assoc -> nodeRecipients.add(assoc.getTargetRef()));
 
-            page.getAnnotations().add(widget);
-
-            acroForm.getFields().add(signatureField);
-
-           // document.save(args[0]);
-        } catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		for (NodeRef nodeRecipient : nodeRecipients) {
+			
+			boolean hasSigned = false;
+			
+			for (int i = 0; i < recipientsArray.length(); i++) {
+				if (recipientsArray.getJSONObject(i).get(NODE_REF).toString().equals(nodeRecipient.toString()) && recipientsArray.getJSONObject(i).has("signatureDate")) {
+					hasSigned = true;
+					break;
+				}
+			}
+			
+			if (!hasSigned) {
+				return false;
+			}
 		}
 		
-		return "/artworks-viewer?nodeRef="+nodeRef.toString()+"&mode=sign";
-	
+		return true;
+		
 	}
 	
+	private PDField removeField(PDDocument document, String fullFieldName) throws IOException {
+	    PDDocumentCatalog documentCatalog = document.getDocumentCatalog();
+	    PDAcroForm acroForm = documentCatalog.getAcroForm();
+
+	    if (acroForm == null) {
+	        return null;
+	    }
+
+	    PDField targetField = null;
+
+	    for (PDField field : acroForm.getFieldTree()) {
+	        if (fullFieldName.equals(field.getFullyQualifiedName())) {
+	            targetField = field;
+	            break;
+	        }
+	    }
+	    if (targetField == null) {
+	        return null;
+	    }
+
+	    PDNonTerminalField parentField = targetField.getParent();
+	    if (parentField != null) {
+	        List<PDField> childFields = parentField.getChildren();
+	        for (PDField field : childFields)
+	        {
+	            if (field.getCOSObject().equals(targetField.getCOSObject())) {
+	                childFields.remove(field);
+	                parentField.setChildren(childFields);
+	                break;
+	            }
+	        }
+	    } else {
+	        List<PDField> rootFields = acroForm.getFields();
+	        for (PDField field : rootFields)
+	        {
+	            if (field.getCOSObject().equals(targetField.getCOSObject())) {
+	                rootFields.remove(field);
+	                break;
+	            }
+	        }
+	    }
+	    
+	    removeWidgets(targetField);
+	    
+		COSDictionary dictionary = document.getDocumentCatalog().getCOSObject();
+		dictionary.setNeedToBeUpdated(true);
+		dictionary = (COSDictionary) dictionary.getDictionaryObject(COSName.ACRO_FORM);
+		dictionary.setNeedToBeUpdated(true);
+		COSArray array = (COSArray) dictionary.getDictionaryObject(COSName.FIELDS);
+		array.setNeedToBeUpdated(true);
+
+	    return targetField;
+	}
 	
+	private void removeWidgets(PDField targetField) throws IOException {
+	    if (targetField instanceof PDTerminalField) {
+	        List<PDAnnotationWidget> widgets = ((PDTerminalField)targetField).getWidgets();
+	        for (PDAnnotationWidget widget : widgets) {
+	            PDPage page = widget.getPage();
+	            if (page != null) {
+	                List<PDAnnotation> annotations = page.getAnnotations();
+	                for (PDAnnotation annotation : annotations) {
+	                    if (annotation.getCOSObject().equals(widget.getCOSObject()))
+	                    {
+	                        annotations.remove(annotation);
+	                        break;
+	                    }
+	                }
+	                
+	                COSDictionary item = page.getCOSObject();
+	                
+	                while (item.containsKey(COSName.PARENT)) {
+	    				COSBase parent = item.getDictionaryObject(COSName.PARENT);
+	    				if (parent instanceof COSDictionary) {
+	    					item = (COSDictionary) parent;
+	    					item.setNeedToBeUpdated(true);
+	    				}
+	    			}
+	                
+	                page.getCOSObject().setNeedToBeUpdated(true);
+	                
+	            }
+	        }
+	    } else if (targetField instanceof PDNonTerminalField) {
+	        List<PDField> childFields = ((PDNonTerminalField)targetField).getChildren();
+	        for (PDField field : childFields)
+	            removeWidgets(field);
+	    }
+	}
+	
+	private void signContent(NodeRef nodeRef, NodeRef recipient) throws IOException {
+	
+			InputStream input = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream();
+
+			PDDocument document = PDDocument.load(input);
+			
+			int accessPermissions = SignatureUtils.getMDPPermission(document);
+			if (accessPermissions == 1) {
+				throw new IllegalStateException("No changes to the document are permitted due to DocMDP transform parameters dictionary");
+			}
+			
+			PDSignature signature = null;
+			
+			if (recipient != null) {
+				String userName = (String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME);
+
+				PDField removedField = removeField(document, userName);
+				
+				while (removedField != null) {
+					removedField = removeField(document, userName);
+				}
+				
+				PDSignatureField signatureField = findMatchingSignatureField(document, userName + "-signature");
+				
+				if (signatureField != null) {
+					// retrieve signature dictionary
+					signature = signatureField.getSignature();
+					
+					if (signature == null) {
+						signature = new PDSignature();
+						signatureField.getCOSObject().setItem(COSName.V, signature);
+					} else {
+						throw new IllegalStateException("The signature field for '" + userName + "' is already signed.");
+					}
+				} else {
+					throw new IllegalStateException("The signature field for '" + userName + "' was not found.");
+				}
+			} else {
+				signature = new PDSignature();
+			}
+			
+			// we allow additional signatures with incremental saves
+			if (document.getVersion() >= 1.5f && accessPermissions == 0) {
+				SignatureUtils.setMDPPermission(document, signature, 2);
+			}
+			
+			String userDisplayName = nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME) + " " + nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
+			
+			signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
+			signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
+			signature.setName(userDisplayName);
+			signature.setReason(signatureReasonInfo);
+			signature.setSignDate(Calendar.getInstance());
+			
+			document.addSignature(signature);
+			try (OutputStream output = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).getContentOutputStream()) {
+				ExternalSigningSupport externalSigning = document.saveIncrementalForExternalSigning(output);
+				byte[] cmsSignature = new byte[0];
+				
+				try {
+					
+					CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+					ContentSigner sha1Signer = new JcaContentSignerBuilder("SHA256WithRSA").build(SignatureUtils.getSignaturePrivateKey());
+					gen.addSignerInfoGenerator(
+							new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build())
+							.build(sha1Signer, (X509Certificate) SignatureUtils.getCertificateChain()[0]));
+					gen.addCertificates(new JcaCertStore(Arrays.asList(SignatureUtils.getCertificateChain())));
+					CMSProcessableInputStream msg = new CMSProcessableInputStream(externalSigning.getContent());
+					CMSSignedData signedData = gen.generate(msg, false);
+					
+					if (tsaUrl != null && !tsaUrl.isEmpty()) {
+						ValidationTimeStamp validation;
+						validation = new ValidationTimeStamp(tsaUrl);
+						signedData = validation.addSignedTimeStamp(signedData);
+					}
+					cmsSignature = signedData.getEncoded();
+				} catch (GeneralSecurityException | CMSException | OperatorCreationException | IOException e) {
+					throw new SignatureException(e.getMessage());
+				}
+				
+				externalSigning.setSignature(cmsSignature);
+			}
+		}
+
+	private byte[] prepareForSignature(InputStream input, SignatureContext context) throws IOException {
+
+		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+
+			PDDocument document = PDDocument.load(input);
+
+			int signaturePageNumber = 0;
+
+			if ("last".equals(context.getSignaturePage())) {
+				signaturePageNumber = document.getNumberOfPages() - 1;
+			} else if (context.getSignaturePage().startsWith("last-")) {
+				int minus = Integer.parseInt(context.getSignaturePage().split("-")[1]);
+				signaturePageNumber = document.getNumberOfPages() - 1 - minus;
+			} else {
+				signaturePageNumber = Integer.parseInt(context.getSignaturePage());
+			}
+			
+			// signature fields
+			addFields(document, signaturePageNumber, context, true);
+			
+			// initials fields
+			for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
+				if (pageNumber != signaturePageNumber) {
+					addFields(document, pageNumber, context, false);
+				}
+			}
+			
+			document.saveIncremental(output);
+
+			return output.toByteArray();
+
+		}
+	}
+
+	private void addFields(PDDocument document, int pageNumber, SignatureContext context, boolean isSignatureField) throws IOException {
+		
+		String[] dimensions = isSignatureField ? context.getSignatureDimensions().split(",") : context.getInitialsDimensions().split(",") ;
+		
+		String[] anchorInfo = isSignatureField ? context.getSignatureAnchorInfo().split(",") : context.getInitialsAnchorInfo().split(",") ;
+		
+		PDPage page = document.getPage(pageNumber);
+
+		PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
+
+		if (acroForm == null) {
+			acroForm = new PDAcroForm(document);
+			document.getDocumentCatalog().setAcroForm(acroForm);
+		}
+		
+		for (int index = 0; index < context.getNodeRecipients().size(); index++) {
+			
+			NodeRef recipient = context.getNodeRecipients().get(index);
+			
+			if (context.getRecipients().contains(recipient)) {
+				
+				acroForm.setDefaultAppearance("/Helv 0 Tf 0 g");
+				
+				PDSignatureField signatureField = new PDSignatureField(acroForm);
+				
+				String fieldName = (String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME);
+				
+				if (isSignatureField) {
+					fieldName += "-signature";
+				}
+				
+				signatureField.setPartialName(fieldName);
+				
+				PDAnnotationWidget fieldWidget = signatureField.getWidgets().get(0);
+				
+				float width = Float.parseFloat(dimensions[0]);
+				float height = Float.parseFloat(dimensions[1]);
+				float x = -1;
+				float y = -1;
+				
+				boolean useAnchor = false;
+				
+				if (anchorInfo != null && anchorInfo.length == 3 && !anchorInfo[0].isBlank()) {
+					
+					int xPosition = Integer.parseInt(anchorInfo[1]);
+					int yPosition = Integer.parseInt(anchorInfo[2]);
+					
+					float[] coordinates = PDFTextLocator.getCoordinates(document, anchorInfo[0], pageNumber);
+					
+					if (coordinates[0] != -1 && coordinates[1] != -1 && coordinates[2] != -1 && coordinates[3] != -1) {
+						
+						useAnchor = true;
+						
+						switch (xPosition) {
+						case LEFT_POSITION:
+							x = coordinates[0] - width;
+							break;
+						case MIDDLE_POSITION:
+							x = coordinates[0] - (coordinates[1] - coordinates[0]) / 2 - width / 2;
+							break;
+						case RIGHT_POSITION:
+							x = coordinates[1];
+							break;
+						default:
+						}
+						
+						switch (yPosition) {
+						case BOTTOM_POSITION:
+							y = coordinates[2] - height;
+							break;
+						case MIDDLE_POSITION:
+							y = coordinates[2] - (coordinates[3] - coordinates[2]) / 2 - height / 2;
+							break;
+						case TOP_POSITION:
+							y = coordinates[3];
+							break;
+						default:
+						}
+					}
+				}
+				
+				if (!useAnchor) {
+					x = page.getMediaBox().getWidth() - Float.parseFloat(dimensions[4]);
+					y = Float.parseFloat(dimensions[5]);
+				}
+				
+				int direction = Integer.parseInt(dimensions[2]);
+				int gap = Integer.parseInt(dimensions[3]);
+				
+				switch (direction) {
+				case RIGHT_DIRECTION:
+					x += index * gap;
+					break;
+				case LEFT_DIRECTION:
+					x -= index * gap;
+					break;
+				case UP_DIRECTION:
+					y += index * gap;
+					break;
+				case DOWN_DIRECTION:
+					y -= index * gap;
+					break;
+				default:
+				}
+				
+				PDRectangle fieldRect = new PDRectangle(x, y, width, height);
+				
+				fieldWidget.setRectangle(fieldRect);
+				
+				fieldWidget.setPage(page);
+				
+				fieldWidget.setPrinted(true);
+				
+				acroForm.getFields().add(signatureField);
+				
+				page.getAnnotations().add(fieldWidget);
+				
+				COSDictionary dictionary = document.getDocumentCatalog().getCOSObject();
+				dictionary.setNeedToBeUpdated(true);
+				dictionary = (COSDictionary) dictionary.getDictionaryObject(COSName.ACRO_FORM);
+				dictionary.setNeedToBeUpdated(true);
+				COSArray array = (COSArray) dictionary.getDictionaryObject(COSName.FIELDS);
+				array.setNeedToBeUpdated(true);
+
+				COSDictionary item = page.getCOSObject();
+                item.setNeedToBeUpdated(true);
+				
+                while (item.containsKey(COSName.PARENT)) {
+    				COSBase parent = item.getDictionaryObject(COSName.PARENT);
+    				if (parent instanceof COSDictionary) {
+    					item = (COSDictionary) parent;
+    					item.setNeedToBeUpdated(true);
+    				}
+    			}
+			}
+		}
+	}
+
+	private SignatureContext buildSignatureContext(List<NodeRef> nodeRecipients, List<NodeRef> recipients, String... params) {
+
+		SignatureContext signatureContext = new SignatureContext();
+		
+		signatureContext.setNodeRecipients(nodeRecipients);
+		
+		signatureContext.setRecipients(recipients);
+
+		if (params != null && params.length > 0) {
+			signatureContext.setSignaturePage(params[0]);
+		} else {
+			signatureContext.setSignaturePage(defaultSignaturePage);
+		}
+		
+		if (params != null && params.length > 1) {
+			signatureContext.setSignatureDimensions(params[1]);
+		} else {
+			signatureContext.setSignatureDimensions(defaultSignatureDimensions);
+		}
+		
+		if (params != null && params.length > 2) {
+			signatureContext.setSignatureAnchorInfo(params[2]);
+		} else {
+			signatureContext.setSignatureAnchorInfo(defaultSignatureAnchorInfo);
+		}
+		
+		if (params != null && params.length > 3) {
+			signatureContext.setInitialsDimensions(params[3]);
+		} else {
+			signatureContext.setInitialsDimensions(defaultInitialsDimensions);
+		}
+		
+		if (params != null && params.length > 4) {
+			signatureContext.setInitialsAnchorInfo(params[4]);
+		} else {
+			signatureContext.setInitialsAnchorInfo(defaultInitialsAnchorInfo);
+		}
+		
+		return signatureContext;
+	}
+ 	
 	
 
+	private PDSignatureField findMatchingSignatureField(PDDocument doc, String fieldName) {
+		PDSignatureField signatureField = null;
+		PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();
 
+		if (acroForm != null) {
+			signatureField = (PDSignatureField) acroForm.getField(fieldName);
+		}
+
+		return signatureField;
+	}
+	
+	private void writeNodeContent(NodeRef nodeRef, byte[] ret) {
+		ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+
+		try (InputStream targetStream = new ByteArrayInputStream(ret)) {
+
+			String mimetype = mimetypeService.guessMimetype(null, targetStream);
+			ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+			Charset charset = charsetFinder.getCharset(targetStream, mimetype);
+			String encoding = charset.name();
+
+			writer.setEncoding(encoding);
+			writer.setMimetype(mimetype);
+			writer.putContent(targetStream);
+
+		} catch (ContentIOException | IOException e) {
+			throw new SignatureException("Failed to write content to node " + nodeRef, e);
+		}
+	}
+	
 }

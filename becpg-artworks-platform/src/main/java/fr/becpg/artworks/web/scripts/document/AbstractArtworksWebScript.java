@@ -28,16 +28,16 @@ public abstract class AbstractArtworksWebScript extends AbstractWebScript {
 	private static final String ACTION_CANCEL = "cancel";
 	private static final String ACTION_CREATE_SESSION = "create-session";
 
-	private static final String PARAM_ACTION = "action";
-	private static final String PARAM_STORE_TYPE = "store_type";
-	private static final String PARAM_STORE_ID = "store_id";
-	private static final String PARAM_ID = "id";
+	protected static final String PARAM_ACTION = "action";
+	protected static final String PARAM_STORE_TYPE = "store_type";
+	protected static final String PARAM_STORE_ID = "store_id";
+	protected static final String PARAM_ID = "id";
 
-	private ArtworksDocumentHandler documentHandler;
+	protected ArtworksDocumentHandler documentHandler;
 
-	private NodeService nodeService;
+	protected NodeService nodeService;
 
-	private LockService lockService;
+	protected LockService lockService;
 
 	protected void setDocumentHandler(ArtworksDocumentHandler documentHandler) {
 		this.documentHandler = documentHandler;
@@ -78,6 +78,8 @@ public abstract class AbstractArtworksWebScript extends AbstractWebScript {
 				logger.error(error);
 				throw new WebScriptException(error);
 			}
+		} else {
+			throw new WebScriptException("Node is locked or doesn't exist");
 		}
 
 		try {

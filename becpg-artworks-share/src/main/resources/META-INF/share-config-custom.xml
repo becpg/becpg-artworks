@@ -21,9 +21,17 @@
                <show id="cm:content" force="true" />
                <show id="mimetype" />
                <show id="app:editInline" force="true" />
+               <show id="sign:status" for-mode="view"/>
                <show id="sign:recipients" />
+               <show id="sign:validator" for-mode="view"/>
+               <show id="sign:validationDate" for-mode="view"/>
+               <show id="sign:recipientsData" for-mode="view"/>
             </field-visibility>
             <appearance>
+            	<set id="signature" appearance="bordered-panel"
+					label-id="artworks.forms.set.signature.label"
+					template="/org/alfresco/components/form/2-column-set.ftl" />
+            
                <field id="cm:name">
                  <control>
                     <control-param name="maxLength">255</control-param>
@@ -47,7 +55,13 @@
                      <control-param name="contextProperty">editInline</control-param>
                   </control>
                </field>
-               <field id="sign:recipients" />
+               <field id="sign:status" set="signature"/>
+               <field id="sign:recipients" set="signature"/>
+               <field id="sign:validator" set="signature"/>
+               <field id="sign:preparationDate" set="signature"/>
+               <field id="sign:validationDate" set="signature"/>
+               <field id="sign:recipientsData" set="signature"/>
+               <field id="sign:certificateThumbprint" set="signature"/>
             </appearance>
          </form>
 		</forms>
@@ -63,9 +77,16 @@
                <show id="cm:content" force="true" />
                <show id="mimetype" />
                <show id="app:editInline" force="true" />
+               <show id="sign:status" for-mode="view"/>
                <show id="sign:recipients" />
+               <show id="sign:validator" for-mode="view"/>
+               <show id="sign:validationDate" for-mode="view"/>
+               <show id="sign:recipientsData" for-mode="view"/>
             </field-visibility>
             <appearance>
+			<set id="signature" appearance="bordered-panel"
+					label-id="artworks.forms.set.signature.label"
+					template="/org/alfresco/components/form/2-column-set.ftl" />
                <field id="cm:name">
                  <control>
                     <control-param name="maxLength">255</control-param>
@@ -89,7 +110,11 @@
                      <control-param name="contextProperty">editInline</control-param>
                   </control>
                </field>
-               	<field id="sign:recipients" />
+               <field id="sign:status" set="signature"/>
+               <field id="sign:recipients" set="signature"/>
+               <field id="sign:validator" set="signature"/>
+               <field id="sign:validationDate" set="signature"/>
+               <field id="sign:recipientsData" set="signature"/>
             </appearance>
          </form>
 		</forms>
