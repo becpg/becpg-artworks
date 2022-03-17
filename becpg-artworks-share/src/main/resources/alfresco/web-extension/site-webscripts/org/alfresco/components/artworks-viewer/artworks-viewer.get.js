@@ -33,10 +33,16 @@ function main() {
 
 			model.contentURL = documentDetails.item.node.contentURL;
 			
+			if (model.taskId) {
+				model.returnUrl = "/share/page/task-edit?taskId=" + model.taskId;
+			} else if (!model.returnUrl) {
+				model.returnUrl = "/share/page/context/mine/document-details?nodeRef=" + model.nodeRef;
+			}
+			
 			if (model.mode != "sign") {
 				model.linkButtons.push({
 					id: "back-button",
-					href : model.returnUrl ? model.returnUrl : "#",
+					href : model.returnUrl,
 					label: (user && user.isGuest) ? msg.get("button.login") : msg.get("button.back"),
 					cssClass: "brand-bgcolor-2"
 				});

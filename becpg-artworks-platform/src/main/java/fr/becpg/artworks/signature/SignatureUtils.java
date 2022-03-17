@@ -51,6 +51,7 @@ import org.bouncycastle.tsp.TimeStampToken;
  * 
  * @author Tilman Hausherr, Valentin Leblanc
  */
+
 public class SignatureUtils {
 	
     private static final Log logger = LogFactory.getLog(SignatureUtils.class);
@@ -59,9 +60,9 @@ public class SignatureUtils {
 	private static String encryptionKeystoreLocation;
 	private static String metadataEncryptionPassword;
 
-	private static String alias = "mykey";
+	private static String alias;
 	
-	private static String myPassword = "mykeypass";
+	private static String myPassword;
 	
 	private static KeyStore alfrescoKeyStore;
 	
@@ -77,6 +78,8 @@ public class SignatureUtils {
 		encryptionKeystoreType = System.getProperty("encryption.keystore.type");
 		encryptionKeystoreLocation = System.getProperty("encryption.keystore.location");
 		metadataEncryptionPassword = System.getProperty("metadata-keystore.password");
+		alias = System.getProperty("beCPG.signature.keystore.alias");
+		myPassword = System.getProperty("beCPG.signature.keystore.password");
 	}
 	
 	private static KeyStore getAlfrescoKeyStore() {

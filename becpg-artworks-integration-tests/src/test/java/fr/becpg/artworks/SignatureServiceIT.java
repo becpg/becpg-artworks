@@ -153,11 +153,9 @@ public class SignatureServiceIT extends RepoBaseTest {
 		
 		String view = signatureService.getDocumentView(nodeRef, SIGNER_1, null);
 		
-		assertNotNull(view);
+		assertEquals("artworks-viewer?nodeRef=" + workingCopy + "&mode=sign&returnUrl=/share/page/context/mine/document-details?nodeRef=" + nodeRef, view);
 		
-		signatureService.sign(workingCopy, signer1);
-		
-		signatureService.checkinDocument(workingCopy);
+		signatureService.signDocument(workingCopy);
 		
 		byte[] signedFile = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
 		
@@ -168,15 +166,14 @@ public class SignatureServiceIT extends RepoBaseTest {
 
 		workingCopy = new NodeRef(signatureService.prepareForSignature(nodeRef, Arrays.asList(signer2), false));
 
-		signatureService.sign(workingCopy, signer2);
-
-		signatureService.checkinDocument(workingCopy);
-
-		checkSignatureInformation(signer1, signer2, nodeRef, true, true, I18NUtil.getMessage("message.signature-status.signed"));
+		signatureService.signDocument(workingCopy);
 
 		signedFile = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
 
 		checkDocMDPPermissions(signedFile, 2);
+
+		checkSignatureInformation(signer1, signer2, nodeRef, true, true, I18NUtil.getMessage("message.signature-status.signed"));
+	
 		checkSignature(originalFile, signedFile, 2);
 
 	}
@@ -202,31 +199,16 @@ public class SignatureServiceIT extends RepoBaseTest {
 		
 		String view = signatureService.getDocumentView(nodeRef, SIGNER_1, null);
 		
-		assertNotNull(view);
+		assertEquals("artworks-viewer?nodeRef=" + workingCopy + "&mode=sign&returnUrl=/share/page/context/mine/document-details?nodeRef=" + nodeRef, view);
 		
-		signatureService.sign(workingCopy, signer1);
+		signatureService.signDocument(workingCopy);
 		
-		byte[] signedFile = contentService.getReader(workingCopy, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
-		
-		checkDocMDPPermissions(signedFile, 2);
-		checkSignature(originalFile, signedFile, 1);
-
-		checkSignatureInformation(signer1, signer2, workingCopy, true, false, I18NUtil.getMessage("message.signature-status.inprogress"));
-
-		signatureService.sign(workingCopy, signer2);
-
-		checkSignatureInformation(signer1, signer2, workingCopy, true, true, I18NUtil.getMessage("message.signature-status.signed"));
-
-		signedFile = contentService.getReader(workingCopy, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
-
-		checkDocMDPPermissions(signedFile, 2);
-		checkSignature(originalFile, signedFile, 2);
-
-		signatureService.checkinDocument(workingCopy);
-
-		signedFile = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
+		byte[] signedFile = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
 		
 		checkDocMDPPermissions(signedFile, 2);
+
+		checkSignatureInformation(signer1, signer2, nodeRef, true, true, I18NUtil.getMessage("message.signature-status.signed"));
+
 		checkSignature(originalFile, signedFile, 2);
 
 	}

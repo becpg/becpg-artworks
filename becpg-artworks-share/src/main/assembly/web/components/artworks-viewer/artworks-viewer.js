@@ -66,6 +66,97 @@
 
 					const { Tools, documentViewer, PDFNet, annotationManager } = instance.Core;
 
+					const saveButton = document.getElementById(me.id + '-saveButton');
+
+					// Save
+					saveButton.onclick = async e => {
+						const doc = documentViewer.getDocument();
+						const xfdfString = await annotationManager.exportAnnotations();
+						const data = await doc.getFileData({
+							// saves the document with annotations in it
+							xfdfString,
+							flags: instance.Core.SaveOptions.INCREMENTAL
+						});
+						const arr = new Uint8Array(data);
+						const blob = new Blob([arr], { type: 'application/pdf' });
+
+
+						var progressListener = function DNDUpload_progressListener(e) {
+							saveButton.classList.add("loading");
+						};
+
+
+						var successListener = function DNDUpload_successListener(e) {
+							me.shouldSave = false;
+							if (me.options.returnUrl) {
+								window.location.href = window.location.protocol + "//" + window.location.host + me.options.returnUrl;
+							}
+						};
+
+
+						var failureListener = function DNDUpload_failureListener(e) {
+							me.shouldSave = true;
+							saveButton.classList.add("should-save");
+							saveButton.classList.remove("loading");
+							alert(e);
+						};
+
+						var request = new XMLHttpRequest();
+						request.upload.addEventListener("progress", progressListener, false);
+						request.upload.addEventListener("load", successListener, false);
+						request.upload.addEventListener("error", failureListener, false);
+
+						var url = PROXY_URI + "api/upload";
+
+						if (CSRF_POLICY.enabled) {
+
+							function getCookie(name) {
+								var nameEQ = name + "=";
+								var ca = document.cookie.split(';');
+								for (var i = 0; i < ca.length; i++) {
+									var c = ca[i];
+									while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+									if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+								}
+								return null;
+							}
+
+								var token = getCookie(CSRF_POLICY.properties["token"]);
+
+								if (token) {
+									token = token.replace(/"/g, '');
+								}
+
+								url += "?" + CSRF_POLICY.properties["token"] + "=" + token;
+							
+						}
+
+						const formData = new FormData;
+						formData.append("filedata", blob);
+						formData.append("filename", me.options.fileName);
+						formData.append("majorVersion", "false");
+						formData.append("overwrite", "false");
+						formData.append("updatenameandmimetype", "false")
+						formData.append("updateNodeRef", me.options.nodeRef);
+						formData.append("description", me.msg["label.newVersion.message"]);
+
+						request.open("POST", url, true);
+						request.send(formData);
+						request.onreadystatechange = function() {
+							if (this.status === 401) {
+								var redirect = this.getResponseHeader["Location"];
+								if (redirect) {
+									window.location.href = window.location.protocol + "//" + window.location.host + redirect;
+									return;
+								}
+								else {
+									window.location.reload(true);
+									return;
+								}
+							}
+						};
+					};
+						
 
 					if (me.options.mode == "sign") {
 						
@@ -102,8 +193,6 @@
 							signatureTool.addSignature();
 							instance.UI.closeElements(['signatureModal']);
 						});
-						
-						const saveButton = document.getElementById(me.id + '-saveButton');
 
 						documentViewer.addEventListener('annotationsLoaded', () => {
 							annotationManager.addEventListener('annotationChanged', (annotations, action) => {
@@ -142,95 +231,6 @@
 								
 							});
 						});
-						
-						// Save
-						saveButton.onclick = async e => {
-							const doc = documentViewer.getDocument();
-							const xfdfString = await annotationManager.exportAnnotations();
-							const data = await doc.getFileData({
-								// saves the document with annotations in it
-								xfdfString,
-								flags: instance.Core.SaveOptions.INCREMENTAL
-							});
-							const arr = new Uint8Array(data);
-							const blob = new Blob([arr], { type: 'application/pdf' });
-
-
-							var progressListener = function DNDUpload_progressListener(e) {
-								saveButton.classList.add("loading");
-							};
-
-
-							var successListener = function DNDUpload_successListener(e) {
-								me.shouldSave = false;
-								if (me.options.returnUrl) {
-									window.location.href = window.location.protocol + "//" + window.location.host + me.options.returnUrl;
-								}
-							};
-
-
-							var failureListener = function DNDUpload_failureListener(e) {
-								me.shouldSave = true;
-								saveButton.classList.add("should-save");
-								saveButton.classList.remove("loading");
-								alert(e);
-							};
-
-							var request = new XMLHttpRequest();
-							request.upload.addEventListener("progress", progressListener, false);
-							request.upload.addEventListener("load", successListener, false);
-							request.upload.addEventListener("error", failureListener, false);
-
-							var url = PROXY_URI + "api/upload";
-
-							if (CSRF_POLICY.enabled) {
-
-								function getCookie(name) {
-									var nameEQ = name + "=";
-									var ca = document.cookie.split(';');
-									for (var i = 0; i < ca.length; i++) {
-										var c = ca[i];
-										while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-										if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-									}
-									return null;
-								}
-
-									var token = getCookie(CSRF_POLICY.properties["token"]);
-
-									if (token) {
-										token = token.replace(/"/g, '');
-									}
-
-									url += "?" + CSRF_POLICY.properties["token"] + "=" + token;
-								
-							}
-
-							const formData = new FormData;
-							formData.append("filedata", blob);
-							formData.append("filename", me.options.fileName);
-							formData.append("majorVersion", "false");
-							formData.append("overwrite", "false");
-							formData.append("updatenameandmimetype", "false")
-							formData.append("updateNodeRef", me.options.nodeRef);
-							formData.append("description", me.msg["label.newVersion.message"]);
-
-							request.open("POST", url, true);
-							request.send(formData);
-							request.onreadystatechange = function() {
-								if (this.status === 401) {
-									var redirect = this.getResponseHeader["Location"];
-									if (redirect) {
-										window.location.href = window.location.protocol + "//" + window.location.host + redirect;
-										return;
-									}
-									else {
-										window.location.reload(true);
-										return;
-									}
-								}
-							};
-						};
 					
 					} else if (me.options.compareContentURL != null) {
 
@@ -293,10 +293,6 @@
 
 						instance.UI.loadDocument(newDoc);
 					} else {
-
-
-						const saveButton = document.getElementById(me.id + '-saveButton');
-
 						documentViewer.addEventListener('annotationsLoaded', () => {
 							annotationManager.addEventListener('annotationChanged', (annotations, action) => {
 								me.shouldSave = true;
@@ -304,93 +300,6 @@
 								saveButton.classList.add("should-save");
 							});
 						});
-
-						// Save
-						saveButton.onclick = async e => {
-							const doc = documentViewer.getDocument();
-							const xfdfString = await annotationManager.exportAnnotations();
-							const data = await doc.getFileData({
-								// saves the document with annotations in it
-								xfdfString,
-								flags: instance.Core.SaveOptions.INCREMENTAL
-							});
-							const arr = new Uint8Array(data);
-							const blob = new Blob([arr], { type: 'application/pdf' });
-
-
-							var progressListener = function DNDUpload_progressListener(e) {
-								saveButton.classList.add("loading");
-							};
-
-
-							var successListener = function DNDUpload_successListener(e) {
-								me.shouldSave = false;
-								window.location.reload(true);
-							};
-
-
-							var failureListener = function DNDUpload_failureListener(e) {
-								me.shouldSave = true;
-								saveButton.classList.add("should-save");
-								saveButton.classList.remove("loading");
-								alert(e);
-							};
-
-							var request = new XMLHttpRequest();
-							request.upload.addEventListener("progress", progressListener, false);
-							request.upload.addEventListener("load", successListener, false);
-							request.upload.addEventListener("error", failureListener, false);
-
-							var url = PROXY_URI + "api/upload";
-
-							if (CSRF_POLICY.enabled) {
-
-								function getCookie(name) {
-									var nameEQ = name + "=";
-									var ca = document.cookie.split(';');
-									for (var i = 0; i < ca.length; i++) {
-										var c = ca[i];
-										while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-										if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-									}
-									return null;
-								}
-
-									var token = getCookie(CSRF_POLICY.properties["token"]);
-
-									if (token) {
-										token = token.replace(/"/g, '');
-									}
-
-									url += "?" + CSRF_POLICY.properties["token"] + "=" + token;
-								
-							}
-
-							const formData = new FormData;
-							formData.append("filedata", blob);
-							formData.append("filename", me.options.fileName);
-							formData.append("majorVersion", "false");
-							formData.append("overwrite", "false");
-							formData.append("updatenameandmimetype", "false")
-							formData.append("updateNodeRef", me.options.nodeRef);
-							formData.append("description", me.msg["label.newVersion.message"]);
-
-							request.open("POST", url, true);
-							request.send(formData);
-							request.onreadystatechange = function() {
-								if (this.status === 401) {
-									var redirect = this.getResponseHeader["Location"];
-									if (redirect) {
-										window.location.href = window.location.protocol + "//" + window.location.host + redirect;
-										return;
-									}
-									else {
-										window.location.reload(true);
-										return;
-									}
-								}
-							};
-						};
 					}
 
 					// wait until the document has been loaded

@@ -47,6 +47,17 @@
 						<many>true</many>
 					</target>
 				</association>
+				<association name="sign:preparedRecipients">
+					<source>
+						<mandatory>false</mandatory>
+						<many>true</many>
+					</source>
+					<target>
+						<class>cm:person</class>
+						<mandatory>false</mandatory>
+						<many>true</many>
+					</target>
+				</association>
 				<association name="sign:validator">
 					<source>
 						<mandatory>false</mandatory>

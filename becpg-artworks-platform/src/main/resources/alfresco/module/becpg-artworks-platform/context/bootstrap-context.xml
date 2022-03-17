@@ -36,16 +36,4 @@
 			</list>
 		</property>
 	</bean>
-	
-	<!-- beCPG Artworks configuration files -->
-	<bean name="beCPGArtworksPlaceholderConfigurer"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="ignoreUnresolvablePlaceholders" value="true" />
-		<property name="ignoreResourceNotFound" value="true"></property>
-		<property name="locations">
-			<list>
-				<value>classpath:alfresco/module/${project.artifactId}/becpg-artworks-config.properties</value>
-			</list>
-		</property>
-	</bean>
 </beans>

@@ -181,8 +181,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 				List<NodeRef> recipientsNodeRefs = new ArrayList<>();
 
-				nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_RECIPIENTS)
-						.forEach(assoc -> recipientsNodeRefs.add(assoc.getTargetRef()));
+				nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_RECIPIENTS).forEach(assoc -> recipientsNodeRefs.add(assoc.getTargetRef()));
 
 				if (recipientsNodeRefs.isEmpty()) {
 					recipientsNodeRefs.add(personService.getPerson(AuthenticationUtil.getFullyAuthenticatedUser()));
@@ -313,9 +312,14 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 		return null;
 	}
-
+	
 	@Override
 	public void checkinDocument(NodeRef nodeRef) {
+		signDocument(nodeRef);
+	}
+
+	@Override
+	public void signDocument(NodeRef nodeRef) {
 
 		String accountId = signatureAuthorization.split(";")[0];
 
@@ -445,11 +449,6 @@ public final class DocuSignServiceImpl implements SignatureService {
 		}
 
 		nodeService.removeAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE);
-	}
-
-	@Override
-	public void sign(NodeRef nodeRef, NodeRef recipient) {
-		throw new IllegalStateException("Not supported");
 	}
 
 }
