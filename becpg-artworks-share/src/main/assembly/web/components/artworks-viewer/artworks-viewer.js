@@ -55,6 +55,7 @@
 				fullAPI: true,
 				initialDoc: me.options.compareContentURL == null ? PROXY_URI + me.options.contentURL : null,
 				annotationUser: USERNAME_DISPLAYNAME,
+				enableMeasurement: true,
 				disabledElements: me.options.compareContentURL != null ? ['layoutButtons', 'pageTransitionButtons', 'toolsButton', 'annotationPopup', 'panToolButton', 'linkButton', 'toolsOverlayCloseButton'] : [],
 				isReadOnly: me.options.compareContentURL != null
 				//isAdminUser: '${user.isAdmin ? string}',
@@ -176,6 +177,13 @@
 						instance.UI.disableElements(['stampToolGroupButton']);
 						instance.UI.disableElements(['fileAttachmentToolGroupButton']);
 						instance.UI.disableElements(['calloutToolGroupButton']);
+						instance.UI.disableElements(['distanceToolGroupButton']);
+						instance.UI.disableElements(['perimeterToolGroupButton']);
+						instance.UI.disableElements(['areaToolGroupButton']);
+						instance.UI.disableElements(['ellipseAreaToolGroupButton']);
+						instance.UI.disableElements(['rectangleAreaToolGroupButton']);
+						instance.UI.disableElements(['cloudyRectangleAreaToolGroupButton']);
+						instance.UI.disableElements(['countToolGroupButton']);
 
 						const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
 

@@ -126,11 +126,11 @@
 			   <div id="yui-main">
 			         <div class="yui-b">
 				    	 <#if mode?? && mode == "sign">
-						   <div id="${el}-viewer" style="width: 100%; height: 600px; margin: 0 auto;"></div>
+						   <div id="${el}-viewer" style="width: 100%; height: 800px; margin: 0 auto;"></div>
 				    	 <#else>
 			         		 <div class="yui-ge">
 	       					 <div class="yui-u first">
-							   <div id="${el}-viewer" style="width: 100%; height: 600px; margin: 0 auto;"></div>
+							   <div id="${el}-viewer" style="width: 100%; height: 800px; margin: 0 auto;"></div>
 					    	 </div>
 							 <div class="yui-u document-versions">
 							   <div class="document-details-panel document-versions">
