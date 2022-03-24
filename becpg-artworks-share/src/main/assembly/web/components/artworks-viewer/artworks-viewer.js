@@ -51,22 +51,25 @@
 
 			this.viewer = WebViewer({
 				path: URL_CONTEXT + '/res/components/artworks-viewer/pdftron/lib',
+				licenseKey: window.atob(me.options.encryptedLicenseKey),
 				documentId: me.options.nodeRef,
 				fullAPI: true,
 				initialDoc: me.options.compareContentURL == null ? PROXY_URI + me.options.contentURL : null,
 				annotationUser: USERNAME_DISPLAYNAME,
 				enableMeasurement: true,
-				disabledElements: me.options.compareContentURL != null ? ['layoutButtons', 'pageTransitionButtons', 'toolsButton', 'annotationPopup', 'panToolButton', 'linkButton', 'toolsOverlayCloseButton'] : [],
+				disabledElements: (me.options.mode == "sign" || me.options.compareContentURL != null) ? ['layoutButtons', 'pageTransitionButtons', 'toolsButton', 'annotationPopup', 'panToolButton', 'linkButton', 'toolsOverlayCloseButton'] : [],
 				isReadOnly: me.options.compareContentURL != null
 				//isAdminUser: '${user.isAdmin ? string}',
 			}, document.getElementById(me.id + '-viewer'))
 				.then(async instance => {
 
 					instance.UI.setLanguage(JS_LOCALE);
-
-
+					instance.UI.enableElements(['bookmarksPanel', 'bookmarksPanelButton', 'richTextPopup']);
 					const { Tools, documentViewer, PDFNet, annotationManager } = instance.Core;
-
+					documentViewer.addEventListener('pageComplete', () => {
+						instance.UI.closeElements(['loadingModal']);
+					});
+					
 					const saveButton = document.getElementById(me.id + '-saveButton');
 
 					// Save
@@ -184,6 +187,16 @@
 						instance.UI.disableElements(['rectangleAreaToolGroupButton']);
 						instance.UI.disableElements(['cloudyRectangleAreaToolGroupButton']);
 						instance.UI.disableElements(['countToolGroupButton']);
+						instance.UI.disableElements(['dateFreeTextToolButton']);
+						instance.UI.disableElements(['dotStampToolButton']);
+						instance.UI.disableElements(['checkStampToolButton']);
+						instance.UI.disableElements(['crossStampToolButton']);
+						instance.UI.disableElements(['freeTextToolGroupButton']);
+						instance.UI.disableElements(['highlightToolGroupButton']);
+						instance.UI.disableElements(['underlineToolGroupButton']);
+						instance.UI.disableElements(['strikeoutToolGroupButton']);
+						instance.UI.disableElements(['squigglyToolGroupButton']);
+						instance.UI.disableElements(['stickyToolGroupButton']);
 
 						const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
 
@@ -301,6 +314,31 @@
 
 						instance.UI.loadDocument(newDoc);
 					} else {
+						
+						instance.UI.setHeaderItems(header => {
+							header.push({
+								type: 'actionButton',
+								img: '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="18px" height="22px" viewBox="0 0 100.000000 100.000000" preserveAspectRatio="xMidYMid meet"> <g transform="translate(0.000000,100.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none"> <path d="M313 975 c-219 -59 -339 -244 -306 -471 33 -231 249 -433 507 -474 109 -17 246 11 296 62 43 43 46 84 10 185 -32 94 -38 154 -16 172 21 18 43 3 76 -50 63 -104 133 -40 116 107 -13 110 -75 225 -173 321 -133 130 -347 192 -510 148z m72 -140 c54 -53 13 -145 -64 -145 -30 0 -70 40 -77 77 -5 27 -1 37 24 63 39 38 83 40 117 5z m276 -14 c26 -32 20 -88 -12 -113 -51 -42 -139 -4 -139 60 0 81 101 116 151 53z m-432 -201 c31 -16 46 -65 31 -100 -15 -37 -37 -50 -84 -50 -66 0 -98 79 -55 134 22 28 72 36 108 16z m130 -226 c40 -33 43 -83 6 -119 -34 -35 -78 -33 -117 5 -25 26 -29 36 -24 62 7 36 22 57 51 68 34 14 52 11 84 -16z"/> </g> </svg>',
+								onClick: () => {
+									const subDocument = document.getElementById('webviewer-1').contentDocument;
+									var colorsMenu = subDocument.getElementById("colorsMenu");
+									var colorsButton = subDocument.querySelector("[data-element='colorsButton']");
+
+									if (colorsMenu.classList.contains("closed")) {
+										colorsMenu.classList.remove("closed");
+										colorsButton.classList.add("active");
+									} else {
+										colorsMenu.classList.add("closed");
+										colorsButton.classList.remove("active");
+									}
+								},
+								dataElement: "colorsButton"
+							});
+						});
+					
+						instance.UI.enableFeatures([instance.UI.Feature.Measurement]);
+						instance.UI.enableElements(['layersPanel', 'layersPanelButton']);
+
 						documentViewer.addEventListener('annotationsLoaded', () => {
 							annotationManager.addEventListener('annotationChanged', (annotations, action) => {
 								me.shouldSave = true;
@@ -308,12 +346,98 @@
 								saveButton.classList.add("should-save");
 							});
 						});
-					}
+						
+						const subDocument = document.getElementById('webviewer-1').contentDocument;
+						
+						const { openElements, closeElements } = instance.UI;
 
-					// wait until the document has been loaded
-					documentViewer.addEventListener('documentLoaded', () => {
-						instance.UI.setLayoutMode(instance.UI.LayoutMode.FacingContinuous);
-					});
+						let colorSeparationLoaded = false;
+						documentViewer.addEventListener('documentLoaded', () => {
+							instance.UI.setLayoutMode(instance.UI.LayoutMode.FacingContinuous);
+							
+							var colorsMenu = subDocument.getElementById("colorsMenu");
+							
+							if (!colorsMenu) {
+								colorsMenu = subDocument.createElement("div");
+								colorsMenu.id = 'colorsMenu';
+								colorsMenu.setAttribute("aria-label", "Colors");
+								colorsMenu.style.left = "auto";
+								colorsMenu.style.right = "6px";
+								colorsMenu.style.top = "40px";
+								colorsMenu.style.display = "inline-block";
+								colorsMenu.classList.add("Overlay");
+								colorsMenu.classList.add("FlyoutMenu");
+								colorsMenu.classList.add("closed");
+								colorsMenu.setAttribute("data-element","colorsMenu");
+								var appElement = subDocument.getElementsByClassName("App")[0];
+								appElement.appendChild(colorsMenu);
+							}
+							
+							var colorsButton = document.getElementById('webviewer-1').contentDocument.querySelector("[data-element='colorsButton']");
+							
+							var closeColorsMenu = function(e) {
+								if (e.target != colorsButton && !colorsMenu.contains(e.target)) {
+									colorsMenu.classList.add("closed");
+									colorsButton.classList.remove("active");
+								}
+							};
+							
+							document.addEventListener('click', closeColorsMenu);
+							document.getElementById('webviewer-1').contentDocument.addEventListener('click', closeColorsMenu);
+
+							const doc = documentViewer.getDocument();
+							colorSeparationLoaded = false;
+							// Enable color separation
+							doc.enableColorSeparations(true);
+							// wait till the individual "colors" in the top left corner load first
+							openElements(['loadingModal']);
+
+							// Listen to each color in a PDF document
+							doc.addEventListener('colorSeparationAdded', color => {
+								colorSeparationLoaded = true;
+								const input = subDocument.createElement('input');
+								input.id = color.name;
+								input.type = 'checkbox';
+								input.checked = color.enabled;
+								input.style.marginTop = `10px`;
+								input.style.marginRight = `5px`;
+								input.style.marginLeft = `10px`;
+								input.onchange = e => {
+									// show 'loadingModal', hide it in the 'pageComplete' event
+									openElements(['loadingModal']);
+									// Show/hide a color
+									doc.enableSeparation(color.name, e.target.checked);
+									// Redraw the canvas
+									documentViewer.refreshAll();
+									documentViewer.updateView();
+								};
+
+								const label = subDocument.createElement('label');
+								label.id = `${color.name} label`;
+								label.htmlFor = color.name;
+								label.style.color = `rgb(${color.rgb.join(',')})`;
+								label.style.marginRight = `10px`;
+								label.innerHTML = color.name;
+
+								const lineBreak = subDocument.createElement('br');
+
+								colorsMenu.appendChild(input);
+								colorsMenu.appendChild(label);
+								colorsMenu.appendChild(lineBreak);
+								closeElements(['loadingModal']);
+							});
+						});
+
+						documentViewer.addEventListener('pageComplete', () => {
+							// wait for the first 'colorSeparationAdded' event before closing the loading modal
+							// we don't want to hide the 'loadingModal' for the first 'pageComplete' event for the initial load
+							if (colorSeparationLoaded) {
+								closeElements(['loadingModal']);
+							}
+						});
+					}
+					
+
 				});
 
 

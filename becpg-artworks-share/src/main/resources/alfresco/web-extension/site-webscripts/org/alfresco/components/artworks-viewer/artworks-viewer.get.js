@@ -81,7 +81,8 @@ function main() {
 		 contentURL : model.contentURL!=null ? model.contentURL : null,
 	     fileName : model.displayName,
 		 userId : user.id,
-		 returnUrl : model.returnUrl
+		 returnUrl : model.returnUrl,
+		 encryptedLicenseKey : model.document.metadata.custom.artworks.licenseKey
       }
    };
    model.widgets = [widget];

@@ -43,9 +43,10 @@
 		<property name="annotationService" ref="annotationService" />
 	</bean>
 
-	<bean id="doclibCustomAnnotation" class="fr.becpg.artworks.annotation.jscript.app.AnnotationCustomResponse">
+	<bean id="doclibCustomArtworks" class="fr.becpg.artworks.jscript.app.ArtworksCustomResponse">
 		<property name="annotationAuthorization" value="${beCPG.annotationAuthorization}" />
 		<property name="annotationViewerLicenseKey" value="${beCPG.annotationViewerLicenseKey}" />
+		<property name="signatureAuthorization" value="${beCPG.signatureAuthorization}" />
 	</bean>
 
 	<bean id="signatureService" class="fr.becpg.artworks.signature.PDFBoxServiceImpl">
@@ -66,13 +67,6 @@
 		
 <!-- 	</bean> -->
 	
-
-	<bean id="doclibCustomSignature" class="fr.becpg.artworks.signature.jscript.app.SignatureCustomResponse">
-		<property name="signatureAuthorization">
-			<value>${beCPG.signatureAuthorization}</value>
-		</property>
-	</bean>
-	
 	<bean id="signatureScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.signature.jscript.SignatureScriptHelper">
 		<property name="extensionName">
 			<value>bSign</value>
@@ -82,11 +76,8 @@
 	
 	
 	<util:map id="slingshotDocLibCustomResponsesMap">
-		<entry key="annotation">
-			<ref bean="doclibCustomAnnotation" />
-		</entry>
-		<entry key="signature">
-			<ref bean="doclibCustomSignature" />
+		<entry key="artworks">
+			<ref bean="doclibCustomArtworks" />
 		</entry>
 	</util:map>
 

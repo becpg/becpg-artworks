@@ -1,6 +1,7 @@
-package fr.becpg.artworks.annotation.jscript.app;
+package fr.becpg.artworks.jscript.app;
 
 import java.io.Serializable;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -11,12 +12,13 @@ import org.alfresco.repo.jscript.app.CustomResponse;
  * @author quere
  *
  */
-public class AnnotationCustomResponse implements CustomResponse {
+public class ArtworksCustomResponse implements CustomResponse {
 
 	private String annotationViewerLicenseKey;
 
 	private String annotationAuthorization;
-
+	
+	private String signatureAuthorization;
 
 	public void setAnnotationViewerLicenseKey(String annotationViewerLicenseKey) {
 		this.annotationViewerLicenseKey = annotationViewerLicenseKey;
@@ -26,24 +28,36 @@ public class AnnotationCustomResponse implements CustomResponse {
 		this.annotationAuthorization = annotationAuthorization;
 	}
 
+	public void setSignatureAuthorization(String signatureAuthorization) {
+		this.signatureAuthorization = signatureAuthorization;
+	}
 
 	@Override
 	public Serializable populate() {
-		boolean externalEnabled = false;
+		boolean annotationExternalEnabled = false;
+		boolean signatureEnabled = false;
+		
 		boolean viewerEnabled = false;
+		
 		if ((annotationAuthorization != null) && !annotationAuthorization.isEmpty()) {
-			externalEnabled = true;
+			annotationExternalEnabled = true;
+		}
+		
+		if ((signatureAuthorization != null) && !signatureAuthorization.isEmpty()) {
+			signatureEnabled = true;
 		}
 
 		if ((annotationViewerLicenseKey != null) && !annotationViewerLicenseKey.isEmpty()) {
 			viewerEnabled = true;
 		}
+		
 
 		Map<String, Serializable> jsonObj = new LinkedHashMap<>(1);
-		jsonObj.put("external", externalEnabled);
+		jsonObj.put("annotationExternal", annotationExternalEnabled);
 		jsonObj.put("viewer", viewerEnabled);
+		jsonObj.put("signatureEnabled", signatureEnabled);
 		if (viewerEnabled) {
-			jsonObj.put("licenseKey", annotationViewerLicenseKey);
+			jsonObj.put("licenseKey", new String(Base64.getEncoder().encode(annotationViewerLicenseKey.getBytes())));
 		}
 
 		return (Serializable) jsonObj;

@@ -24,7 +24,7 @@
    </bean>
    
    <bean id="evaluator.becpg.doclib.action.annotation.viewer.isEnabled" parent="evaluator.doclib.action.metadataValue">
-      <property name="accessor" value="custom.annotation.viewer"/>
+      <property name="accessor" value="custom.artworks.viewer"/>
       <property name="comparator">
          <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
             <property name="value" value="true" />
@@ -33,7 +33,7 @@
    </bean>
 	
    <bean id="evaluator.becpg.doclib.action.annotation.isEnabled" parent="evaluator.doclib.action.metadataValue">
-      <property name="accessor" value="custom.annotation.external"/>
+      <property name="accessor" value="custom.artworks.annotationExternal"/>
       <property name="comparator">
          <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
             <property name="value" value="true" />
@@ -66,7 +66,7 @@
 	</bean>
 	
    <bean id="evaluator.becpg.doclib.action.signature.isEnabled" parent="evaluator.doclib.action.metadataValue">
-      <property name="accessor" value="custom.signature.enabled"/>
+      <property name="accessor" value="custom.artworks.signatureEnabled"/>
       <property name="comparator">
          <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
             <property name="value" value="true" />
