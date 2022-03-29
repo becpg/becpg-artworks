@@ -123,6 +123,9 @@ public class PDFBoxServiceImpl implements SignatureService {
 	@Value("${beCPG.signature.keystore.password}")
 	private String password;
 	
+	// ex: "0","3","last","last-1"
+	private String defaultSignaturePage = "last";
+	
 	// width,height,direction(1=right,2=left,3=up,4=down),gap,rightMargin,bottomMargin
 	private String defaultSignatureDimensions = "100,50,1,150,300,300";
 	
@@ -134,9 +137,6 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
 	private String defaultInitialsAnchorInfo = "Page,0,2";
-	
-	// ex: "0","3","last","last-1"
-	private String defaultSignaturePage = "last";
 	
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
 		this.checkOutCheckInService = checkOutCheckInService;
