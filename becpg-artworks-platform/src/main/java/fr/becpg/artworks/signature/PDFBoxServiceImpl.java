@@ -732,7 +732,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 							x = coordinates[0] - width;
 							break;
 						case MIDDLE_POSITION:
-							x = coordinates[0] - (coordinates[1] - coordinates[0]) / 2 - width / 2;
+							x = (coordinates[1] + coordinates[0]) / 2 - width / 2;
 							break;
 						case RIGHT_POSITION:
 							x = coordinates[1];
@@ -745,7 +745,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 							y = coordinates[2] - height;
 							break;
 						case MIDDLE_POSITION:
-							y = coordinates[2] - (coordinates[3] - coordinates[2]) / 2 - height / 2;
+							y = (coordinates[3] + coordinates[2]) / 2 - height / 2;
 							break;
 						case TOP_POSITION:
 							y = coordinates[3];
