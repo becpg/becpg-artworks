@@ -72,6 +72,7 @@
 			<value>bSign</value>
 		</property>
 		<property name="signatureService" ref="signatureService"/>
+		<property name="serviceRegistry" ref="ServiceRegistry" />
 	</bean>
 	
 	

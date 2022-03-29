@@ -149,7 +149,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 		
 		checkDocMDPPermissions(originalFile, 0);
 		
-		NodeRef workingCopy = new NodeRef(signatureService.prepareForSignature(nodeRef, Arrays.asList(signer1), false));
+		NodeRef workingCopy = signatureService.prepareForSignature(nodeRef, Arrays.asList(signer1), false);
 		
 		String view = signatureService.getDocumentView(nodeRef, SIGNER_1, null);
 		
@@ -164,7 +164,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 
 		checkSignatureInformation(signer1, null, nodeRef, true, false, I18NUtil.getMessage("message.signature-status.inprogress"));
 
-		workingCopy = new NodeRef(signatureService.prepareForSignature(nodeRef, Arrays.asList(signer2), false));
+		workingCopy = signatureService.prepareForSignature(nodeRef, Arrays.asList(signer2), false);
 
 		signatureService.signDocument(workingCopy);
 
@@ -315,7 +315,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 				X509CertificateHolder certificateHolder = (X509CertificateHolder) matches.iterator().next();
 				X509Certificate certFromSignedData = new JcaX509CertificateConverter().getCertificate(certificateHolder);
 				
-				Assert.assertEquals(SignatureUtils.getCertificateChain()[0], certFromSignedData);
+				Assert.assertEquals(SignatureUtils.getCertificateChain(null)[0], certFromSignedData);
 				
 				// CMSVerifierCertificateNotValidException means that the keystore wasn't valid
 				// at signing time

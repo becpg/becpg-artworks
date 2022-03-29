@@ -78,11 +78,8 @@ import fr.becpg.artworks.signature.model.SignatureModel;
 
 /**
  * 
- * @author matthieu
- * Exemple https://github.com/apache/pdfbox/tree/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature
+ * @author valentin
  * 
- * MetadataEncryptor d'alfresco + iTEXT: 
- * https://github.com/rouxemmanuel/DigitalSigning/blob/master/DigitalSigningAlfresco/src/main/java/org/alfresco/plugin/digitalSigning/service/SigningService.java
  */
 @Service
 public class PDFBoxServiceImpl implements SignatureService {
@@ -119,7 +116,13 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	@Value("${beCPG.signature.tsaUrl}")
 	private String tsaUrl;
-
+	
+	@Value("${beCPG.signature.keystore.alias}")
+	private String alias;
+	
+	@Value("${beCPG.signature.keystore.password}")
+	private String password;
+	
 	// width,height,direction(1=right,2=left,3=up,4=down),gap,rightMargin,bottomMargin
 	private String defaultSignatureDimensions = "100,50,1,150,300,300";
 	
@@ -157,7 +160,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
-		return prepareForSignature(nodeRef, new ArrayList<>(), false);
+		return prepareForSignature(nodeRef, new ArrayList<>(), false).toString();
 	}
 	
 	@Override
@@ -166,7 +169,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 	}
 
 	@Override
-	public String prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params) {
+	public NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params) {
 		
 		if (logger.isDebugEnabled()) {
 			logger.debug("prepareForSignature : originalNode = " + originalNode + ", recipients = " + recipients + ", params = " + (params == null ? params : Arrays.asList(params)));
@@ -203,7 +206,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 			
 			updatePreparationInformation(originalNode, context, workingCopyNode);
 			
-			return workingCopyNode.toString();
+			return workingCopyNode;
 		} catch (IOException e) {
 			String documentName = (String) nodeService.getProperty(originalNode, ContentModel.PROP_NAME);
 			throw new SignatureException("Error while preparing signature for '" + documentName + "' : " + e.getMessage());
@@ -615,11 +618,11 @@ public class PDFBoxServiceImpl implements SignatureService {
 				try {
 					
 					CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-					ContentSigner sha1Signer = new JcaContentSignerBuilder("SHA256WithRSA").build(SignatureUtils.getSignaturePrivateKey());
+					ContentSigner sha1Signer = new JcaContentSignerBuilder("SHA256WithRSA").build(SignatureUtils.getSignaturePrivateKey(alias, password));
 					gen.addSignerInfoGenerator(
 							new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build())
-							.build(sha1Signer, (X509Certificate) SignatureUtils.getCertificateChain()[0]));
-					gen.addCertificates(new JcaCertStore(Arrays.asList(SignatureUtils.getCertificateChain())));
+							.build(sha1Signer, (X509Certificate) SignatureUtils.getCertificateChain(alias)[0]));
+					gen.addCertificates(new JcaCertStore(Arrays.asList(SignatureUtils.getCertificateChain(alias))));
 					CMSProcessableInputStream msg = new CMSProcessableInputStream(externalSigning.getContent());
 					CMSSignedData signedData = gen.generate(msg, false);
 					

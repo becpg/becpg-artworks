@@ -8,7 +8,7 @@ import fr.becpg.artworks.ArtworksDocumentHandler;
 
 public interface SignatureService extends ArtworksDocumentHandler{
 
-	public String prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params);
+	public NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params);
 	
 	public void signDocument(NodeRef nodeRef);
 	

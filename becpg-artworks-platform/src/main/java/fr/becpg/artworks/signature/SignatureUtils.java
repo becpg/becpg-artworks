@@ -18,7 +18,9 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.logging.Log;
@@ -45,6 +47,7 @@ import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.tsp.TSPException;
 import org.bouncycastle.tsp.TimeStampToken;
+import org.springframework.stereotype.Service;
 
 /**
  * Utility class for the signature / timestamp examples.
@@ -52,34 +55,31 @@ import org.bouncycastle.tsp.TimeStampToken;
  * @author Tilman Hausherr, Valentin Leblanc
  */
 
+@Service
 public class SignatureUtils {
 	
     private static final Log logger = LogFactory.getLog(SignatureUtils.class);
 
 	private static String encryptionKeystoreType;
+	
 	private static String encryptionKeystoreLocation;
+	
 	private static String metadataEncryptionPassword;
 
-	private static String alias;
-	
-	private static String myPassword;
-	
 	private static KeyStore alfrescoKeyStore;
 	
-	private static PrivateKey signaturePrivateKey;
+	private static Map<String, PrivateKey> signaturePrivateKeyCache = new HashMap<>();
 	
-	private static Certificate[] certificateChain;
-
-	private SignatureUtils() {
-		
-	}
+	private static Map<String, Certificate[]> certificateChainCache = new HashMap<>();
 	
 	static {
 		encryptionKeystoreType = System.getProperty("encryption.keystore.type");
 		encryptionKeystoreLocation = System.getProperty("encryption.keystore.location");
 		metadataEncryptionPassword = System.getProperty("metadata-keystore.password");
-		alias = System.getProperty("beCPG.signature.keystore.alias");
-		myPassword = System.getProperty("beCPG.signature.keystore.password");
+	}
+	
+	private SignatureUtils() {
+		
 	}
 	
 	private static KeyStore getAlfrescoKeyStore() {
@@ -106,30 +106,30 @@ public class SignatureUtils {
 		return alfrescoKeyStore;
 	}
 	
-	public static PrivateKey getSignaturePrivateKey() {
+	public static PrivateKey getSignaturePrivateKey(String alias, String password) {
 		
-		if (signaturePrivateKey == null) {
+		if (signaturePrivateKeyCache.get(alias) == null) {
 			try {
-				signaturePrivateKey = (PrivateKey) getAlfrescoKeyStore().getKey(alias, myPassword.toCharArray());
+				signaturePrivateKeyCache.put(alias, (PrivateKey) getAlfrescoKeyStore().getKey(alias, password.toCharArray()));
 			} catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e1) {
 				throw new SignatureException("Failed to get private key from store for alias : " + alias);
 			}
 		}
 		
-		return signaturePrivateKey;
+		return signaturePrivateKeyCache.get(alias);
 	}
 	
-	public static Certificate[] getCertificateChain() {
+	public static Certificate[] getCertificateChain(String alias) {
 		
-		if (certificateChain == null) {
+		if (alias != null && certificateChainCache.get(alias) == null) {
 			try {
-				certificateChain = getAlfrescoKeyStore().getCertificateChain(alias);
+				certificateChainCache.put(alias, getAlfrescoKeyStore().getCertificateChain(alias));
 			} catch (KeyStoreException e) {
 				throw new SignatureException("Failed to get certificate chain from store flor alias : " + alias);
 			}
 		}
 		
-		return certificateChain;
+		return certificateChainCache.getOrDefault(alias, certificateChainCache.values().iterator().next());
 	}
 	
 	 /**

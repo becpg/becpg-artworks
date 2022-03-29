@@ -35,7 +35,7 @@ public class ArtworksCustomResponse implements CustomResponse {
 	@Override
 	public Serializable populate() {
 		boolean annotationExternalEnabled = false;
-		boolean signatureEnabled = false;
+		boolean signatureExternalEnabled = false;
 		
 		boolean viewerEnabled = false;
 		
@@ -44,7 +44,7 @@ public class ArtworksCustomResponse implements CustomResponse {
 		}
 		
 		if ((signatureAuthorization != null) && !signatureAuthorization.isEmpty()) {
-			signatureEnabled = true;
+			signatureExternalEnabled = true;
 		}
 
 		if ((annotationViewerLicenseKey != null) && !annotationViewerLicenseKey.isEmpty()) {
@@ -54,8 +54,8 @@ public class ArtworksCustomResponse implements CustomResponse {
 
 		Map<String, Serializable> jsonObj = new LinkedHashMap<>(1);
 		jsonObj.put("annotationExternal", annotationExternalEnabled);
+		jsonObj.put("signatureExternal", signatureExternalEnabled);
 		jsonObj.put("viewer", viewerEnabled);
-		jsonObj.put("signatureEnabled", signatureEnabled);
 		if (viewerEnabled) {
 			jsonObj.put("licenseKey", new String(Base64.getEncoder().encode(annotationViewerLicenseKey.getBytes())));
 		}

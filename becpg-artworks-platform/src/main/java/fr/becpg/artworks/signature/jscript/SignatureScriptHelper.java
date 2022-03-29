@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import fr.becpg.artworks.signature.SignatureService;
@@ -35,16 +36,22 @@ import fr.becpg.artworks.signature.SignatureService;
 public final class SignatureScriptHelper extends BaseScopableProcessorExtension {
 
 	private SignatureService signatureService;
-
+	
 	public void setSignatureService(SignatureService signatureService) {
 		this.signatureService = signatureService;
 	}
-
+	
+	private ServiceRegistry serviceRegistry;
+	
+	public void setServiceRegistry(ServiceRegistry serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
+	}
+	
 	public String getSignatureView(ScriptNode document, String userName, NodeRef task) {
 		return signatureService.getDocumentView(document.getNodeRef(), userName, task);
 	}
 
-	public String prepareForSignature(ScriptNode document, ScriptNode[] recipients, String... params) {
+	public ScriptNode prepareForSignature(ScriptNode document, ScriptNode[] recipients, String... params) {
 		
 		List<NodeRef> recipientNodes = new ArrayList<>();
 			
@@ -52,7 +59,7 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 			recipientNodes.add(recipient.getNodeRef());
 		}
 		
-		return signatureService.prepareForSignature(document.getNodeRef(), recipientNodes, false, params);
+		return new ScriptNode(signatureService.prepareForSignature(document.getNodeRef(), recipientNodes, false, params), serviceRegistry);
 	}
 
 	public void checkinDocument(ScriptNode document) {

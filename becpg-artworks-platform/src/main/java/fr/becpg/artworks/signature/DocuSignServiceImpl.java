@@ -135,11 +135,11 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
-		return prepareForSignature(nodeRef, null, true);
+		return prepareForSignature(nodeRef, null, true).toString();
 	}
 
 	@Override
-	public String prepareForSignature(NodeRef nodeRef, List<NodeRef> recipients, boolean notifyByMail, String... params) {
+	public NodeRef prepareForSignature(NodeRef nodeRef, List<NodeRef> recipients, boolean notifyByMail, String... params) {
 
 		logger.debug("sendForSignature");
 
@@ -265,7 +265,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 		}
 
-		return envelopeId;
+		return nodeRef;
 	}
 
 	@Override
