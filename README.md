@@ -15,13 +15,23 @@ beCPG is an open source Product Lifecycle Management (PLM) software designed to 
  It helps to accelerate innovation and reduce time-to-market while improving product quality.
 https://www.becpg.fr/
 
-
 ### Annotation feature
 
 Annotation feature is provided with two implementations:
- * Standalone using  [PDFTron](https://www.pdftron.com/) proprietary library
+ * Standalone using  [PDFTron](https://www.pdftron.com/) proprietary library, providing actions uppon PDF document :
+   * Add annotations
+		![](docs/images/annotation3.png)
+   * Track text changes
+		![](docs/images/text-comparison.png)
+   * Visualize image changes
+		![](docs/images/image-comparison.png)
+   * Extract colors
+		![](docs/images/colors.png)
+   * Extract layers
+		![](docs/images/layers.png)
+   * Perform measurement
+		![](docs/images/measure.png)
 
- (TODO) list features and capture
 
  * Or external using [Kami](https://www.kamiapp.com/) annotation manager 
 
@@ -111,7 +121,7 @@ To create a new certificate for test purpose:
 
 ### Setup
 
-Enable **DockSign** signature by providing API access token:
+Enable **DocuSign** signature by providing API access token:
 
 ```properties
  beCPG.signatureAuthorization=accountId;access_token
@@ -129,7 +139,7 @@ Enable **PDFTron** internal PDF annotation by proving licence key:
  beCPG.annotationViewerLicenseKey=licenceKey
 ```
 
-Enable internal digital signature with **PdfBox** (**PDFTron** annotation viewer is required) 
+Enable internal digital signature with **PDFBox** (**PDFTron** annotation viewer is required) 
 
 ```properties
  beCPG.signature.reasonInfo=Digitally signed with beCPG
@@ -158,9 +168,9 @@ Internal signature support is best integrated with beCPG PLM. If you want to use
 
 | Method                                            | Description                                                  |
 | ------------------------------------------------- | ------------------------------------------------------------ |
-| prepareForSignature(document, recipients, params) | document is the ScriptNode of the PDF document you want to sign, recipients is an array of ScriptNode representing the current recipients, params is an optional parameter which is an array of strings, the values change the signature positioning, size, and string anchors for the signature |
+| prepareForSignature(document, recipients, params) | ***document*** is the ScriptNode of the PDF document you want to sign, ***recipients*** is an array of ScriptNode representing the current recipients for whom the document will be prepared, ***params*** is an optional parameter which is an array of strings, the values change the signature positioning, size, and string anchors for the signature |
 | signDocument(document)                            | Digitally sign the document for the prepared recipients      |
-| getSignatureView(document, userName,  task)       | Return signature viewer url                                  |
+| getSignatureView(document, userName,  task)       | Returns the signature viewer URL (must be prefixed with HOST:PORT/share/page/context/mine/) |
 
 
 
@@ -188,10 +198,9 @@ bSign.prepareForSignature(document, recipients, "last", "100,50,1,150,300,300", 
 
   1. Upload a PDF document to ACS
   2. Add the signature aspect to it, with some "sign:recipients" associations which are the recipients (alfresco accounts)
-  3. Call the "prepareForSignature" method
-    ` bSign.prepareForSignature(document, recipients, params) ` 
-the current recipients (they must belong to the recipients defined earlier. The signature preparation can be done for each recipient or for all recipients at once, depending on your process), 
-  4. Call the "getSignatureView" method ` bSign.getSignatureView(document, null, null) ` which will return a URL (it must be prefixed with "https://HOST:PORT/share/page/context/mine/") example : http://localhost:8180/share/page/context/mine/artworks-viewer?nodeRef=workspace://SpacesStore/eba3017f-176b-4316-aafd-c2037c477cae&mode=sign&returnUrl=/share/page/context/mine/document-details?nodeRef=workspace://SpacesStore/38a2e156-73c0-47d9-8efd-24c84782c084
+  3. Call the "prepareForSignature" method  ` bSign.prepareForSignature(document, recipients, params) ` 
+  Note that the chosen **recipients** must belong to the recipients defined earlier. The signature preparation can be done for each recipient or for all recipients at once, depending on your process
+  4. Call the "getSignatureView" method ` bSign.getSignatureView(document, null, null) ` which will return a URL (it must be prefixed with "HOST:PORT/share/page/context/mine/")
   5. Once you enter the viewer, you can see the annotations that need to be signed. Please sign all the annotations before Saving the document
   6. Once the document is saved with the viewer, you need to complete the signature by calling the method "signDocument"
     ` bSign.signDocument(document) ` which will digitally sign the document for the prepared recipients
@@ -237,5 +246,4 @@ Here the recipient2 must sign the document with the viewer and save it.
 // after recipient2 signed the document with the viewer : sign the document digitally for recipient2
 bSign.signDocument(document);
 ```
-
 

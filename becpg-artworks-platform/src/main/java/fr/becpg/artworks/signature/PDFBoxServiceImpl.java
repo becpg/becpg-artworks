@@ -9,6 +9,8 @@ import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -617,12 +619,15 @@ public class PDFBoxServiceImpl implements SignatureService {
 				
 				try {
 					
+					Certificate[] certificationChain = SignatureUtils.getCertificateChain(alias);
+					X509Certificate certificate = (X509Certificate) certificationChain[0];
+					PrivateKey privateKey = SignatureUtils.getSignaturePrivateKey(alias, password);
+					
 					CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-					ContentSigner sha1Signer = new JcaContentSignerBuilder("SHA256WithRSA").build(SignatureUtils.getSignaturePrivateKey(alias, password));
-					gen.addSignerInfoGenerator(
-							new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build())
-							.build(sha1Signer, (X509Certificate) SignatureUtils.getCertificateChain(alias)[0]));
-					gen.addCertificates(new JcaCertStore(Arrays.asList(SignatureUtils.getCertificateChain(alias))));
+					ContentSigner sha1Signer = new JcaContentSignerBuilder("SHA256WithRSA").build(privateKey);
+					gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build())
+									.build(sha1Signer, certificate));
+					gen.addCertificates(new JcaCertStore(Arrays.asList(certificationChain)));
 					CMSProcessableInputStream msg = new CMSProcessableInputStream(externalSigning.getContent());
 					CMSSignedData signedData = gen.generate(msg, false);
 					
@@ -632,6 +637,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 						signedData = validation.addSignedTimeStamp(signedData);
 					}
 					cmsSignature = signedData.getEncoded();
+					
+					if (logger.isDebugEnabled()) {
+						logger.debug("signature length = " + cmsSignature.length);
+						logger.debug("certificate = " + certificate.toString());
+					}
+					
 				} catch (GeneralSecurityException | CMSException | OperatorCreationException | IOException e) {
 					throw new SignatureException(e.getMessage());
 				}
@@ -801,6 +812,21 @@ public class PDFBoxServiceImpl implements SignatureService {
 				COSDictionary item = page.getCOSObject();
                 item.setNeedToBeUpdated(true);
 				
+                COSBase annots = item.getDictionaryObject(COSName.ANNOTS).getCOSObject();
+                
+                if (annots instanceof COSArray) {
+                	
+                	((COSArray) annots).setNeedToBeUpdated(true);
+                	
+                	for (int i = 0; i < ((COSArray) annots).size(); i++) {
+                		COSBase object = ((COSArray) annots).get(i).getCOSObject().getCOSObject();
+                		
+                		if (object instanceof COSDictionary) {
+                			((COSDictionary) object).setNeedToBeUpdated(true);
+                		}
+                	}
+                }
+                
                 while (item.containsKey(COSName.PARENT)) {
     				COSBase parent = item.getDictionaryObject(COSName.PARENT);
     				if (parent instanceof COSDictionary) {
