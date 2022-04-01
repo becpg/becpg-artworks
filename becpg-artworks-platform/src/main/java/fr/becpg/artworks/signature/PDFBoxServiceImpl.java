@@ -49,6 +49,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.ExternalSigningSupport;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
@@ -102,6 +103,8 @@ public class PDFBoxServiceImpl implements SignatureService {
 	private static final int RIGHT_POSITION = 2;
 	private static final int BOTTOM_POSITION = 0;
 	private static final int TOP_POSITION = 2;
+	
+	private static final int SIGNATURE_SIZE = 0x5000;
 
 	private CheckOutCheckInService checkOutCheckInService;
 	
@@ -612,7 +615,10 @@ public class PDFBoxServiceImpl implements SignatureService {
 			signature.setReason(signatureReasonInfo);
 			signature.setSignDate(Calendar.getInstance());
 			
-			document.addSignature(signature);
+			SignatureOptions signatureOptions = new SignatureOptions();
+			signatureOptions.setPreferredSignatureSize(SIGNATURE_SIZE);
+			
+			document.addSignature(signature, signatureOptions);
 			try (OutputStream output = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).getContentOutputStream()) {
 				ExternalSigningSupport externalSigning = document.saveIncrementalForExternalSigning(output);
 				byte[] cmsSignature = new byte[0];
@@ -640,7 +646,6 @@ public class PDFBoxServiceImpl implements SignatureService {
 					
 					if (logger.isDebugEnabled()) {
 						logger.debug("signature length = " + cmsSignature.length);
-						logger.debug("certificate = " + certificate.toString());
 					}
 					
 				} catch (GeneralSecurityException | CMSException | OperatorCreationException | IOException e) {
