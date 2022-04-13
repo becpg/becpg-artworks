@@ -1,8 +1,8 @@
 pipeline {
     agent { 
     	docker {
-            image '${env.AGENT_URL}:jdk-11'
-            args '-u jenkins --privileged -v /var/run/docker.sock:/var/run/docker.sock' 
+            image "${env.AGENT_URL}:jdk-11"
+            args "-u jenkins --privileged -v /var/run/docker.sock:/var/run/docker.sock"
         }
     }
     stages {
@@ -20,7 +20,7 @@ pipeline {
                     junit '**/target/surefire-reports/*.xml'
                 }
                 failure {
-			        mail to: '${env.DEV_MAIL}',
+			        mail to: "${env.DEV_MAIL}",
 			        subject: "beCPG CI - Failed tests: ${currentBuild.fullDisplayName}",
 			        body: "Something is wrong with ${env.BUILD_URL}"
 			    }
