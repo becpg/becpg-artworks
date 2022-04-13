@@ -11,21 +11,6 @@ pipeline {
                 sh 'mvn -B -DskipTests clean install'
             }
         }
-         stage('test') {
-            steps {
-                sh 'mvn test'
-            }
-            post {
-              	always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-                failure {
-			        mail to: "${env.DEV_MAIL}",
-			        subject: "beCPG CI - Failed tests: ${currentBuild.fullDisplayName}",
-			        body: "Something is wrong with ${env.BUILD_URL}"
-			    }
-            }
-        }
         stage('sonar') {
  	 		steps {
 			    withSonarQubeEnv('beCPG Sonar') {
