@@ -24,6 +24,7 @@ import javax.xml.bind.DatatypeConverter;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -34,6 +35,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
@@ -68,16 +70,15 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.tsp.TSPException;
 import org.bouncycastle.tsp.TimeStampToken;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.stereotype.Service;
-
-import com.github.openjson.JSONArray;
-import com.github.openjson.JSONException;
-import com.github.openjson.JSONObject;
 
 import fr.becpg.artworks.signature.model.SignatureContext;
 import fr.becpg.artworks.signature.model.SignatureModel;
+import fr.becpg.artworks.signature.model.SignatureStatus;
 
 /**
  * 
@@ -116,8 +117,14 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	private BehaviourFilter policyBehaviourFilter;
 	
-	@Value("${beCPG.signature.reasonInfo}")
-	private String signatureReasonInfo;
+	@Value("${beCPG.signature.reason}")
+	private String signatureReason;
+	
+	@Value("${beCPG.signature.location}")
+	private String signatureLocation;
+	
+	@Value("${beCPG.signature.contactInfo}")
+	private String signatureContactInfo;
 	
 	@Value("${beCPG.signature.tsaUrl}")
 	private String tsaUrl;
@@ -128,20 +135,11 @@ public class PDFBoxServiceImpl implements SignatureService {
 	@Value("${beCPG.signature.keystore.password}")
 	private String password;
 	
-	// ex: "0","3","last","last-1"
-	private String defaultSignaturePage = "last";
+	private PersonService personService;
 	
-	// width,height,direction(1=right,2=left,3=up,4=down),gap,rightMargin,bottomMargin
-	private String defaultSignatureDimensions = "100,50,1,150,300,300";
-	
-	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
-	private String defaultSignatureAnchorInfo = "signature,2,0";
-	
-	// width,height,direction(1=right,2=left,3=up,4=down),gap,rightMargin,bottomMargin
-	private String defaultInitialsDimensions = "50,25,3,30,150,150";
-	
-	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
-	private String defaultInitialsAnchorInfo = "Page,0,2";
+	public void setPersonService(PersonService personService) {
+		this.personService = personService;
+	}
 	
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
 		this.checkOutCheckInService = checkOutCheckInService;
@@ -165,12 +163,29 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
-		return prepareForSignature(nodeRef, new ArrayList<>(), false).toString();
+		
+		if (!nodeService.hasAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE)) {
+			nodeService.addAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE, null);
+		}
+		
+		List<AssociationRef> recipientAssocs = nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_RECIPIENTS);
+
+		if (recipientAssocs.isEmpty()) {
+			NodeRef currentUser = personService.getPerson(AuthenticationUtil.getFullyAuthenticatedUser());
+			nodeService.createAssociation(nodeRef, currentUser, SignatureModel.ASSOC_RECIPIENTS);
+		}
+		
+		List<NodeRef> recipients = new ArrayList<>();
+		for (AssociationRef recipientAssoc : recipientAssocs) {
+			recipients.add(recipientAssoc.getTargetRef());
+		}
+		
+		return prepareForSignature(nodeRef, recipients, false).toString();
 	}
 	
 	@Override
-	public void checkinDocument(NodeRef nodeRef) {
-		signDocument(nodeRef);
+	public NodeRef checkinDocument(NodeRef nodeRef) {
+		return signDocument(nodeRef);
 	}
 
 	@Override
@@ -197,19 +212,19 @@ public class PDFBoxServiceImpl implements SignatureService {
 		}
 		
 		try {
-			NodeRef workingCopyNode = checkOutCheckInService.checkout(originalNode);
+			updatePreparationInformation(originalNode, context);
 			
 			for (NodeRef recipient : recipients) {
-				nodeService.createAssociation(workingCopyNode, recipient, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
+				nodeService.createAssociation(originalNode, recipient, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
 			}
+			
+			NodeRef workingCopyNode = checkOutCheckInService.checkout(originalNode);
 			
 			InputStream originalContentInputStream = contentService.getReader(originalNode, ContentModel.PROP_CONTENT).getContentInputStream();
 			
 			byte[] preparedSignature = prepareForSignature(originalContentInputStream, context);
 			
 			writeNodeContent(workingCopyNode, preparedSignature);
-			
-			updatePreparationInformation(originalNode, context, workingCopyNode);
 			
 			return workingCopyNode;
 		} catch (IOException e) {
@@ -220,23 +235,42 @@ public class PDFBoxServiceImpl implements SignatureService {
 	}
 	
 	@Override
-	public void signDocument(NodeRef nodeRef) {
-		List<AssociationRef> sourceAssocs = nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
-        
-        if (!sourceAssocs.isEmpty()) {
-        	nodeRef = checkOutCheckInService.checkin(nodeRef, null);
-        }
-        
-		List<AssociationRef> recipients = nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
-
-		for (AssociationRef recipient : recipients) {
-			sign(nodeRef, recipient.getTargetRef());
+	public NodeRef signDocument(NodeRef nodeRef) {
+		
+		NodeRef signingNode = nodeRef;
+		
+		boolean checkin = false;
+		
+		if (nodeService.hasAspect(signingNode, ContentModel.ASPECT_WORKING_COPY)) {
+			checkin = true;
+		} else {
+			List<AssociationRef> workingCopyAssocs = nodeService.getTargetAssocs(signingNode, ContentModel.ASSOC_WORKING_COPY_LINK);
+			
+			if (!workingCopyAssocs.isEmpty()) {
+				signingNode = workingCopyAssocs.get(0).getTargetRef();
+				checkin = true;
+			}
 		}
 		
+		List<AssociationRef> preparedRecipients = nodeService.getTargetAssocs(signingNode, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
+
+		for (AssociationRef preparedRecipient : preparedRecipients) {
+			sign(signingNode, preparedRecipient.getTargetRef());
+		}
+		
+		if (checkin) {
+			nodeRef = checkOutCheckInService.checkin(signingNode, null);
+			
+			for (AssociationRef preparedRecipient : preparedRecipients) {
+				nodeService.removeAssociation(nodeRef, preparedRecipient.getTargetRef(), SignatureModel.ASSOC_PREPARED_RECIPIENTS);
+			}
+		}
+		
+		return nodeRef;
 	}
 
 	@Override
-	public void cancelDocument(NodeRef nodeRef) {
+	public NodeRef cancelDocument(NodeRef nodeRef) {
 		
 		if (logger.isDebugEnabled()) {
 			logger.debug("cancelDocument : nodeRef = " + nodeRef);
@@ -248,29 +282,41 @@ public class PDFBoxServiceImpl implements SignatureService {
         	checkOutCheckInService.cancelCheckout(assocs.get(0).getTargetRef());
         }
         
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY)) {
+        	nodeRef = checkOutCheckInService.cancelCheckout(nodeRef);
+        }
+        
         nodeService.removeAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE);
+        
+        return nodeRef;
 	}
 
 	@Override
-	public String getDocumentView(NodeRef nodeRef, String userId, NodeRef task) {
+	public String getDocumentView(NodeRef nodeRef, NodeRef user, NodeRef task) {
 		
 		if (logger.isDebugEnabled()) {
-			logger.debug("getDocumentView : nodeRef = " + nodeRef + ", userId = " + userId + ", task = " + task);
+			logger.debug("getDocumentView : nodeRef = " + nodeRef + ", user = " + user + ", task = " + task);
 		}
 
+        NodeRef workingNode = null;
+        
         List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
         
-        String requestParam = "returnUrl=/share/page/context/mine/document-details?nodeRef=" + nodeRef;
+        if (!assocs.isEmpty()) {
+        	workingNode = assocs.get(0).getTargetRef();
+        } else {
+        	workingNode = nodeRef;
+        }
+        
+        String requestParams = "?nodeRef=" + workingNode + "&mode=sign";
         
         if (task != null) {
-        	requestParam = "taskId={task|pjt:tlWorkflowTaskInstance}";
+        	requestParams += "&taskId={task|pjt:tlWorkflowTaskInstance}";
+        } else {
+        	requestParams += "&returnUrl=/share/page/context/mine/document-details?nodeRef=" + nodeRef;
         }
         
-        if (!assocs.isEmpty()) {
-        	return "artworks-viewer?nodeRef=" + assocs.get(0).getTargetRef() + "&mode=sign&" + requestParam;
-        }
-        
-		throw new SignatureException("The node has no working copy link reference");
+        return "artworks-viewer" + requestParams;
 	}
 				
 	private void sign(NodeRef nodeRef, NodeRef recipient) {
@@ -289,20 +335,20 @@ public class PDFBoxServiceImpl implements SignatureService {
 				throw new SignatureException("Failed to create signature", e);
 			}
 			
+			nodeService.removeAssociation(nodeRef, recipient, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
+			
 			try {
 				updateSignatureInformation(nodeRef, recipient);
 			} catch (InvalidTypeException | ContentIOException | InvalidNodeRefException | IOException e) {
 				throw new SignatureException("Failed to update signature information", e);
 			}
 			
-			nodeService.removeAssociation(nodeRef, recipient, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
-			
 		} finally {
 			policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
 		}
 	}
 
-	private void updatePreparationInformation(NodeRef originalNode, SignatureContext context, NodeRef workingCopyNode) {
+	private void updatePreparationInformation(NodeRef originalNode, SignatureContext context) {
 		JSONObject recipientDataJson = new JSONObject();
 	
 		Object recipientData = nodeService.getProperty(originalNode, SignatureModel.PROP_RECIPIENTS_DATA);
@@ -345,8 +391,8 @@ public class PDFBoxServiceImpl implements SignatureService {
 			}
 		}
 		
-		nodeService.setProperty(workingCopyNode, SignatureModel.PROP_RECIPIENTS_DATA, recipientDataJson.toString());
-		nodeService.setProperty(workingCopyNode, SignatureModel.PROP_STATUS, I18NUtil.getMessage("message.signature-status.inprogress"));
+		nodeService.setProperty(originalNode, SignatureModel.PROP_RECIPIENTS_DATA, recipientDataJson.toString());
+		nodeService.setProperty(originalNode, SignatureModel.PROP_STATUS, SignatureStatus.Prepared);
 	}
 
 	private void updateSignatureInformation(NodeRef nodeRef, NodeRef recipient) throws InvalidTypeException, ContentIOException, InvalidNodeRefException, IOException {
@@ -404,7 +450,11 @@ public class PDFBoxServiceImpl implements SignatureService {
     	nodeService.setProperty(nodeRef, SignatureModel.PROP_RECIPIENTS_DATA, recipientDataJson.toString());
     	
     	if (allSigned(nodeRef, recipientsArray)) {
-    		nodeService.setProperty(nodeRef, SignatureModel.PROP_STATUS, I18NUtil.getMessage("message.signature-status.signed"));
+    		nodeService.setProperty(nodeRef, SignatureModel.PROP_STATUS, SignatureStatus.Signed);
+    	} else if (!nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_PREPARED_RECIPIENTS).isEmpty()) {
+    		nodeService.setProperty(nodeRef, SignatureModel.PROP_STATUS, SignatureStatus.Prepared);
+    	} else {
+    		nodeService.setProperty(nodeRef, SignatureModel.PROP_STATUS, SignatureStatus.Initialized);
     	}
 	}
 	
@@ -612,7 +662,9 @@ public class PDFBoxServiceImpl implements SignatureService {
 			signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
 			signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
 			signature.setName(userDisplayName);
-			signature.setReason(signatureReasonInfo);
+			signature.setReason(signatureReason);
+			signature.setLocation(signatureLocation);
+			signature.setContactInfo(signatureContactInfo);
 			signature.setSignDate(Calendar.getInstance());
 			
 			SignatureOptions signatureOptions = new SignatureOptions();
@@ -772,8 +824,8 @@ public class PDFBoxServiceImpl implements SignatureService {
 				}
 				
 				if (!useAnchor) {
-					x = page.getMediaBox().getWidth() - Float.parseFloat(dimensions[4]);
-					y = Float.parseFloat(dimensions[5]);
+					x = page.getMediaBox().getWidth() * Float.parseFloat(dimensions[4]) / 100;
+					y = page.getMediaBox().getHeight() * Float.parseFloat(dimensions[5]) / 100;
 				}
 				
 				int direction = Integer.parseInt(dimensions[2]);
@@ -853,32 +905,22 @@ public class PDFBoxServiceImpl implements SignatureService {
 
 		if (params != null && params.length > 0) {
 			signatureContext.setSignaturePage(params[0]);
-		} else {
-			signatureContext.setSignaturePage(defaultSignaturePage);
 		}
 		
 		if (params != null && params.length > 1) {
 			signatureContext.setSignatureDimensions(params[1]);
-		} else {
-			signatureContext.setSignatureDimensions(defaultSignatureDimensions);
 		}
 		
 		if (params != null && params.length > 2) {
 			signatureContext.setSignatureAnchorInfo(params[2]);
-		} else {
-			signatureContext.setSignatureAnchorInfo(defaultSignatureAnchorInfo);
 		}
 		
 		if (params != null && params.length > 3) {
 			signatureContext.setInitialsDimensions(params[3]);
-		} else {
-			signatureContext.setInitialsDimensions(defaultInitialsDimensions);
 		}
 		
 		if (params != null && params.length > 4) {
 			signatureContext.setInitialsAnchorInfo(params[4]);
-		} else {
-			signatureContext.setInitialsAnchorInfo(defaultInitialsAnchorInfo);
 		}
 		
 		return signatureContext;

@@ -10,6 +10,6 @@ public interface SignatureService extends ArtworksDocumentHandler{
 
 	public NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params);
 	
-	public void signDocument(NodeRef nodeRef);
+	public NodeRef signDocument(NodeRef nodeRef);
 	
 }

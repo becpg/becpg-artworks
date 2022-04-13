@@ -151,6 +151,7 @@
 					<permission allow="true">Write</permission>
 				</permissions>
 				<evaluator negate="true">evaluator.becpg.doclib.action.annotation.hasAnnotationAspect</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.annotation.mimetype</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.annotation.isEnabled</evaluator>
 				<evaluator negate="true">evaluator.doclib.action.notEditable</evaluator>
@@ -214,6 +215,7 @@
 					<permission allow="true">Write</permission>
 				</permissions>
 				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.mimetype</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
 				<evaluator negate="true">evaluator.doclib.action.notEditable</evaluator>
 			</action>
@@ -226,6 +228,7 @@
 				</permissions>
 				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.isStatusInitialized</evaluator>
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isSentForSignature</evaluator>
 			</action>
 			<action id="signature-checkin" type="javascript" icon="document-upload-new-version" label="actions.document.signature-checkin">
@@ -233,9 +236,65 @@
 				<permissions>
 					<permission allow="true">Write</permission>
 				</permissions>
-				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signatureExternal.isEnabled</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.isSentForSignature</evaluator>
+			</action>
+			<action id="signature-cancel" type="javascript" icon="document-upload-new-version" label="actions.document.signature-cancel">
+				<param name="function">onActionCancelSignature</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusInitialized</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusSigned</evaluator>
+				<evaluator negate="true">evaluator.doclib.metadata.isLocked</evaluator>
+			</action>
+			<action id="signature-prepare" type="javascript" icon="document-edit-properties" label="actions.document.signature-prepare">
+				<param name="function">onActionPrepareSignature</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signatureExternal.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.mimetype</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusPrepared</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusReadyToSign</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusSigned</evaluator>
+			</action>
+			<action id="signature-sign" type="javascript" icon="document-edit-properties" label="actions.document.signature-sign">
+				<param name="function">onActionCheckInSignature</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signatureExternal.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.isStatusPrepared</evaluator>
+				<evaluator negate="true">evaluator.doclib.action.notEditable</evaluator>
+			</action>
+			<action id="signature-sign-and-checkin" type="javascript" icon="document-edit-properties" label="actions.document.signature-sign">
+				<param name="function">onActionCheckInSignature</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signatureExternal.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.isStatusReadyToSign</evaluator>
+				<evaluator>evaluator.doclib.action.isWorkingCopy</evaluator>
+			</action>
+			<action id="signature-view" type="javascript" icon="document-upload-new-version" label="actions.document.signature-view">
+				<param name="function">onActionViewSignature</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusInitialized</evaluator>
+				<evaluator negate="true">evaluator.doclib.metadata.isLocked</evaluator>
 			</action>
 		</actions>
 		<actionGroups>
@@ -247,6 +306,11 @@
 				<action index="425" subgroup="40" id="annotation-cancel" />
 				<action index="426" subgroup="40" id="signature-checkout" />
 				<action index="427" subgroup="40" id="signature-checkin" />
+				<action index="428" subgroup="40" id="signature-prepare" />
+				<action index="429" subgroup="40" id="signature-sign" />
+				<action index="430" subgroup="40" id="signature-sign-and-checkin" />
+				<action index="431" subgroup="40" id="signature-cancel" />
+				<action index="432" subgroup="40" id="signature-view" />
 			</actionGroup>
 
 			<actionGroup id="document-browse">
@@ -257,6 +321,11 @@
 				<action index="145"  id="annotation-cancel" />
 				<action index="146"  id="signature-checkout" />
 				<action index="147"  id="signature-checkin" />
+				<action index="148"  id="signature-prepare" />
+				<action index="149"  id="signature-sign" />
+				<action index="150"  id="signature-sign-and-checkin" />
+				<action index="151"  id="signature-cancel" />
+				<action index="152"  id="signature-view" />
 			</actionGroup>
 			
 		</actionGroups>	

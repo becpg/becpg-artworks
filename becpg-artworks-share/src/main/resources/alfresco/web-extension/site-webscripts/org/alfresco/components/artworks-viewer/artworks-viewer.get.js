@@ -39,6 +39,12 @@ function main() {
 				model.returnUrl = "/share/page/context/mine/document-details?nodeRef=" + model.nodeRef;
 			}
 			
+			if (model.mode == "sign") {
+				if (model.node.properties["sign:status"] == "Signed") {
+					model.mode = "signedView";
+				}
+			}
+			
 			if (model.mode != "sign") {
 				model.linkButtons.push({
 					id: "back-button",
@@ -53,7 +59,6 @@ function main() {
 		var versions = getVersions(model.nodeRef);
 		if (versions) {
 			 model.versions = versions;
-		
 		}
 
 	}
@@ -76,13 +81,16 @@ function main() {
       name : "ArtworksViewer",
       options : {
          nodeRef :  (page.url.args.nodeRef != null) ? page.url.args.nodeRef : "",
-         mode :  (page.url.args.mode != null) ? page.url.args.mode : "annotation",
+         mode :  (model.mode != null) ? model.mode : "annotation",
          compareContentURL : model.compareContentURL!=null ? model.compareContentURL : null,
 		 contentURL : model.contentURL!=null ? model.contentURL : null,
 	     fileName : model.displayName,
 		 userId : user.id,
 		 returnUrl : model.returnUrl,
-		 encryptedLicenseKey : model.document.metadata.custom.artworks.licenseKey
+		 encryptedLicenseKey : model.document.metadata.custom.artworks.licenseKey,
+		 certificate : model.document.metadata.custom.artworks.certificate,
+		 mimetype : model.document.item.node.mimetype,
+		 parent : model.document.item.parent.nodeRef
       }
    };
    model.widgets = [widget];

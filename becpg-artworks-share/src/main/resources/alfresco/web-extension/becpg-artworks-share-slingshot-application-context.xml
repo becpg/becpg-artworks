@@ -61,11 +61,30 @@
 		<property name="mimetypes">
 			<list>
 				<value>application/pdf</value>
+				<value>image/jpeg</value>
+				<value>image/png</value>
+				<value>image/bmp</value>
+				<value>image/gif</value>
+				<value>image/tiff</value>
+				<value>image/webp</value>
+				<value>application/msword</value>
+				<value>application/vnd.ms-excel</value>
+				<value>application/vnd.openxmlformats-officedocument.wordprocessingml.document</value>
+				<value>application/vnd.ms-powerpoint</value>
 			</list>
 		</property>
 	</bean>
 	
    <bean id="evaluator.becpg.doclib.action.signature.isEnabled" parent="evaluator.doclib.action.metadataValue">
+      <property name="accessor" value="custom.artworks.signature"/>
+      <property name="comparator">
+         <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
+            <property name="value" value="true" />
+         </bean>
+      </property>
+   </bean>
+   
+   <bean id="evaluator.becpg.doclib.action.signatureExternal.isEnabled" parent="evaluator.doclib.action.metadataValue">
       <property name="accessor" value="custom.artworks.signatureExternal"/>
       <property name="comparator">
          <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
@@ -82,7 +101,56 @@
       </property>
 	</bean>
 	
+	<bean id="evaluator.becpg.doclib.action.signature.mimetype" parent="evaluator.doclib.action.isMimetype">
+		<property name="mimetypes">
+			<list>
+				<value>application/pdf</value>
+			</list>
+		</property>
+	</bean>
+
+   <bean id="evaluator.becpg.doclib.action.signature.isStatusInitialized" parent="evaluator.doclib.action.value">
+      <property name="accessor" value="node.properties.sign:status"/>
+      <property name="comparator">
+         <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
+            <property name="value" value="Initialized" />
+         </bean>
+      </property>
+   </bean>
+   <bean id="evaluator.becpg.doclib.action.signature.isStatusPrepared" parent="evaluator.doclib.action.value">
+      <property name="accessor" value="node.properties.sign:status"/>
+      <property name="comparator">
+         <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
+            <property name="value" value="Prepared" />
+         </bean>
+      </property>
+   </bean>
+   <bean id="evaluator.becpg.doclib.action.signature.isStatusReadyToSign" parent="evaluator.doclib.action.value">
+      <property name="accessor" value="node.properties.sign:status"/>
+      <property name="comparator">
+         <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
+            <property name="value" value="ReadyToSign" />
+         </bean>
+      </property>
+   </bean>
+   <bean id="evaluator.becpg.doclib.action.signature.isStatusSigned" parent="evaluator.doclib.action.value">
+      <property name="accessor" value="node.properties.sign:status"/>
+      <property name="comparator">
+         <bean class="org.alfresco.web.evaluator.StringEqualsComparator">
+            <property name="value" value="Signed" />
+         </bean>
+      </property>
+   </bean>
+    <bean id="evaluator.becpg.doclib.action.hasSignatureAspectAndIsLocked" parent="evaluator.doclib.action.chainedMatchAll">
+      <property name="evaluators">
+         <list>
+            <ref bean="evaluator.doclib.action.isLocked" />
+            <ref bean="evaluator.becpg.doclib.action.signature.hasSignatureAspect" />
+         </list>
+      </property>
+   </bean>
+   
    <bean id="evaluator.becpg.doclib.action.signature.isSentForSignature" class="org.alfresco.web.evaluator.PropertyNotNullEvaluator">
-   <property name="property" value="sign:signatureDocumentIdentifier"/>
+   <property name="property" value="sign:documentIdentifier"/>
 	</bean>
 </beans>

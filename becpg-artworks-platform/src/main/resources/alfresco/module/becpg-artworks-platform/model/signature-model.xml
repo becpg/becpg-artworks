@@ -16,7 +16,18 @@
         <namespace uri="http://www.becpg.fr/signature/1.0" prefix="sign"/>
     </namespaces>
 
-
+	<constraints>
+		<constraint name="sign:statuses" type="LIST">
+			<parameter name="allowedValues">
+				<list>
+					<value>Initialized</value>
+					<value>Prepared</value>
+					<value>ReadyToSign</value>
+					<value>Signed</value>
+				</list>
+			</parameter>
+		</constraint>
+	</constraints>
     <aspects>
       
 		<aspect name="sign:signatureAspect">
@@ -32,7 +43,11 @@
 				  <type>d:text</type>
 				</property>
 				<property name="sign:status">
-				  <type>d:text</type>
+					<type>d:text</type>
+					<default>Initialized</default>
+					<constraints>
+						<constraint ref="sign:statuses" />
+					</constraints>
 				</property>
 			</properties>
 			<associations>

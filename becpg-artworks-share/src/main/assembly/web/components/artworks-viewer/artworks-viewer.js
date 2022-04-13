@@ -57,12 +57,23 @@
 				initialDoc: me.options.compareContentURL == null ? PROXY_URI + me.options.contentURL : null,
 				annotationUser: USERNAME_DISPLAYNAME,
 				enableMeasurement: true,
-				disabledElements: (me.options.mode == "sign" || me.options.compareContentURL != null) ? ['layoutButtons', 'pageTransitionButtons', 'toolsButton', 'annotationPopup', 'panToolButton', 'linkButton', 'toolsOverlayCloseButton'] : [],
+				disabledElements: (me.options.mode.includes("sign") || me.options.compareContentURL != null) ? ['layoutButtons', 'pageTransitionButtons', 'toolsButton', 'annotationPopup', 'panToolButton', 'linkButton', 'toolsOverlayCloseButton'] : [],
 				isReadOnly: me.options.compareContentURL != null
 				//isAdminUser: '${user.isAdmin ? string}',
 			}, document.getElementById(me.id + '-viewer'))
 				.then(async instance => {
+					
+					const { VerificationOptions } = instance.UI;
+					
+					var bytes = []; // char codes
 
+					for (var i = 0; i < me.options.certificate.length; ++i) {
+						var code = me.options.certificate.charCodeAt(i);
+						bytes = bytes.concat([code & 0xff, code / 256 >>> 0]);
+					}
+
+					VerificationOptions.addTrustedCertificates([bytes, me.options.certificate]);
+					
 					instance.UI.setLanguage(JS_LOCALE);
 					instance.UI.enableElements(['bookmarksPanel', 'bookmarksPanelButton', 'richTextPopup']);
 					const { Tools, documentViewer, PDFNet, annotationManager } = instance.Core;
@@ -137,12 +148,28 @@
 
 						const formData = new FormData;
 						formData.append("filedata", blob);
-						formData.append("filename", me.options.fileName);
-						formData.append("majorVersion", "false");
+						if (me.options.mimetype == "application/pdf") {
+							formData.append("filename", me.options.fileName);
+							formData.append("updateNodeRef", me.options.nodeRef);
+							formData.append("majorVersion", "false");
+							formData.append("description", me.msg["label.newVersion.message"]);
+							formData.append("updatenameandmimetype", "false")
+						} else {
+							var fileName = me.options.fileName;
+							if (fileName.indexOf(".") != -1){
+				         		 fileName = fileName.substr(0, fileName.lastIndexOf("."));
+				         	 }
+							fileName += ".pdf";
+							formData.append("filename", fileName);
+							formData.append("destination", me.options.parent);
+						}
+						
 						formData.append("overwrite", "false");
-						formData.append("updatenameandmimetype", "false")
-						formData.append("updateNodeRef", me.options.nodeRef);
-						formData.append("description", me.msg["label.newVersion.message"]);
+						
+						if (me.options.mode == "sign") {
+							formData.append("checkin", "false");
+							formData.append('properties', '[{"sign:status":"ReadyToSign"}]');
+						}
 
 						request.open("POST", url, true);
 						request.send(formData);
@@ -154,7 +181,7 @@
 									return;
 								}
 								else {
-									window.location.reload(true);
+									window.location.reload();
 									return;
 								}
 							}
@@ -162,7 +189,7 @@
 					};
 						
 
-					if (me.options.mode == "sign") {
+					if (me.options.mode == "sign" || me.options.mode == "signedView") {
 						
 						instance.UI.disableElements(['ribbons']);
 						instance.UI.disableElements(['freeHandToolGroupButton']);
@@ -198,6 +225,15 @@
 						instance.UI.disableElements(['squigglyToolGroupButton']);
 						instance.UI.disableElements(['stickyToolGroupButton']);
 
+						if (me.options.mode == "signedView") {
+							saveButton.style.display = "none";
+							instance.UI.openElements(['leftPanel', 'signaturePanel' ]);
+							instance.UI.disableElements(['toolsHeader']);
+							instance.UI.disableElements(['bookmarksPanelButton']);
+							instance.UI.disableElements(['outlinesPanelButton']);
+							instance.UI.disableElements(['thumbnailsPanelButton']);
+						}
+						
 						const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
 
 						const createSignHereElement = instance.Annotations.SignatureWidgetAnnotation.prototype.createSignHereElement;

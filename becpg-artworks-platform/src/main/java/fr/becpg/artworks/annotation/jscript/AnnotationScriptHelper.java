@@ -19,7 +19,6 @@ package fr.becpg.artworks.annotation.jscript;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 import fr.becpg.artworks.annotation.AnnotationService;
 
@@ -43,7 +42,7 @@ public final class AnnotationScriptHelper extends BaseScopableProcessorExtension
 	}
 
 	public String getOrCreateRemoteView(ScriptNode scriptNode) {
-		return annotationService.getDocumentView(scriptNode.getNodeRef(), AuthenticationUtil.getFullyAuthenticatedUser(),null);
+		return annotationService.getDocumentView(scriptNode.getNodeRef(), null ,null);
 	}
 
 	public void checkinDocument(ScriptNode scriptNode) {

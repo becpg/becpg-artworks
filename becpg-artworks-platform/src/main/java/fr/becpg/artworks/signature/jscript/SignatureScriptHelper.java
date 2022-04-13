@@ -47,8 +47,8 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 		this.serviceRegistry = serviceRegistry;
 	}
 	
-	public String getSignatureView(ScriptNode document, String userName, NodeRef task) {
-		return signatureService.getDocumentView(document.getNodeRef(), userName, task);
+	public String getSignatureView(ScriptNode document, ScriptNode user, NodeRef task) {
+		return signatureService.getDocumentView(document.getNodeRef(), user == null ? null : user.getNodeRef(), task);
 	}
 
 	public ScriptNode prepareForSignature(ScriptNode document, ScriptNode[] recipients, String... params) {

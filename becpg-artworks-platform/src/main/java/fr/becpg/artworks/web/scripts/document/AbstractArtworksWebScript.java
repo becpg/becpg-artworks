@@ -3,7 +3,6 @@ package fr.becpg.artworks.web.scripts.document;
 import java.io.IOException;
 import java.util.Map;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,25 +60,31 @@ public abstract class AbstractArtworksWebScript extends AbstractWebScript {
 
 		NodeRef nodeRef = new NodeRef(storeType, storeId, nodeId);
 		String viewerUrl = null;
+		NodeRef returnedNodeRef = null;
 
-		if (nodeService.exists(nodeRef) && (lockService.getLockStatus(nodeRef) == LockStatus.NO_LOCK)) {
+		if (nodeService.exists(nodeRef)) {
 
-			if (ACTION_CHECKOUT.equals(action)) {
-				documentHandler.checkoutDocument(nodeRef);
-				viewerUrl = documentHandler.getDocumentView(nodeRef, AuthenticationUtil.getFullyAuthenticatedUser(), null);
-			} else if (ACTION_CHECKIN.equals(action)) {
-				documentHandler.checkinDocument(nodeRef);
-			} else if (ACTION_CANCEL.equals(action)) {
-				documentHandler.cancelDocument(nodeRef);
-			} else if (ACTION_CREATE_SESSION.equals(action)) {
-				viewerUrl = documentHandler.getDocumentView(nodeRef, AuthenticationUtil.getFullyAuthenticatedUser(), null);
+			if (ACTION_CANCEL.equals(action)) {
+				returnedNodeRef = documentHandler.cancelDocument(nodeRef);
+			} else if (lockService.getLockStatus(nodeRef) == LockStatus.NO_LOCK) {
+				if (ACTION_CHECKOUT.equals(action)) {
+					documentHandler.checkoutDocument(nodeRef);
+					viewerUrl = documentHandler.getDocumentView(nodeRef, null, null);
+				} else if (ACTION_CHECKIN.equals(action)) {
+					returnedNodeRef = documentHandler.checkinDocument(nodeRef);
+				} else if (ACTION_CREATE_SESSION.equals(action)) {
+					viewerUrl = documentHandler.getDocumentView(nodeRef, null, null);
+				} else {
+					String error = "Unsupported action: " + action;
+					logger.error(error);
+					throw new WebScriptException(error);
+				}
 			} else {
-				String error = "Unsupported action: " + action;
-				logger.error(error);
-				throw new WebScriptException(error);
+				throw new WebScriptException("Node is locked");
 			}
+
 		} else {
-			throw new WebScriptException("Node is locked or doesn't exist");
+			throw new WebScriptException("Node doesn't exist");
 		}
 
 		try {
@@ -88,6 +93,9 @@ public abstract class AbstractArtworksWebScript extends AbstractWebScript {
 
 			if (viewerUrl != null) {
 				ret.put("viewerUrl", viewerUrl);
+			}
+			if (returnedNodeRef != null) {
+				ret.put("returnedNodeRef", returnedNodeRef.toString());
 			}
 			ret.put("status", "SUCCESS");
 

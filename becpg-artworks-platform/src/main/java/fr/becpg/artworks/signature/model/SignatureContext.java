@@ -7,16 +7,21 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public class SignatureContext {
 
-	private String signaturePage;
+	// ex: "0","3","last","last-1"
+	private String signaturePage = "last";
 	
-	private String signatureDimensions;
+	// width,height,direction(1=right,2=left,3=up,4=down),gap,fromLeftProportion,fromBottomProportion
+	private String signatureDimensions = "100,50,3,60,75,10";
 	
-	private String initialsDimensions;
+	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
+	private String signatureAnchorInfo = "signature,2,0";
 	
-	private String signatureAnchorInfo;
+	// width,height,direction(1=right,2=left,3=up,4=down),gap,fromLeftProportion,fromBottomProportion
+	private String initialsDimensions = "50,25,3,30,75,10";
 	
-	private String initialsAnchorInfo;
-	
+	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
+	private String initialsAnchorInfo = "Page,0,2";
+
 	private List<NodeRef> nodeRecipients;
 	
 	private List<NodeRef> recipients;

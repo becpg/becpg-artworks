@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -185,15 +186,15 @@ public final class KamiServiceImpl implements AnnotationService {
 	 * @return
 	 */
 	@Override
-	public String getDocumentView(NodeRef nodeRef,String userId, NodeRef task) {
+	public String getDocumentView(NodeRef nodeRef, NodeRef personNodeRef, NodeRef task) {
 
-
-		String userDisplayName = "";
-		NodeRef personNodeRef = personService.getPerson(userId);
-		if (personNodeRef != null) {
-			userDisplayName = nodeService.getProperty(personNodeRef, ContentModel.PROP_FIRSTNAME) + " "
-					+ nodeService.getProperty(personNodeRef, ContentModel.PROP_LASTNAME);
+		if (personNodeRef == null) {
+			personNodeRef = personService.getPerson(AuthenticationUtil.getFullyAuthenticatedUser());
 		}
+
+		String userDisplayName = nodeService.getProperty(personNodeRef, ContentModel.PROP_FIRSTNAME) + " "
+				+ nodeService.getProperty(personNodeRef, ContentModel.PROP_LASTNAME);
+		String userId = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
 
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
@@ -235,7 +236,7 @@ public final class KamiServiceImpl implements AnnotationService {
 	 * @throws InterruptedException
 	 */
 	@Override
-	public void checkinDocument(NodeRef nodeRef) {
+	public NodeRef checkinDocument(NodeRef nodeRef) {
 		logger.debug("exportDocument");
 		String documentIdentifier = (String) nodeService.getProperty(nodeRef, AnnotationModel.PROP_ANNOTATION_DOCUMENT_IDENTIFIER);
 
@@ -312,6 +313,8 @@ public final class KamiServiceImpl implements AnnotationService {
 		}
 		
 		cancelDocument(nodeRef);
+		
+		return nodeRef;
 	}
 
 	private void copyContent(String fileUrl, ContentWriter writer) throws MalformedURLException {
@@ -328,7 +331,7 @@ public final class KamiServiceImpl implements AnnotationService {
 	}
 
 	@Override
-	public void cancelDocument(NodeRef nodeRef) {
+	public NodeRef cancelDocument(NodeRef nodeRef) {
 		logger.debug("deleteDocument");
 		String documentIdentifier = (String) nodeService.getProperty(nodeRef, AnnotationModel.PROP_ANNOTATION_DOCUMENT_IDENTIFIER);
 		String url = "https://api.notablepdf.com/embed/documents/" + documentIdentifier;
@@ -339,5 +342,7 @@ public final class KamiServiceImpl implements AnnotationService {
 		HttpEntity<String> entity = new HttpEntity<>("", headers);
 		restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
 		nodeService.removeAspect(nodeRef, AnnotationModel.ASPECT_ANNOTATION);
+		
+		return nodeRef;
 	}
 }

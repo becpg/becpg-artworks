@@ -103,7 +103,9 @@
 				-->
 	               </div>
 	               <div class="yui-u quickshare-node-action"> 
+	               <#assign saveButtonLabel = msg("button.save")>
 	               <#if mode?? && mode == "sign">
+	              	  <#assign saveButtonLabel = msg("actions.viewer.validate-signature")>
 	                  <!-- Cancel Button -->
 	                  <span class="yui-button yui-link-button">
 	                     <span class="first-child">
@@ -111,10 +113,10 @@
 	                     </span>
 	                  </span>
 	               </#if>
-	                  <!-- Download Button -->
+	                  <!-- Save Button -->
 	                  <span class="yui-button yui-link-button yui-button-disabled onDownloadDocumentClick">
 	                     <span class="first-child">
-	                        <a href="#" id="${el}-saveButton" tabindex="0">${msg("button.save")}</a>
+	                        <a href="#" id="${el}-saveButton" tabindex="0">${saveButtonLabel}</a>
 	                     </span>
 	                  </span>
 	               </div>

@@ -181,13 +181,13 @@ The signature feature is designed so that each page of the document will contain
 The **params** of the **prepareForSignature** method have default values if nothing is set. Here is the default params structure :
 
 ```javascript
-bSign.prepareForSignature(document, recipients, "last", "100,50,1,150,300,300", "signature,2,0", "50,25,3,30,150,150", "Page,0,2")
+bSign.prepareForSignature(document, recipients, "last", "100,50,3,60,75,10", "signature,2,0", "50,25,3,30,75,10", "Page,0,2")
 ```
 
  * **last** : defines the page number of the final signature. It can be a number ("1", "14", ...) or a number from the end ("last", "last-2", ...)
- * **100,50,1,150,300,300** : defines the signature field dimensions (width,height,direction(1=right,2=left,3=up,4=down),gap,rightMargin,bottomMargin). Direction is the direction of the multiple fields on each page (if there are multiple recipients). The margins are here to positionate the first field in case of a non-matching keyword
+ * **100,50,1,150,300,300** : defines the signature field dimensions (width,height,direction(1=right,2=left,3=up,4=down),gap,fromLeftProportion,fromBottomProportion). Direction is the direction of the multiple fields on each page (if there are multiple recipients). The margins are here to positionate the first field in case of a non-matching keyword
  * **signature,2,0** : defines the signature field anchor information (keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top))
- * "**50,25,3,30,150,150**" : defines the initials field dimensions (width,height,direction(1=right,2=left,3=up,4=down),gap,rightMargin,bottomMargin)
+ * "**50,25,3,30,150,150**" : defines the initials field dimensions (width,height,direction(1=right,2=left,3=up,4=down),gap,fromLeftProportion,fromBottomProportion)
  * **Page,0,2** : defines the initials field anchor information (keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top))
 
 

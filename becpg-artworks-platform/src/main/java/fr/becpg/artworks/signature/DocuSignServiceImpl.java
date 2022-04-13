@@ -269,23 +269,30 @@ public final class DocuSignServiceImpl implements SignatureService {
 	}
 
 	@Override
-	public String getDocumentView(NodeRef nodeRef, String userId, NodeRef task) {
-
-		String returnUrl = UrlUtil.getShareUrl(sysAdminParams) + "/service/becpg/project/task-edit-url?nodeRef=" + task.toString();
-
+	public String getDocumentView(NodeRef nodeRef, NodeRef personNodeRef, NodeRef task) {
+		
+		if (personNodeRef == null) {
+			return null;
+		}
+		
+		String returnUrl = UrlUtil.getShareUrl(sysAdminParams);
+		
+		if (task != null) {
+			returnUrl += "/service/becpg/project/task-edit-url?nodeRef=" + task.toString();
+		} else {
+			returnUrl += "/page/context/mine/document-details?nodeRef=" + nodeRef;
+		}
+		
 		String accountId = signatureAuthorization.split(";")[0];
 
 		String accessToken = signatureAuthorization.split(";")[1];
 
 		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_DOCUMENT_IDENTIFIER);
-		String userDisplayName = userId;
-		String email = "no-reply@becpg.fr";
-		NodeRef personNodeRef = personService.getPerson(userId);
-		if (personNodeRef != null) {
-			userDisplayName = nodeService.getProperty(personNodeRef, ContentModel.PROP_FIRSTNAME) + " "
-					+ nodeService.getProperty(personNodeRef, ContentModel.PROP_LASTNAME);
-			email = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL);
-		}
+		
+		String userDisplayName = nodeService.getProperty(personNodeRef, ContentModel.PROP_FIRSTNAME) + " "
+				+ nodeService.getProperty(personNodeRef, ContentModel.PROP_LASTNAME);
+		
+		String email = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL);
 
 		String url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId + "/views/recipient";
 
@@ -298,7 +305,12 @@ public final class DocuSignServiceImpl implements SignatureService {
 		body.put("userName", userDisplayName);
 		body.put("authenticationMethod", "email");
 		body.put("email", email);
-		body.put("clientUserId", new JSONObject((String) nodeService.getProperty(nodeRef, SignatureModel.PROP_RECIPIENTS_DATA)).get(userId));
+		if (task != null && personNodeRef != null) {
+			
+			String recipientData = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_RECIPIENTS_DATA);
+			
+			body.put("clientUserId", new JSONObject(recipientData).get(personNodeRef.toString()));
+		}
 
 		RestTemplate restTemplate = new RestTemplate();
 
@@ -314,12 +326,12 @@ public final class DocuSignServiceImpl implements SignatureService {
 	}
 	
 	@Override
-	public void checkinDocument(NodeRef nodeRef) {
-		signDocument(nodeRef);
+	public NodeRef checkinDocument(NodeRef nodeRef) {
+		return signDocument(nodeRef);
 	}
 
 	@Override
-	public void signDocument(NodeRef nodeRef) {
+	public NodeRef signDocument(NodeRef nodeRef) {
 
 		String accountId = signatureAuthorization.split(";")[0];
 
@@ -396,6 +408,8 @@ public final class DocuSignServiceImpl implements SignatureService {
 
 		cancelDocument(nodeRef);
 		
+		return nodeRef;
+		
 	}
 
 	private void writeContent(NodeRef nodeRef, byte[] ret) {
@@ -418,7 +432,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 	}
 
 	@Override
-	public void cancelDocument(NodeRef nodeRef) {
+	public NodeRef cancelDocument(NodeRef nodeRef) {
 
 		String accountId = signatureAuthorization.split(";")[0];
 
@@ -449,6 +463,8 @@ public final class DocuSignServiceImpl implements SignatureService {
 		}
 
 		nodeService.removeAspect(nodeRef, SignatureModel.ASPECT_SIGNATURE);
+		
+		return nodeRef;
 	}
 
 }

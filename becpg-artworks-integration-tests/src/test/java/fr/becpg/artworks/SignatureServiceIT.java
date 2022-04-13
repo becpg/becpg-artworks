@@ -43,20 +43,19 @@ import org.bouncycastle.tsp.TimeStampToken;
 import org.bouncycastle.tsp.TimeStampTokenInfo;
 import org.bouncycastle.util.Selector;
 import org.bouncycastle.util.Store;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import com.github.openjson.JSONArray;
-import com.github.openjson.JSONObject;
 
 import fr.becpg.artworks.signature.CertificateVerificationException;
 import fr.becpg.artworks.signature.SignatureService;
 import fr.becpg.artworks.signature.SignatureUtils;
 import fr.becpg.artworks.signature.model.SignatureModel;
+import fr.becpg.artworks.signature.model.SignatureStatus;
 
 @RunWith(AlfrescoTestRunner.class)
 public class SignatureServiceIT extends RepoBaseTest {
@@ -94,7 +93,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 		
 		NodeRef checkedOut = new NodeRef(signatureService.checkoutDocument(nodeRef));
 		
-		checkSignatureInformation(signer1, signer2, checkedOut, false, false, I18NUtil.getMessage("message.signature-status.inprogress"));
+		checkSignatureInformation(signer1, signer2, checkedOut, false, false, SignatureStatus.Prepared);
 
 		byte[] file = contentService.getReader(checkedOut, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
 
@@ -151,7 +150,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 		
 		NodeRef workingCopy = signatureService.prepareForSignature(nodeRef, Arrays.asList(signer1), false);
 		
-		String view = signatureService.getDocumentView(nodeRef, SIGNER_1, null);
+		String view = signatureService.getDocumentView(nodeRef, signer1, null);
 		
 		assertEquals("artworks-viewer?nodeRef=" + workingCopy + "&mode=sign&returnUrl=/share/page/context/mine/document-details?nodeRef=" + nodeRef, view);
 		
@@ -162,9 +161,11 @@ public class SignatureServiceIT extends RepoBaseTest {
 		checkDocMDPPermissions(signedFile, 2);
 		checkSignature(originalFile, signedFile, 1);
 
-		checkSignatureInformation(signer1, null, nodeRef, true, false, I18NUtil.getMessage("message.signature-status.inprogress"));
+		checkSignatureInformation(signer1, null, nodeRef, true, false, SignatureStatus.Initialized);
 
 		workingCopy = signatureService.prepareForSignature(nodeRef, Arrays.asList(signer2), false);
+		
+		checkSignatureInformation(signer1, signer2, nodeRef, true, false, SignatureStatus.Prepared);
 
 		signatureService.signDocument(workingCopy);
 
@@ -172,7 +173,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 
 		checkDocMDPPermissions(signedFile, 2);
 
-		checkSignatureInformation(signer1, signer2, nodeRef, true, true, I18NUtil.getMessage("message.signature-status.signed"));
+		checkSignatureInformation(signer1, signer2, nodeRef, true, true, SignatureStatus.Signed);
 	
 		checkSignature(originalFile, signedFile, 2);
 
@@ -197,7 +198,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 		
 		NodeRef workingCopy = new NodeRef(signatureService.checkoutDocument(nodeRef));
 		
-		String view = signatureService.getDocumentView(nodeRef, SIGNER_1, null);
+		String view = signatureService.getDocumentView(nodeRef, signer1, null);
 		
 		assertEquals("artworks-viewer?nodeRef=" + workingCopy + "&mode=sign&returnUrl=/share/page/context/mine/document-details?nodeRef=" + nodeRef, view);
 		
@@ -207,13 +208,13 @@ public class SignatureServiceIT extends RepoBaseTest {
 		
 		checkDocMDPPermissions(signedFile, 2);
 
-		checkSignatureInformation(signer1, signer2, nodeRef, true, true, I18NUtil.getMessage("message.signature-status.signed"));
+		checkSignatureInformation(signer1, signer2, nodeRef, true, true, SignatureStatus.Signed);
 
 		checkSignature(originalFile, signedFile, 2);
 
 	}
 
-	private void checkSignatureInformation(NodeRef signer1, NodeRef signer2, NodeRef nodeRef, boolean signer1Signed, boolean signer2Signed, String statusMessage) throws CertificateEncodingException, NoSuchAlgorithmException {
+	private void checkSignatureInformation(NodeRef signer1, NodeRef signer2, NodeRef nodeRef, boolean signer1Signed, boolean signer2Signed, SignatureStatus expectedStatus) throws CertificateEncodingException, NoSuchAlgorithmException {
 		JSONObject recipientDataJson = new JSONObject();
 
 	    Object recipientData = nodeService.getProperty(nodeRef, SignatureModel.PROP_RECIPIENTS_DATA);
@@ -252,9 +253,9 @@ public class SignatureServiceIT extends RepoBaseTest {
     		assertEquals(signer2Signed, signer2Json.has("contentThumbprint"));
     	}
     	
-	    String signatureStatus = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_STATUS);
+	    String actualStatus = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_STATUS);
 
-    	assertEquals(statusMessage, signatureStatus);
+    	assertEquals(expectedStatus.toString(), actualStatus);
     	
 	}
 
