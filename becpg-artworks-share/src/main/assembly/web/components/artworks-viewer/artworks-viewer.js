@@ -156,9 +156,6 @@
 							formData.append("updatenameandmimetype", "false")
 						} else {
 							var fileName = me.options.fileName;
-							if (fileName.indexOf(".") != -1){
-				         		 fileName = fileName.substr(0, fileName.lastIndexOf("."));
-				         	 }
 							fileName += ".pdf";
 							formData.append("filename", fileName);
 							formData.append("destination", me.options.parent);
