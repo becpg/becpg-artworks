@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +21,6 @@ import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -30,9 +28,7 @@ import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -76,6 +72,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import fr.becpg.artworks.helper.ContentHelper;
 import fr.becpg.artworks.signature.model.SignatureContext;
 import fr.becpg.artworks.signature.model.SignatureModel;
 import fr.becpg.artworks.signature.model.SignatureStatus;
@@ -111,8 +108,6 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	private ContentService contentService;
 	
-	private MimetypeService mimetypeService;
-	
 	private NodeService nodeService;
 	
 	private BehaviourFilter policyBehaviourFilter;
@@ -137,6 +132,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	private PersonService personService;
 	
+	private ContentHelper contentHelper;
+	
+	public void setContentHelper(ContentHelper contentHelper) {
+		this.contentHelper = contentHelper;
+	}
+	
 	public void setPersonService(PersonService personService) {
 		this.personService = personService;
 	}
@@ -149,10 +150,6 @@ public class PDFBoxServiceImpl implements SignatureService {
 		this.contentService = contentService;
 	}
 
-	public void setMimetypeService(MimetypeService mimetypeService) {
-		this.mimetypeService = mimetypeService;
-	}
-	
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
@@ -224,7 +221,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 			
 			byte[] preparedSignature = prepareForSignature(originalContentInputStream, context);
 			
-			writeNodeContent(workingCopyNode, preparedSignature);
+			contentHelper.writeContent(workingCopyNode, preparedSignature);
 			
 			return workingCopyNode;
 		} catch (IOException e) {
@@ -937,25 +934,6 @@ public class PDFBoxServiceImpl implements SignatureService {
 		}
 
 		return signatureField;
-	}
-	
-	private void writeNodeContent(NodeRef nodeRef, byte[] ret) {
-		ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-
-		try (InputStream targetStream = new ByteArrayInputStream(ret)) {
-
-			String mimetype = mimetypeService.guessMimetype(null, targetStream);
-			ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-			Charset charset = charsetFinder.getCharset(targetStream, mimetype);
-			String encoding = charset.name();
-
-			writer.setEncoding(encoding);
-			writer.setMimetype(mimetype);
-			writer.putContent(targetStream);
-
-		} catch (ContentIOException | IOException e) {
-			throw new SignatureException("Failed to write content to node " + nodeRef, e);
-		}
 	}
 	
 }

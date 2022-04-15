@@ -17,12 +17,9 @@
  ******************************************************************************/
 package fr.becpg.artworks.signature;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -32,15 +29,12 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -65,6 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import fr.becpg.artworks.helper.ContentHelper;
 import fr.becpg.artworks.signature.model.SignatureModel;
 
 /**
@@ -104,6 +99,12 @@ public final class DocuSignServiceImpl implements SignatureService {
 	private MimetypeService mimetypeService;
 	
 	private SysAdminParams sysAdminParams;
+	
+	private ContentHelper contentHelper;
+	
+	public void setContentHelper(ContentHelper contentHelper) {
+		this.contentHelper = contentHelper;
+	}
 
 	public void setSysAdminParams(SysAdminParams sysAdminParams) {
 		this.sysAdminParams = sysAdminParams;
@@ -368,7 +369,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 			Map<String, Serializable> versionProperties = new HashMap<>();
 			versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
 			checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
-			writeContent(nodeRef, signedDocumentBytes);
+			contentHelper.writeContent(nodeRef, signedDocumentBytes);
 		} else {
 			throw new WebScriptException("Signed document could not be retrieved from DocuSign");
 		}
@@ -400,7 +401,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 				checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
 			}
 
-			writeContent(certificateNode, certficateBytes);
+			contentHelper.writeContent(certificateNode, certficateBytes);
 
 		} else {
 			throw new WebScriptException("Signature Certificate could not be retrieved from DocuSign");
@@ -410,25 +411,6 @@ public final class DocuSignServiceImpl implements SignatureService {
 		
 		return nodeRef;
 		
-	}
-
-	private void writeContent(NodeRef nodeRef, byte[] ret) {
-		ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-
-		try (InputStream targetStream = new ByteArrayInputStream(ret)) {
-
-			String mimetype = mimetypeService.guessMimetype(null, targetStream);
-			ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-			Charset charset = charsetFinder.getCharset(targetStream, mimetype);
-			String encoding = charset.name();
-
-			writer.setEncoding(encoding);
-			writer.setMimetype(mimetype);
-			writer.putContent(targetStream);
-
-		} catch (ContentIOException | IOException e) {
-			logger.error("Failed to write content to node", e);
-		}
 	}
 
 	@Override
