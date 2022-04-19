@@ -76,12 +76,14 @@ public class ArtworksCustomResponse implements CustomResponse {
 			jsonObj.put("licenseKey", new String(Base64.getEncoder().encode(annotationViewerLicenseKey.getBytes())));
 			
 			Certificate[] certificationChain = SignatureUtils.getCertificateChain(signatureKeyStoreAlias);
-			X509Certificate certificate = (X509Certificate) certificationChain[0];
 			
-			try {
-				jsonObj.put("certificate", new String(certificate.getEncoded()));
-			} catch (CertificateEncodingException e) {
-				logger.error("Could not get the encoded certificate data", e);
+			if (certificationChain != null && certificationChain.length > 0 ) {
+				X509Certificate certificate = (X509Certificate) certificationChain[0];
+				try {
+					jsonObj.put("certificate", new String(certificate.getEncoded()));
+				} catch (CertificateEncodingException e) {
+					logger.error("Could not get the encoded certificate data", e);
+				}
 			}
 		}
 
