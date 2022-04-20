@@ -59,7 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import fr.becpg.artworks.helper.ContentHelper;
+import fr.becpg.artworks.helper.NodeContentHelper;
 import fr.becpg.artworks.signature.model.SignatureModel;
 
 /**
@@ -100,10 +100,10 @@ public final class DocuSignServiceImpl implements SignatureService {
 	
 	private SysAdminParams sysAdminParams;
 	
-	private ContentHelper contentHelper;
+	private NodeContentHelper nodeContentHelper;
 	
-	public void setContentHelper(ContentHelper contentHelper) {
-		this.contentHelper = contentHelper;
+	public void setNodeContentHelper(NodeContentHelper nodeContentHelper) {
+		this.nodeContentHelper = nodeContentHelper;
 	}
 
 	public void setSysAdminParams(SysAdminParams sysAdminParams) {
@@ -369,7 +369,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 			Map<String, Serializable> versionProperties = new HashMap<>();
 			versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
 			checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
-			contentHelper.writeContent(nodeRef, signedDocumentBytes);
+			nodeContentHelper.writeContent(nodeRef, signedDocumentBytes);
 		} else {
 			throw new WebScriptException("Signed document could not be retrieved from DocuSign");
 		}
@@ -401,7 +401,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 				checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
 			}
 
-			contentHelper.writeContent(certificateNode, certficateBytes);
+			nodeContentHelper.writeContent(certificateNode, certficateBytes);
 
 		} else {
 			throw new WebScriptException("Signature Certificate could not be retrieved from DocuSign");

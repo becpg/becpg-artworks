@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import fr.becpg.artworks.compare.pdfcompare.CompareResult;
 import fr.becpg.artworks.compare.pdfcompare.PdfComparator;
-import fr.becpg.artworks.helper.ContentHelper;
+import fr.becpg.artworks.helper.NodeContentHelper;
 
 @Service
 public class PdfFileComparePlugin implements CompareDocumentPlugin {
@@ -32,13 +32,13 @@ public class PdfFileComparePlugin implements CompareDocumentPlugin {
 	private MimetypeService mimetypeService;
 	
 	@Autowired
-	private ContentHelper contentHelper;
+	private NodeContentHelper nodeContentHelper;
 
 	@Override
 	public File compare(NodeRef node1, NodeRef node2) throws IOException {
 		
-		File file1 = contentHelper.createContentFile(node1);
-		File file2 = contentHelper.createContentFile(node2);
+		File file1 = nodeContentHelper.createContentFile(node1);
+		File file2 = nodeContentHelper.createContentFile(node2);
 
 		PdfComparator<CompareResult> pdfComparator = new PdfComparator<>(file1, file2);
 		
@@ -49,8 +49,8 @@ public class PdfFileComparePlugin implements CompareDocumentPlugin {
 		
 		pdfComparator.compare().writeTo(result.getPath().replace(name, fileName));
 
-		contentHelper.deleteFile(file1);
-		contentHelper.deleteFile(file2);
+		nodeContentHelper.deleteFile(file1);
+		nodeContentHelper.deleteFile(file2);
 
 		return result;
 		

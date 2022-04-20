@@ -22,9 +22,9 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class ContentHelper {
+public class NodeContentHelper {
 
-	private static final Log logger = LogFactory.getLog(ContentHelper.class);
+	private static final Log logger = LogFactory.getLog(NodeContentHelper.class);
 
 	private ContentService contentService;
 

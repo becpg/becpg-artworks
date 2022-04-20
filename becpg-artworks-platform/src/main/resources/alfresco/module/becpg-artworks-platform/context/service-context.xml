@@ -51,7 +51,7 @@
 	</bean>
 
 	<bean id="signatureService" class="fr.becpg.artworks.signature.PDFBoxServiceImpl">
-		<property name="contentHelper" ref="contentHelper" />
+		<property name="nodeContentHelper" ref="nodeContentHelper" />
 		<property name="contentService" ref="contentService" />
 		<property name="checkOutCheckInService" ref="checkOutCheckInService" />
 		<property name="nodeService" ref="nodeService" />
@@ -67,7 +67,7 @@
 <!-- 		<property name="signatureAuthorization" value="${beCPG.signatureAuthorization}" /> -->
 <!-- 		<property name="mimetypeService" ref="mimetypeService" /> -->
 <!-- 		<property name="sysAdminParams" ref="sysAdminParams" /> -->
-<!-- 		<property name="contentHelper" ref="contentHelper" /> -->
+<!-- 		<property name="nodeContentHelper" ref="nodeContentHelper" /> -->
 <!-- 	</bean> -->
 	
 	<bean id="signatureScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.signature.jscript.SignatureScriptHelper">
@@ -78,7 +78,7 @@
 		<property name="serviceRegistry" ref="ServiceRegistry" />
 	</bean>
 	
-	<bean id="contentHelper" class="fr.becpg.artworks.helper.ContentHelper">
+	<bean id="nodeContentHelper" class="fr.becpg.artworks.helper.NodeContentHelper">
 		<property name="contentService" ref="contentService" />
 		<property name="mimetypeService" ref="mimetypeService" />
 		<property name="nodeService" ref="nodeService" />

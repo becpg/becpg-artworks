@@ -17,7 +17,7 @@ import com.github.romankh3.image.comparison.ImageComparison;
 import com.github.romankh3.image.comparison.ImageComparisonUtil;
 import com.github.romankh3.image.comparison.model.ImageComparisonResult;
 
-import fr.becpg.artworks.helper.ContentHelper;
+import fr.becpg.artworks.helper.NodeContentHelper;
 
 @Service
 public class ImageFileComparePlugin implements CompareDocumentPlugin {
@@ -35,7 +35,7 @@ public class ImageFileComparePlugin implements CompareDocumentPlugin {
 	private MimetypeService mimetypeService;
 	
 	@Autowired
-	private ContentHelper contentHelper;
+	private NodeContentHelper nodeContentHelper;
 
 	@Override
 	public boolean accepts(NodeRef nodeRef) {
@@ -51,8 +51,8 @@ public class ImageFileComparePlugin implements CompareDocumentPlugin {
 	@Override
 	public File compare(NodeRef node1, NodeRef node2) throws IOException {
 		
-		File file1 = contentHelper.createContentFile(node1);
-		File file2 = contentHelper.createContentFile(node2);
+		File file1 = nodeContentHelper.createContentFile(node1);
+		File file2 = nodeContentHelper.createContentFile(node2);
 		
 		BufferedImage image1 = ImageComparisonUtil.readImageFromResources(file1.getAbsolutePath());
         BufferedImage image2 = ImageComparisonUtil.readImageFromResources(file2.getAbsolutePath());
@@ -65,8 +65,8 @@ public class ImageFileComparePlugin implements CompareDocumentPlugin {
         
         ImageComparisonUtil.saveImage(resultFile, imageResult.getResult());
 
-        contentHelper.deleteFile(file1);
-        contentHelper.deleteFile(file2);
+        nodeContentHelper.deleteFile(file1);
+        nodeContentHelper.deleteFile(file2);
 
 		return resultFile;
 

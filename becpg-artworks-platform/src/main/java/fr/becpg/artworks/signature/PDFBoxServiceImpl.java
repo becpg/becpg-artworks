@@ -72,7 +72,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import fr.becpg.artworks.helper.ContentHelper;
+import fr.becpg.artworks.helper.NodeContentHelper;
 import fr.becpg.artworks.signature.model.SignatureContext;
 import fr.becpg.artworks.signature.model.SignatureModel;
 import fr.becpg.artworks.signature.model.SignatureStatus;
@@ -132,10 +132,10 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	private PersonService personService;
 	
-	private ContentHelper contentHelper;
+	private NodeContentHelper nodeContentHelper;
 	
-	public void setContentHelper(ContentHelper contentHelper) {
-		this.contentHelper = contentHelper;
+	public void setNodeContentHelper(NodeContentHelper nodeContentHelper) {
+		this.nodeContentHelper = nodeContentHelper;
 	}
 	
 	public void setPersonService(PersonService personService) {
@@ -221,7 +221,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 			
 			byte[] preparedSignature = prepareForSignature(originalContentInputStream, context);
 			
-			contentHelper.writeContent(workingCopyNode, preparedSignature);
+			nodeContentHelper.writeContent(workingCopyNode, preparedSignature);
 			
 			return workingCopyNode;
 		} catch (IOException e) {
