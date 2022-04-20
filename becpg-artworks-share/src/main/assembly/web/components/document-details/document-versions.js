@@ -234,11 +234,6 @@
         var downloadURL = Alfresco.constants.PROXY_URI + 'api/node/content/' + doc.nodeRef.replace(":/", "") + '/' + encodeURI(doc.name) + '?a=true',
             html = '';
 
-		//beCPG #9608
-		if (doc.isComparable == "true"){
-			var compareURL = Alfresco.constants.PROXY_URI + 'becpg/document/compare/' + this.options.nodeRef.replace(":/", "") + "/compare?entities="+doc.nodeRef;
-		}
-		
          html += '<div class="version-panel-left">'
          html += '   <span class="document-version">' + $html(doc.label) + '</span>';
          html += '</div>';
@@ -250,9 +245,6 @@
             html += '   <a href="#" name=".onRevertVersionClick" rel="' + doc.label + '" class="' + this.id + ' revert" title="' + this.msg("label.revert") + '">&nbsp;</a>';
          }
          html += '      <a href="' + downloadURL + '" target="_blank" class="download" title="' + this.msg("label.download") + '">&nbsp;</a>';
-		if(compareURL!=null){
-             html += '   <a href="' + compareURL + '" target="_blank" class="compare" title="' + Alfresco.util.message("label.compare") + '">&nbsp;</a>';
-         }
          html += '      <a href="#" name=".onViewHistoricPropertiesClick" rel="' + doc.nodeRef + '" class="' + this.id + ' historicProperties" title="' + this.msg("label.historicProperties") + '">&nbsp;</a>';
          html += '   </span>';
          html += '   <div class="clear"></div>';

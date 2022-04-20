@@ -64,10 +64,6 @@ function main() {
 					version = versionHistory[i];
 					p = getPerson(version.creator);
 
-					var mimetype = version.node.getMimetype();
-
-					var isComp = (mimetype == node.getMimetype()) && (mimetype.contains("image") || mimetype.contains("pdf"));
-					
 					versions[versions.length] =
 					{
 						nodeRef: version.node.nodeRef.toString(),
@@ -81,7 +77,6 @@ function main() {
 							firstName: p.firstName,
 							lastName: p.lastName
 						},
-						isComparable: isComp ? "true" : "false"
 					};
 				}
 			}
@@ -101,7 +96,6 @@ function main() {
 						firstName: p.firstName,
 						lastName: p.lastName
 					},
-					isComparable: "false"
 				};
 			}
 

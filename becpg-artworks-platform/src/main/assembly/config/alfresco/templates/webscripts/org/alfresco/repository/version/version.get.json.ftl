@@ -13,8 +13,7 @@
          "userName": "${v.creator.userName}",
          "firstName": "${v.creator.firstName!""}",
          "lastName": "${v.creator.lastName!""}"
-      },
-      "isComparable": "${v.isComparable}"
+      }
    }<#if (v_has_next)>,</#if>
 </#list>
 ]
