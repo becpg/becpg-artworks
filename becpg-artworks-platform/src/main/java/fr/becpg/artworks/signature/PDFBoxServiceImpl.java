@@ -219,9 +219,9 @@ public class PDFBoxServiceImpl implements SignatureService {
 			
 			InputStream originalContentInputStream = contentService.getReader(originalNode, ContentModel.PROP_CONTENT).getContentInputStream();
 			
-			byte[] preparedSignature = prepareForSignature(originalContentInputStream, context);
+			byte[] preparedDocument = prepareForSignature(originalContentInputStream, context);
 			
-			nodeContentHelper.writeContent(workingCopyNode, preparedSignature);
+			nodeContentHelper.writeContent(workingCopyNode, preparedDocument);
 			
 			return workingCopyNode;
 		} catch (IOException e) {

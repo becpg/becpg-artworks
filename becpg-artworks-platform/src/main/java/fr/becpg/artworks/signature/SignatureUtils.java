@@ -58,7 +58,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class SignatureUtils {
 	
-    private static final Log logger = LogFactory.getLog(SignatureUtils.class);
+    	private static final String REFERENCE = "Reference";
+
+	private static final String TRANSFORM_METHOD = "TransformMethod";
+
+	private static final String TRANSFORM_PARAMS = "TransformParams";
+
+	private static final Log logger = LogFactory.getLog(SignatureUtils.class);
 
 	private static String encryptionKeystoreType;
 	
@@ -125,7 +131,7 @@ public class SignatureUtils {
 			try {
 				certificateChainCache.put(alias, getAlfrescoKeyStore().getCertificateChain(alias));
 			} catch (KeyStoreException e) {
-				throw new SignatureException("Failed to get certificate chain from store flor alias : " + alias);
+				throw new SignatureException("Failed to get certificate chain from store for alias : " + alias);
 			}
 		}
 		
@@ -151,7 +157,7 @@ public class SignatureUtils {
             COSDictionary signatureDict = permsDict.getCOSDictionary(COSName.DOCMDP);
             if (signatureDict != null)
             {
-                COSArray refArray = signatureDict.getCOSArray(COSName.getPDFName("Reference"));
+                COSArray refArray = signatureDict.getCOSArray(COSName.getPDFName(REFERENCE));
                 if (refArray != null)
                 {
                     for (int i = 0; i < refArray.size(); ++i)
@@ -160,9 +166,9 @@ public class SignatureUtils {
                         if (base instanceof COSDictionary)
                         {
                             COSDictionary sigRefDict = (COSDictionary) base;
-                            if (COSName.DOCMDP.equals(sigRefDict.getDictionaryObject(COSName.getPDFName("TransformMethod"))))
+                            if (COSName.DOCMDP.equals(sigRefDict.getDictionaryObject(COSName.getPDFName(TRANSFORM_METHOD))))
                             {
-                                base = sigRefDict.getDictionaryObject(COSName.getPDFName("TransformParams"));
+                                base = sigRefDict.getDictionaryObject(COSName.getPDFName(TRANSFORM_PARAMS));
                                 if (base instanceof COSDictionary)
                                 {
                                     COSDictionary transformDict = (COSDictionary) base;
@@ -214,21 +220,21 @@ public class SignatureUtils {
 
         // DocMDP specific stuff
         COSDictionary transformParameters = new COSDictionary();
-        transformParameters.setItem(COSName.TYPE, COSName.getPDFName("TransformParams"));
+        transformParameters.setItem(COSName.TYPE, COSName.getPDFName(TRANSFORM_PARAMS));
         transformParameters.setInt(COSName.P, accessPermissions);
         transformParameters.setName(COSName.V, "1.2");
         transformParameters.setNeedToBeUpdated(true);
 
         COSDictionary referenceDict = new COSDictionary();
         referenceDict.setItem(COSName.TYPE, COSName.getPDFName("SigRef"));
-        referenceDict.setItem(COSName.getPDFName("TransformMethod"), COSName.DOCMDP);
+        referenceDict.setItem(COSName.getPDFName(TRANSFORM_METHOD), COSName.DOCMDP);
         referenceDict.setItem(COSName.DIGEST_METHOD, COSName.getPDFName("SHA1"));
-        referenceDict.setItem(COSName.getPDFName("TransformParams"), transformParameters);
+        referenceDict.setItem(COSName.getPDFName(TRANSFORM_PARAMS), transformParameters);
         referenceDict.setNeedToBeUpdated(true);
 
         COSArray referenceArray = new COSArray();
         referenceArray.add(referenceDict);
-        sigDict.setItem(COSName.getPDFName("Reference"), referenceArray);
+        sigDict.setItem(COSName.getPDFName(REFERENCE), referenceArray);
         referenceArray.setNeedToBeUpdated(true);
 
         // Catalog
