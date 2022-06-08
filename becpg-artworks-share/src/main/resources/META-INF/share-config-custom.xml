@@ -293,7 +293,18 @@
 				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
-				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusInitialized</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.isStatusReadyToSign</evaluator>
+				<evaluator negate="true">evaluator.doclib.metadata.isLocked</evaluator>
+			</action>
+			<action id="signature-sign-view" type="javascript" icon="document-upload-new-version" label="actions.document.signature-prepare">
+				<param name="function">onActionViewSignature</param>
+				<permissions>
+					<permission allow="true">Write</permission>
+				</permissions>
+				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.signature.isStatusPrepared</evaluator>
 				<evaluator negate="true">evaluator.doclib.metadata.isLocked</evaluator>
 			</action>
 		</actions>
@@ -311,6 +322,7 @@
 				<action index="430" subgroup="40" id="signature-sign-and-checkin" />
 				<action index="431" subgroup="40" id="signature-cancel" />
 				<action index="432" subgroup="40" id="signature-view" />
+				<action index="433" subgroup="40" id="signature-sign-view" />
 			</actionGroup>
 
 			<actionGroup id="document-browse">
@@ -326,6 +338,7 @@
 				<action index="150"  id="signature-sign-and-checkin" />
 				<action index="151"  id="signature-cancel" />
 				<action index="152"  id="signature-view" />
+				<action index="153"  id="signature-sign-view" />
 			</actionGroup>
 			
 		</actionGroups>	

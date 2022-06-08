@@ -309,8 +309,6 @@ public class PDFBoxServiceImpl implements SignatureService {
         
         if (task != null) {
         	requestParams += "&taskId={task|pjt:tlWorkflowTaskInstance}";
-        } else {
-        	requestParams += "&returnUrl=/share/page/context/mine/document-details?nodeRef=" + nodeRef;
         }
         
         return "artworks-viewer" + requestParams;
@@ -675,6 +673,11 @@ public class PDFBoxServiceImpl implements SignatureService {
 				try {
 					
 					Certificate[] certificationChain = SignatureUtils.getCertificateChain(alias);
+					
+					if (certificationChain == null) {
+						throw new SignatureException("Signature certificate could not be found for alias: " + alias);
+					}
+					
 					X509Certificate certificate = (X509Certificate) certificationChain[0];
 					PrivateKey privateKey = SignatureUtils.getSignaturePrivateKey(alias, password);
 					

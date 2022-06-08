@@ -113,7 +113,7 @@ keytool -importkeystore \
 To create a new certificate for test purpose:
 
 ```bash
-  keytool -genkeypair -alias [some-alias] -validity 365 -keyalg RSA -keysize 2048 -keypass oKIWzVdEdA -storetype JCEKS -keystore /usr/local/tomcat/shared/classes/alfresco/extension/keystore -storepass mp6yc0UD9e     
+  keytool -genkeypair -alias [some-alias] -validity 365 -keyalg RSA -keysize 2048 -keypass oKIWzVdEdA -storetype JCEKS -keystore /usr/local/tomcat/shared/classes/alfresco/extension/keystore/keystore -storepass mp6yc0UD9e     
 ```
 
 
