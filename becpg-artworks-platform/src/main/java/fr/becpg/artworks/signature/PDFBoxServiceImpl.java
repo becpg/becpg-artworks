@@ -188,27 +188,31 @@ public class PDFBoxServiceImpl implements SignatureService {
 	@Override
 	public NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params) {
 		
-		if (logger.isDebugEnabled()) {
-			logger.debug("prepareForSignature : originalNode = " + originalNode + ", recipients = " + recipients + ", params = " + (params == null ? params : Arrays.asList(params)));
-		}
-		
-		List<NodeRef> nodeRecipients = new ArrayList<>();
-		
-		nodeService.getTargetAssocs(originalNode, SignatureModel.ASSOC_RECIPIENTS)
-		.forEach(assoc -> nodeRecipients.add(assoc.getTargetRef()));
-		
-		// if no recipient set : take all the recipients from node aspect
-		if (recipients.isEmpty()) {
-			recipients.addAll(nodeRecipients);
-		}
-		
-		SignatureContext context = buildSignatureContext(nodeRecipients, recipients, params);
-		
-		if (logger.isDebugEnabled()) {
-			logger.debug(context.toString());
-		}
-		
 		try {
+			
+			policyBehaviourFilter.disableBehaviour(SignatureModel.ASPECT_SIGNATURE);
+			
+			if (logger.isDebugEnabled()) {
+				logger.debug("prepareForSignature : originalNode = " + originalNode + ", recipients = " + recipients + ", params = " + (params == null ? params : Arrays.asList(params)));
+			}
+			
+			List<NodeRef> nodeRecipients = new ArrayList<>();
+			
+			nodeService.getTargetAssocs(originalNode, SignatureModel.ASSOC_RECIPIENTS)
+			.forEach(assoc -> nodeRecipients.add(assoc.getTargetRef()));
+			
+			// if no recipient set : take all the recipients from node aspect
+			if (recipients.isEmpty()) {
+				recipients.addAll(nodeRecipients);
+			}
+			
+			SignatureContext context = buildSignatureContext(nodeRecipients, recipients, params);
+			
+			if (logger.isDebugEnabled()) {
+				logger.debug(context.toString());
+			}
+		
+		
 			updatePreparationInformation(originalNode, context);
 			
 			for (NodeRef recipient : recipients) {
@@ -227,42 +231,52 @@ public class PDFBoxServiceImpl implements SignatureService {
 		} catch (IOException e) {
 			String documentName = (String) nodeService.getProperty(originalNode, ContentModel.PROP_NAME);
 			throw new SignatureException("Error while preparing signature for '" + documentName + "' : " + e.getMessage());
+		} finally {
+			policyBehaviourFilter.enableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 		}
 	    
 	}
 	
 	@Override
 	public NodeRef signDocument(NodeRef nodeRef) {
-		
-		NodeRef signingNode = nodeRef;
-		
-		boolean checkin = false;
-		
-		if (nodeService.hasAspect(signingNode, ContentModel.ASPECT_WORKING_COPY)) {
-			checkin = true;
-		} else {
-			List<AssociationRef> workingCopyAssocs = nodeService.getTargetAssocs(signingNode, ContentModel.ASSOC_WORKING_COPY_LINK);
-			
-			if (!workingCopyAssocs.isEmpty()) {
-				signingNode = workingCopyAssocs.get(0).getTargetRef();
-				checkin = true;
-			}
-		}
-		
-		List<AssociationRef> preparedRecipients = nodeService.getTargetAssocs(signingNode, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
 
-		for (AssociationRef preparedRecipient : preparedRecipients) {
-			sign(signingNode, preparedRecipient.getTargetRef());
-		}
-		
-		if (checkin) {
-			nodeRef = checkOutCheckInService.checkin(signingNode, null);
-			
-			for (AssociationRef preparedRecipient : preparedRecipients) {
-				nodeService.removeAssociation(nodeRef, preparedRecipient.getTargetRef(), SignatureModel.ASSOC_PREPARED_RECIPIENTS);
+		try {
+
+			policyBehaviourFilter.disableBehaviour(SignatureModel.ASPECT_SIGNATURE);
+
+			NodeRef signingNode = nodeRef;
+
+			boolean checkin = false;
+
+			if (nodeService.hasAspect(signingNode, ContentModel.ASPECT_WORKING_COPY)) {
+				checkin = true;
+			} else {
+				List<AssociationRef> workingCopyAssocs = nodeService.getTargetAssocs(signingNode, ContentModel.ASSOC_WORKING_COPY_LINK);
+
+				if (!workingCopyAssocs.isEmpty()) {
+					signingNode = workingCopyAssocs.get(0).getTargetRef();
+					checkin = true;
+				}
 			}
+
+			List<AssociationRef> preparedRecipients = nodeService.getTargetAssocs(signingNode, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
+
+			for (AssociationRef preparedRecipient : preparedRecipients) {
+				sign(signingNode, preparedRecipient.getTargetRef());
+			}
+
+			if (checkin) {
+				nodeRef = checkOutCheckInService.checkin(signingNode, null);
+
+				for (AssociationRef preparedRecipient : preparedRecipients) {
+					nodeService.removeAssociation(nodeRef, preparedRecipient.getTargetRef(), SignatureModel.ASSOC_PREPARED_RECIPIENTS);
+				}
+			}
+
+		} finally {
+			policyBehaviourFilter.enableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 		}
-		
+
 		return nodeRef;
 	}
 
@@ -316,14 +330,14 @@ public class PDFBoxServiceImpl implements SignatureService {
 				
 	private void sign(NodeRef nodeRef, NodeRef recipient) {
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("sign : nodeRef = " + nodeRef + ", recipient = " + recipient);
-		}
-
 		try {
 
 			policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-
+			
+			if (logger.isDebugEnabled()) {
+				logger.debug("sign : nodeRef = " + nodeRef + ", recipient = " + recipient);
+			}
+	
 			try {
 				signContent(nodeRef, recipient);
 			} catch (IOException e) {
@@ -337,7 +351,6 @@ public class PDFBoxServiceImpl implements SignatureService {
 			} catch (InvalidTypeException | ContentIOException | InvalidNodeRefException | IOException e) {
 				throw new SignatureException("Failed to update signature information", e);
 			}
-			
 		} finally {
 			policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
 		}

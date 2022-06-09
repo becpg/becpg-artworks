@@ -30,6 +30,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -101,6 +102,12 @@ public final class DocuSignServiceImpl implements SignatureService {
 	private SysAdminParams sysAdminParams;
 	
 	private NodeContentHelper nodeContentHelper;
+	
+	private BehaviourFilter policyBehaviourFilter;
+
+	public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter) {
+		this.policyBehaviourFilter = policyBehaviourFilter;
+	}
 	
 	public void setNodeContentHelper(NodeContentHelper nodeContentHelper) {
 		this.nodeContentHelper = nodeContentHelper;
@@ -334,82 +341,89 @@ public final class DocuSignServiceImpl implements SignatureService {
 	@Override
 	public NodeRef signDocument(NodeRef nodeRef) {
 
-		String accountId = signatureAuthorization.split(";")[0];
-
-		String accessToken = signatureAuthorization.split(";")[1];
-
-		String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_DOCUMENT_IDENTIFIER);
-
-		String url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId;
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.add(AUTHORIZATION, BEARER + accessToken);
-
-		RestTemplate restTemplate = new RestTemplate();
-
-		HttpEntity<String> entity = new HttpEntity<>(headers);
-
-		ResponseEntity<String> statusResponse = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-
-		String status = new JSONObject(statusResponse.getBody()).getString("status");
-
-		if (!"completed".equalsIgnoreCase(status)) {
-			throw new WebScriptException("Document signature is not completed");
-		}
-
-		url += "/documents/1/";
-
-		ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
-
-		byte[] signedDocumentBytes = response.getBody();
-
-		if (signedDocumentBytes != null) {
-
-			NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(nodeRef);
-			Map<String, Serializable> versionProperties = new HashMap<>();
-			versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
-			checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
-			nodeContentHelper.writeContent(nodeRef, signedDocumentBytes);
-		} else {
-			throw new WebScriptException("Signed document could not be retrieved from DocuSign");
-		}
-
-		url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId + "/documents/certificate";
-
-		ResponseEntity<byte[]> certificateResponse = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
-
-		byte[] certficateBytes = certificateResponse.getBody();
-
-		if (certficateBytes != null) {
-
-			String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME) + " - Signature Certificate";
-
-			NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-
-			NodeRef certificateNode = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, name);
-
-			if (certificateNode == null) {
-				Map<QName, Serializable> props = new HashMap<>();
-				props.put(ContentModel.PROP_NAME, name);
-				certificateNode = nodeService
-						.createNode(parent, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, props).getChildRef();
-				nodeService.addAspect(certificateNode, ContentModel.ASPECT_VERSIONABLE, null);
-			} else {
-				NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(certificateNode);
+		try {
+			
+			policyBehaviourFilter.disableBehaviour(SignatureModel.ASPECT_SIGNATURE);
+			
+			String accountId = signatureAuthorization.split(";")[0];
+			
+			String accessToken = signatureAuthorization.split(";")[1];
+			
+			String envelopeId = (String) nodeService.getProperty(nodeRef, SignatureModel.PROP_DOCUMENT_IDENTIFIER);
+			
+			String url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId;
+			
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(AUTHORIZATION, BEARER + accessToken);
+			
+			RestTemplate restTemplate = new RestTemplate();
+			
+			HttpEntity<String> entity = new HttpEntity<>(headers);
+			
+			ResponseEntity<String> statusResponse = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+			
+			String status = new JSONObject(statusResponse.getBody()).getString("status");
+			
+			if (!"completed".equalsIgnoreCase(status)) {
+				throw new WebScriptException("Document signature is not completed");
+			}
+			
+			url += "/documents/1/";
+			
+			ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
+			
+			byte[] signedDocumentBytes = response.getBody();
+			
+			if (signedDocumentBytes != null) {
+				
+				NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(nodeRef);
 				Map<String, Serializable> versionProperties = new HashMap<>();
 				versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
 				checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
+				nodeContentHelper.writeContent(nodeRef, signedDocumentBytes);
+			} else {
+				throw new WebScriptException("Signed document could not be retrieved from DocuSign");
 			}
-
-			nodeContentHelper.writeContent(certificateNode, certficateBytes);
-
-		} else {
-			throw new WebScriptException("Signature Certificate could not be retrieved from DocuSign");
+			
+			url = DOCUSIGN_BASE_URL + accountId + ENVELOPES + envelopeId + "/documents/certificate";
+			
+			ResponseEntity<byte[]> certificateResponse = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
+			
+			byte[] certficateBytes = certificateResponse.getBody();
+			
+			if (certficateBytes != null) {
+				
+				String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME) + " - Signature Certificate";
+				
+				NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+				
+				NodeRef certificateNode = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, name);
+				
+				if (certificateNode == null) {
+					Map<QName, Serializable> props = new HashMap<>();
+					props.put(ContentModel.PROP_NAME, name);
+					certificateNode = nodeService
+							.createNode(parent, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, props).getChildRef();
+					nodeService.addAspect(certificateNode, ContentModel.ASPECT_VERSIONABLE, null);
+				} else {
+					NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(certificateNode);
+					Map<String, Serializable> versionProperties = new HashMap<>();
+					versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
+					checkOutCheckInService.checkin(workingCopyNodeRef, versionProperties);
+				}
+				
+				nodeContentHelper.writeContent(certificateNode, certficateBytes);
+				
+			} else {
+				throw new WebScriptException("Signature Certificate could not be retrieved from DocuSign");
+			}
+			
+			cancelDocument(nodeRef);
+			
+			return nodeRef;
+		} finally {
+			policyBehaviourFilter.enableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 		}
-
-		cancelDocument(nodeRef);
-		
-		return nodeRef;
 		
 	}
 

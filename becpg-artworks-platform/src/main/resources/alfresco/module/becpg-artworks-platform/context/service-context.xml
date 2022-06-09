@@ -66,6 +66,7 @@
 <!-- 		<property name="mimetypeService" ref="mimetypeService" /> -->
 <!-- 		<property name="sysAdminParams" ref="sysAdminParams" /> -->
 <!-- 		<property name="nodeContentHelper" ref="nodeContentHelper" /> -->
+<!--         <property name="policyBehaviourFilter" ref="policyBehaviourFilter"/> -->
 <!-- 	</bean> -->
 	
 	<bean id="signatureScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.signature.jscript.SignatureScriptHelper">
@@ -79,6 +80,11 @@
 	<bean id="nodeContentHelper" class="fr.becpg.artworks.helper.NodeContentHelper">
 		<property name="contentService" ref="contentService" />
 		<property name="mimetypeService" ref="mimetypeService" />
+		<property name="nodeService" ref="nodeService" />
+	</bean>
+	
+	<bean id="signatureContentPolicy" class="fr.becpg.artworks.policy.SignatureContentPolicy" init-method="init" >
+		<property name="policyComponent" ref="policyComponent" />
 		<property name="nodeService" ref="nodeService" />
 	</bean>
 	
