@@ -18,7 +18,7 @@ https://www.becpg.fr/
 ### Annotation feature
 
 Annotation feature is provided with two implementations:
- * Standalone using  [PDFTron](https://www.pdftron.com/) proprietary library, providing actions uppon PDF document :
+ * Standalone using  [PDFTron](https://www.pdftron.com/) proprietary library, providing actions upon PDF document :
    * Add annotations
 		![](docs/images/annotation3.png)
    * Track text changes
@@ -31,6 +31,9 @@ Annotation feature is provided with two implementations:
 		![](docs/images/layers.png)
    * Perform measurement
 		![](docs/images/measure.png)
+
+(To use pdftron you have to download it and place it to
+ /becpg-artworks-share/src/mains/assembly/web/components/artworks-viewer/pdftron/ See Install instructions in pdftron folder)
 
 
  * Or external using [Kami](https://www.kamiapp.com/) annotation manager 
@@ -76,8 +79,6 @@ For details on how to use internal signatures refers to API
 ### Prerequisites
 
 -  Alfresco 7
-
-
 
 ### Build
 
