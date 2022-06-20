@@ -287,6 +287,10 @@
 						});
 					
 					} else if (me.options.compareContentURL != null) {
+						
+						documentViewer.addEventListener('documentLoaded', () => {
+							instance.UI.setLayoutMode(instance.UI.LayoutMode.FacingContinuous);
+						});
 
 						await PDFNet.initialize();
 
