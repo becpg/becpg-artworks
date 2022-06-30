@@ -258,7 +258,7 @@
 								var allSigned = true;
 								
 								signatureWidgetAnnots.forEach(annot => {
-									if (annot.annot == null && (annot.Wa.jd == me.options.userId || annot.Wa.jd == (me.options.userId + "-signature"))) {
+									if (annot.annot == null) {
 										allSigned = false;
 									}
 								});

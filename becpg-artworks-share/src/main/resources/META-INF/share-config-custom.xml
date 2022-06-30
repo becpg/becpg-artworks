@@ -293,7 +293,8 @@
 				<evaluator>evaluator.becpg.doclib.action.signature.isEnabled</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
-				<evaluator>evaluator.becpg.doclib.action.signature.isStatusReadyToSign</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusInitialized</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusPrepared</evaluator>
 				<evaluator negate="true">evaluator.doclib.metadata.isLocked</evaluator>
 			</action>
 			<action id="signature-sign-view" type="javascript" icon="document-upload-new-version" label="actions.document.signature-prepare">
