@@ -59,15 +59,15 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 			recipientNodes.add(recipient.getNodeRef());
 		}
 		
-		return new ScriptNode(signatureService.prepareForSignature(document.getNodeRef(), recipientNodes, false, params), serviceRegistry);
+		return new ScriptNode(signatureService.prepareForSignature(document.getNodeRef(), recipientNodes, false, params), serviceRegistry, getScope());
 	}
 
 	public void checkinDocument(ScriptNode document) {
 		signatureService.checkinDocument(document.getNodeRef());
 	}
 	
-	public void signDocument(ScriptNode document) {
-		signatureService.signDocument(document.getNodeRef());
+	public ScriptNode signDocument(ScriptNode document) {
+		return new ScriptNode(signatureService.signDocument(document.getNodeRef()), serviceRegistry, getScope());
 	}
 
 }
