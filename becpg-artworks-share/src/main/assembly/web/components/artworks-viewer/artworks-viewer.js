@@ -266,7 +266,7 @@
 								if (allSigned && action == "delete") {
 									signatureWidgetAnnots.forEach(signatureWidgetAnnot => {
 										annotations.forEach(annotation => {
-											if (signatureWidgetAnnot.annot === annotation && (signatureWidgetAnnot.Wa.jd == me.options.userId || signatureWidgetAnnot.Wa.jd == (me.options.userId + "-signature"))) {
+											if (signatureWidgetAnnot.annot === annotation) {
 												allSigned = false;
 											}
 										});
