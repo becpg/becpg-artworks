@@ -39,13 +39,14 @@ function main() {
 				model.returnUrl = "/share/page/context/mine/document-details?nodeRef=" + model.nodeRef;
 			}
 			
+			var showBackButton = true;
+			
 			if (model.mode == "sign") {
-				if (model.node.properties["sign:status"] == "Signed") {
-					model.mode = "signedView";
-				}
+				model.signatureStatus = model.node.properties["sign:status"];
+				showBackButton = model.signatureStatus == "Signed";
 			}
 			
-			if (model.mode != "sign") {
+			if (showBackButton) {
 				model.linkButtons.push({
 					id: "back-button",
 					href : model.returnUrl,
@@ -82,6 +83,7 @@ function main() {
       options : {
          nodeRef :  (page.url.args.nodeRef != null) ? page.url.args.nodeRef : "",
          mode :  (model.mode != null) ? model.mode : "annotation",
+         signatureStatus :  model.signatureStatus != null ? model.signatureStatus : null,
          compareContentURL : model.compareContentURL!=null ? model.compareContentURL : null,
 		 contentURL : model.contentURL!=null ? model.contentURL : null,
 	     fileName : model.displayName,

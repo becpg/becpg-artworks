@@ -186,7 +186,7 @@
 					};
 						
 
-					if (me.options.mode == "sign" || me.options.mode == "signedView") {
+					if (me.options.mode == "sign") {
 						
 						instance.UI.disableElements(['ribbons']);
 						instance.UI.disableElements(['freeHandToolGroupButton']);
@@ -222,7 +222,7 @@
 						instance.UI.disableElements(['squigglyToolGroupButton']);
 						instance.UI.disableElements(['stickyToolGroupButton']);
 
-						if (me.options.mode == "signedView") {
+						if (me.options.signatureStatus == "Signed") {
 							saveButton.style.display = "none";
 							instance.UI.openElements(['leftPanel', 'signaturePanel' ]);
 							instance.UI.disableElements(['toolsHeader']);
@@ -236,11 +236,16 @@
 						const createSignHereElement = instance.Annotations.SignatureWidgetAnnotation.prototype.createSignHereElement;
 
 						instance.Annotations.SignatureWidgetAnnotation.prototype.createSignHereElement = function() {
-						  // signHereElement is the default one with dark blue background
-						  const signHereElement = createSignHereElement.apply(this, arguments);
-						
-						  signHereElement.style.background = 'red';
-						  return signHereElement;
+
+							if (me.options.signatureStatus == "ReadyToSign") {
+								return null;
+							}
+							
+							// signHereElement is the default one with dark blue background
+							const signHereElement = createSignHereElement.apply(this, arguments);
+
+							signHereElement.style.background = 'red';
+							return signHereElement;
 						}
 							
 						signatureTool.addEventListener('locationSelected', () => {
@@ -258,7 +263,7 @@
 								var allSigned = true;
 								
 								signatureWidgetAnnots.forEach(annot => {
-									if (annot.annot == null) {
+									if (annot.annot == null && (annot.Qa.qd == me.options.userId || annot.Qa.qd == (me.options.userId + "-signature"))) {
 										allSigned = false;
 									}
 								});

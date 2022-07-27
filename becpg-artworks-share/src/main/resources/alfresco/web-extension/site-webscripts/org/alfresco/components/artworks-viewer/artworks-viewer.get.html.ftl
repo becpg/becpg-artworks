@@ -104,7 +104,7 @@
 	               </div>
 	               <div class="yui-u quickshare-node-action"> 
 	               <#assign saveButtonLabel = msg("button.save")>
-	               <#if mode?? && mode == "sign">
+	               <#if mode?? && mode == "sign" && signatureStatus != "Signed" >
 	              	  <#assign saveButtonLabel = msg("actions.viewer.validate-signature")>
 	                  <!-- Cancel Button -->
 	                  <span class="yui-button yui-link-button">
