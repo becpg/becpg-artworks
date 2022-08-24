@@ -101,9 +101,7 @@
                   </control>
                </field>
                <field id="mimetype">
-                  <control template="/org/alfresco/components/form/controls/hidden.ftl">
-                     <control-param name="contextProperty">mimeType</control-param>
-                  </control>
+                  <control template="/org/alfresco/components/form/controls/mimetype.ftl" />
                </field>
                <field id="app:editInline">
                   <control template="/org/alfresco/components/form/controls/hidden.ftl">
