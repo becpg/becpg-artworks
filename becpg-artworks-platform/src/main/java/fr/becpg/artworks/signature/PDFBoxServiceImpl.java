@@ -16,7 +16,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -31,6 +34,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -112,6 +117,8 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	private BehaviourFilter policyBehaviourFilter;
 	
+	private AuthorityService authorityService;
+
 	@Value("${beCPG.signature.reason}")
 	private String signatureReason;
 	
@@ -133,6 +140,10 @@ public class PDFBoxServiceImpl implements SignatureService {
 	private PersonService personService;
 	
 	private NodeContentHelper nodeContentHelper;
+	
+	public void setAuthorityService(AuthorityService authorityService) {
+		this.authorityService = authorityService;
+	}
 	
 	public void setNodeContentHelper(NodeContentHelper nodeContentHelper) {
 		this.nodeContentHelper = nodeContentHelper;
@@ -172,12 +183,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 			nodeService.createAssociation(nodeRef, currentUser, SignatureModel.ASSOC_RECIPIENTS);
 		}
 		
-		List<NodeRef> recipients = new ArrayList<>();
-		for (AssociationRef recipientAssoc : recipientAssocs) {
-			recipients.add(recipientAssoc.getTargetRef());
-		}
-		
-		return prepareForSignature(nodeRef, recipients, false).toString();
+		return prepareForSignature(nodeRef, new ArrayList<>(), false).toString();
 	}
 	
 	@Override
@@ -198,8 +204,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 			
 			List<NodeRef> nodeRecipients = new ArrayList<>();
 			
-			nodeService.getTargetAssocs(originalNode, SignatureModel.ASSOC_RECIPIENTS)
-			.forEach(assoc -> nodeRecipients.add(assoc.getTargetRef()));
+			nodeService.getTargetAssocs(originalNode, SignatureModel.ASSOC_RECIPIENTS).forEach(assoc -> nodeRecipients.addAll(extractPeopleFromGroup(assoc.getTargetRef())));
 			
 			// if no recipient set : take all the recipients from node aspect
 			if (recipients.isEmpty()) {
@@ -326,6 +331,18 @@ public class PDFBoxServiceImpl implements SignatureService {
         }
         
         return "artworks-viewer" + requestParams;
+	}
+	
+	private List<NodeRef> extractPeopleFromGroup(NodeRef authority) {
+		Set<String> ret = new HashSet<>();
+		if (nodeService.getType(authority).equals(ContentModel.TYPE_AUTHORITY_CONTAINER)) {
+			String authorityName = (String) nodeService.getProperty(authority, ContentModel.PROP_AUTHORITY_NAME);
+			ret = authorityService.getContainedAuthorities(AuthorityType.USER, authorityName, false);
+		} else {
+			ret.add((String) nodeService.getProperty(authority, ContentModel.PROP_USERNAME));
+		}
+
+		return ret.stream().map(username -> personService.getPerson(username)).collect(Collectors.toList());
 	}
 				
 	private void sign(NodeRef nodeRef, NodeRef recipient) {
@@ -495,10 +512,13 @@ public class PDFBoxServiceImpl implements SignatureService {
 			Collection<SignerInformation> signers = signedData.getSignerInfos().getSigners();
 			SignerInformation signerInformation = signers.iterator().next();
 
-			TimeStampToken timeStampToken = SignatureUtils
-					.extractTimeStampTokenFromSignerInformation(signerInformation);
+			TimeStampToken timeStampToken = SignatureUtils.extractTimeStampTokenFromSignerInformation(signerInformation);
 
-			return timeStampToken.getTimeStampInfo().getGenTime();
+			if (timeStampToken != null && timeStampToken.getTimeStampInfo() != null) {
+				return timeStampToken.getTimeStampInfo().getGenTime();
+			}
+			
+			return null;
 		}
 	}
 
@@ -506,8 +526,7 @@ public class PDFBoxServiceImpl implements SignatureService {
     	
 		List<NodeRef> nodeRecipients = new ArrayList<>();
 		
-		nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_RECIPIENTS)
-				.forEach(assoc -> nodeRecipients.add(assoc.getTargetRef()));
+		nodeService.getTargetAssocs(nodeRef, SignatureModel.ASSOC_RECIPIENTS).forEach(assoc -> nodeRecipients.addAll(extractPeopleFromGroup(assoc.getTargetRef())));
 
 		for (NodeRef nodeRecipient : nodeRecipients) {
 			
@@ -662,7 +681,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 			
 			// we allow additional signatures with incremental saves
 			if (document.getVersion() >= 1.5f && accessPermissions == 0) {
-				SignatureUtils.setMDPPermission(document, signature, 2);
+				SignatureUtils.setMDPPermission(document, signature, 3);
 			}
 			
 			String userDisplayName = nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME) + " " + nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);

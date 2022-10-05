@@ -55,6 +55,7 @@
 		<property name="nodeService" ref="nodeService" />
         <property name="policyBehaviourFilter" ref="policyBehaviourFilter"/>
         <property name="personService" ref="personService"/>
+        <property name="authorityService" ref="authorityService"/>
 	</bean>
 	
 <!-- 	<bean id="signatureService" class="fr.becpg.artworks.signature.DocuSignServiceImpl"> -->
