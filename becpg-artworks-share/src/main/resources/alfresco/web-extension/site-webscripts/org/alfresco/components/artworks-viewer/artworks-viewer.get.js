@@ -33,10 +33,16 @@ function main() {
 
 			model.contentURL = documentDetails.item.node.contentURL;
 			
+			var siteName = AlfrescoUtil.getSiteFromPath(documentDetails);
+			
 			if (model.taskId) {
 				model.returnUrl = "/share/page/task-edit?taskId=" + model.taskId;
 			} else if (!model.returnUrl) {
-				model.returnUrl = "/share/page/context/mine/document-details?nodeRef=" + model.nodeRef;
+				if (siteName) {
+					model.returnUrl = "/share/page/site/" + siteName + "/document-details?nodeRef=" + model.nodeRef;
+				} else {
+					model.returnUrl = "/share/page/context/mine/document-details?nodeRef=" + model.nodeRef;
+				}
 			}
 			
 			var showBackButton = true;
