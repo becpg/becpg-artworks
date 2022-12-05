@@ -263,7 +263,7 @@
 								var allSigned = true;
 								
 								signatureWidgetAnnots.forEach(annot => {
-									if (annot.annot == null && (annot.Qa.qd == me.options.userId || annot.Qa.qd == (me.options.userId + "-signature"))) {
+									if (annot.annot == null && (annot.Va.Ed == me.options.userId || annot.Va.Ed == (me.options.userId + "-signature"))) {
 										allSigned = false;
 									}
 								});
