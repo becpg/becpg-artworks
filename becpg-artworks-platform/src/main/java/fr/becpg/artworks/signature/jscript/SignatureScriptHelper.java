@@ -69,5 +69,9 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 	public ScriptNode signDocument(ScriptNode document) {
 		return new ScriptNode(signatureService.signDocument(document.getNodeRef()), serviceRegistry, getScope());
 	}
+	
+	public ScriptNode cancelSignature(ScriptNode document) {
+		return new ScriptNode(signatureService.cancelDocument(document.getNodeRef()), serviceRegistry, getScope());
+	}
 
 }
