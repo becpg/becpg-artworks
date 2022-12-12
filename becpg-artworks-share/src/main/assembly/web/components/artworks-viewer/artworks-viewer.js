@@ -100,15 +100,6 @@
 							saveButton.classList.add("loading");
 						};
 
-
-						var successListener = function DNDUpload_successListener(e) {
-							me.shouldSave = false;
-							if (me.options.returnUrl) {
-								window.location.href = window.location.protocol + "//" + window.location.host + me.options.returnUrl;
-							}
-						};
-
-
 						var failureListener = function DNDUpload_failureListener(e) {
 							me.shouldSave = true;
 							saveButton.classList.add("should-save");
@@ -118,7 +109,6 @@
 
 						var request = new XMLHttpRequest();
 						request.upload.addEventListener("progress", progressListener, false);
-						request.upload.addEventListener("load", successListener, false);
 						request.upload.addEventListener("error", failureListener, false);
 
 						var url = PROXY_URI + "api/upload";
@@ -155,6 +145,7 @@
 							formData.append("description", me.msg["label.newVersion.message"]);
 							formData.append("updatenameandmimetype", "false")
 						} else {
+							me.createNewFile = true;
 							var fileName = me.options.fileName;
 							fileName += ".pdf";
 							formData.append("filename", fileName);
@@ -170,7 +161,8 @@
 
 						request.open("POST", url, true);
 						request.send(formData);
-						request.onreadystatechange = function() {
+						request.responseType = "text";
+						request.onreadystatechange = () => {
 							if (this.status === 401) {
 								var redirect = this.getResponseHeader["Location"];
 								if (redirect) {
@@ -180,6 +172,18 @@
 								else {
 									window.location.reload();
 									return;
+								}
+							} else if (request.status == 200) {
+								me.shouldSave = false;
+								
+							    var response = JSON.parse(request.responseText);
+		
+								if (response) {
+									me.options.returnUrl = me.options.returnUrl.split("nodeRef=")[0] + "nodeRef=" + response.nodeRef;
+								}
+								
+								if (me.options.returnUrl) {
+									window.location.href = window.location.protocol + "//" + window.location.host + me.options.returnUrl;
 								}
 							}
 						};
