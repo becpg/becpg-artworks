@@ -178,7 +178,7 @@
 								
 							    var response = JSON.parse(request.responseText);
 		
-								if (response) {
+								if (response && me.options.returnUrl.includes("nodeRef=")) {
 									me.options.returnUrl = me.options.returnUrl.split("nodeRef=")[0] + "nodeRef=" + response.nodeRef;
 								}
 								
