@@ -11,7 +11,7 @@
     <parent>
         <groupId>fr.becpg.artworks</groupId>
         <artifactId>becpg-artworks</artifactId>
-        <version>4.2.0.0</version>
+        <version>4.2.1.0</version>
     </parent>
 
     <properties>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>fr.becpg.artworks</groupId>
             <artifactId>becpg-artworks-platform</artifactId>
-            <version>4.2.0.0</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
