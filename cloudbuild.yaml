@@ -1,7 +1,7 @@
 steps:
   - name: maven:3-jdk-11
     entrypoint: mvn
-    args: ['package','-Dmaven.test.skip=true']            
+    args: ['package']            
 artifacts:
   mavenArtifacts:
   - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
