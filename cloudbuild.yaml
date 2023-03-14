@@ -5,12 +5,24 @@ steps:
 artifacts:
   mavenArtifacts:
   - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
-    path : '/workspace/becpg-artworks/becpg-artworks-share-docker/target/becpg-artworks-share-4.2.1.1.amp'
+    path : '/workspace/becpg-artworks/becpg-artworks-share/target/becpg-artworks-share-${ARTWORKS_VERSION}.amp'
     artifact_id: 'becpg-artworks-share'
     group_id: 'fr.becpg.artworks'
-    version: '4.2.1.1'
+    version: ${ARTWORKS_VERSION}
   - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
-    path : '/workspace/becpg-artworks/becpg-artworks-platform/target/becpg-artworks-platform-4.2.1.1.amp'
+    path : '/workspace/becpg-artworks/becpg-artworks-share/target/becpg-artworks-share-${ARTWORKS_VERSION}.jar'
+    artifact_id: 'becpg-artworks-share'
+    group_id: 'fr.becpg.artworks'
+    version: ${ARTWORKS_VERSION}    
+  - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
+    path : '/workspace/becpg-artworks/becpg-artworks-platform/target/becpg-artworks-platform-${ARTWORKS_VERSION}.jar'
     artifact_id: 'becpg-artworks-platform'
     group_id: 'fr.becpg.artworks'
-    version: '4.2.1.1'    
+    version: ${ARTWORKS_VERSION} 
+  - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
+    path : '/workspace/becpg-artworks/becpg-artworks-platform/target/becpg-artworks-platform-${ARTWORKS_VERSION}.amp'
+    artifact_id: 'becpg-artworks-platform'
+    group_id: 'fr.becpg.artworks'
+    version: ${ARTWORKS_VERSION}
+substitutions:
+   ARTWORKS_VERSION : 4.2.1-SNAPSHOT        
