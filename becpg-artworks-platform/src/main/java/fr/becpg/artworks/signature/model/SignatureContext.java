@@ -11,13 +11,13 @@ public class SignatureContext {
 	private String signaturePage = "last";
 	
 	// width,height,direction(1=right,2=left,3=up,4=down),gap,fromLeftProportion,fromBottomProportion
-	private String signatureDimensions = "100,50,3,60,75,10";
+	private String signatureDimensions = "200,75,3,60,75,10";
 	
 	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
 	private String signatureAnchorInfo = "signature,2,0";
 	
 	// width,height,direction(1=right,2=left,3=up,4=down),gap,fromLeftProportion,fromBottomProportion
-	private String initialsDimensions = "50,25,3,30,75,10";
+	private String initialsDimensions = "100,35,3,30,75,10";
 	
 	// keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top)
 	private String initialsAnchorInfo = "Page,0,2";
