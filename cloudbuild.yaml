@@ -1,30 +1,7 @@
 steps:
   - name: maven:3-jdk-11
     entrypoint: mvn
-    args: ['package']            
-artifacts:
-  mavenArtifacts:
-  - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
-    path : '/workspace/becpg-artworks-share/target/becpg-artworks-share-${_ARTWORKS_VERSION}.amp'
-    artifact_id: 'becpg-artworks-share'
-    group_id: 'fr.becpg.artworks'
-    version: ${_ARTWORKS_VERSION}
-  - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
-    path : '/workspace/becpg-artworks-share/target/becpg-artworks-share-${_ARTWORKS_VERSION}.jar'
-    artifact_id: 'becpg-artworks-share'
-    group_id: 'fr.becpg.artworks'
-    version: ${_ARTWORKS_VERSION}    
-  - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
-    path : '/workspace/becpg-artworks-platform/target/becpg-artworks-platform-${_ARTWORKS_VERSION}.jar'
-    artifact_id: 'becpg-artworks-platform'
-    group_id: 'fr.becpg.artworks'
-    version: ${_ARTWORKS_VERSION} 
-  - repository: 'https://europe-west1-maven.pkg.dev/${PROJECT_ID}/becpg-mvn'
-    path : '/workspace/becpg-artworks-platform/target/becpg-artworks-platform-${_ARTWORKS_VERSION}.amp'
-    artifact_id: 'becpg-artworks-platform'
-    group_id: 'fr.becpg.artworks'
-    version: ${_ARTWORKS_VERSION}
-substitutions:
-   _ARTWORKS_VERSION : 4.2.1-SNAPSHOT
-options:
-    dynamic_substitutions: true           
+    args: ['package']
+  - name: maven:3-jdk-11
+    entrypoint: mvn
+    args: ['deploy','-Dmaven.test.skip=true']         

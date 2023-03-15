@@ -445,6 +445,14 @@
                 </configuration>
             </plugin>
         </plugins>
+        
+        <extensions>
+			<extension>
+				<groupId>com.google.cloud.artifactregistry</groupId>
+				<artifactId>artifactregistry-maven-wagon</artifactId>
+				<version>2.2.0</version>
+			</extension>
+		</extensions>
     </build>
 
     <profiles>
@@ -528,6 +536,17 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
+    
+    <distributionManagement>
+     	<repository>
+			<id>becpg-registry</id>
+			<url>artifactregistry://europe-west1-maven.pkg.dev/becpg-314807/becpg-mvn</url>
+		</repository>
+		<snapshotRepository>
+			<id>becpg-registry</id>
+			<url>artifactregistry://europe-west1-maven.pkg.dev/becpg-314807/becpg-mvn</url>
+		</snapshotRepository>
+    </distributionManagement>
   <modules>
     <module>becpg-artworks-platform</module>
     <module>becpg-artworks-share</module>
