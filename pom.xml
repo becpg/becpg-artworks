@@ -520,6 +520,10 @@
            <id>alfresco-internal</id>
            <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
         </repository>
+        <repository>
+			<id>becpg-registry</id>
+			<url>artifactregistry://europe-west1-maven.pkg.dev/becpg-314807/becpg-mvn</url>
+		</repository>
     </repositories>
 
     <pluginRepositories>
