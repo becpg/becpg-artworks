@@ -237,6 +237,7 @@
 				<evaluator>evaluator.becpg.doclib.action.signatureExternal.isEnabled</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.isSentForSignature</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.document.isReport</evaluator>
 			</action>
 			<action id="signature-cancel" type="javascript" icon="document-upload-new-version" label="actions.document.signature-cancel">
 				<param name="function">onActionCancelSignature</param>
@@ -248,6 +249,7 @@
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusInitialized</evaluator>
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusSigned</evaluator>
 				<evaluator negate="true">evaluator.doclib.metadata.isLocked</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.document.isReport</evaluator>
 			</action>
 			<action id="signature-prepare" type="javascript" icon="document-edit-properties" label="actions.document.signature-prepare">
 				<param name="function">onActionPrepareSignature</param>
@@ -260,6 +262,7 @@
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusPrepared</evaluator>
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusReadyToSign</evaluator>
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusSigned</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.document.isReport</evaluator>
 			</action>
 			<action id="signature-sign" type="javascript" icon="document-edit-properties" label="actions.document.signature-sign">
 				<param name="function">onActionCheckInSignature</param>
@@ -271,6 +274,7 @@
 				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.isStatusPrepared</evaluator>
 				<evaluator negate="true">evaluator.doclib.action.notEditable</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.document.isReport</evaluator>
 			</action>
 			<action id="signature-sign-and-checkin" type="javascript" icon="document-edit-properties" label="actions.document.signature-sign">
 				<param name="function">onActionCheckInSignature</param>
@@ -282,6 +286,7 @@
 				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.isStatusReadyToSign</evaluator>
 				<evaluator>evaluator.doclib.action.isWorkingCopy</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.document.isReport</evaluator>
 			</action>
 			<action id="signature-view" type="javascript" icon="document-upload-new-version" label="actions.document.signature-view">
 				<param name="function">onActionViewSignature</param>
@@ -294,6 +299,7 @@
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusInitialized</evaluator>
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusPrepared</evaluator>
 				<evaluator negate="true">evaluator.doclib.metadata.isLocked</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.document.isReport</evaluator>
 			</action>
 			<action id="signature-sign-view" type="javascript" icon="document-upload-new-version" label="actions.document.signature-prepare">
 				<param name="function">onActionViewSignature</param>
@@ -305,6 +311,7 @@
 				<evaluator>evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.signature.isStatusPrepared</evaluator>
 				<evaluator negate="true">evaluator.doclib.metadata.isLocked</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.document.isReport</evaluator>
 			</action>
 		</actions>
 		<actionGroups>
