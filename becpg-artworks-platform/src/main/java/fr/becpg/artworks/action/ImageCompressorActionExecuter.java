@@ -117,8 +117,6 @@ public class ImageCompressorActionExecuter extends TransformActionExecuter {
 			return;
 		}
 
-		// Get the mime type
-		String mimeType = (String) ruleAction.getParameterValue(PARAM_MIME_TYPE);
 		// Get the content reader
 		ContentReader contentReader = this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
 		if (null == contentReader || !contentReader.exists()) {
@@ -131,6 +129,14 @@ public class ImageCompressorActionExecuter extends TransformActionExecuter {
 		transformationOptions.setUse(Thread.currentThread().getName().contains("Async") ? "asyncRule" : "syncRule");
 
 		String sourceMimetype = contentReader.getMimetype();
+		
+		// Get the mime type
+		String mimeType = (String) ruleAction.getParameterValue(PARAM_MIME_TYPE);
+		
+		if (mimeType == null) {
+			mimeType = sourceMimetype;
+		}
+		
 		long sourceSizeInBytes = contentReader.getSize();
 		String contentUrl = contentReader.getContentUrl();
 		Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, mimeType);
