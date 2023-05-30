@@ -96,7 +96,7 @@ function main() {
 		 userId : user.id,
 		 returnUrl : model.returnUrl,
 		 encryptedLicenseKey : model.document.metadata.custom.artworks.licenseKey,
-		 certificate : model.document.metadata.custom.artworks.certificate,
+		 issuerCertificateURL : model.document.metadata.custom.artworks.issuerCertificateURL,
 		 mimetype : model.document.item.node.mimetype,
 		 parent : model.document.item.parent.nodeRef
       }

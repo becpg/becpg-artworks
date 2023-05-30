@@ -62,21 +62,19 @@
 				//isAdminUser: '${user.isAdmin ? string}',
 			}, document.getElementById(me.id + '-viewer'))
 				.then(async instance => {
-					
-					const { VerificationOptions } = instance.UI;
-					
-					var bytes = []; // char codes
 
-					for (var i = 0; i < me.options.certificate.length; ++i) {
-						var code = me.options.certificate.charCodeAt(i);
-						bytes = bytes.concat([code & 0xff, code / 256 >>> 0]);
-					}
+					const { documentViewer, annotationManager, PDFNet } = instance.Core;
 
-					VerificationOptions.addTrustedCertificates([bytes, me.options.certificate]);
+					documentViewer.addEventListener('documentLoaded', async () => {
+
+						const { VerificationOptions } = instance.UI;
+
+						VerificationOptions.addTrustedCertificates([me.options.issuerCertificateURL]);
 					
+  					});
+										
 					instance.UI.setLanguage(JS_LOCALE);
 					instance.UI.enableElements(['bookmarksPanel', 'bookmarksPanelButton', 'richTextPopup']);
-					const { Tools, documentViewer, PDFNet, annotationManager } = instance.Core;
 					documentViewer.addEventListener('pageComplete', () => {
 						instance.UI.closeElements(['loadingModal']);
 					});

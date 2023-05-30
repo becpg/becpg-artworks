@@ -45,7 +45,7 @@
 		<property name="annotationAuthorization" value="${beCPG.annotationAuthorization}" />
 		<property name="annotationViewerLicenseKey" value="${beCPG.annotationViewerLicenseKey}" />
 		<property name="signatureAuthorization" value="${beCPG.signatureAuthorization}" />
-		<property name="signatureKeyStoreAlias" value="${beCPG.signature.keystore.alias}" />
+		<property name="issuerCertificateURL" value="${beCPG.signature.issuerCertificateURL}" />
 	</bean>
 
 	<bean id="signatureService" class="fr.becpg.artworks.signature.PDFBoxServiceImpl">
