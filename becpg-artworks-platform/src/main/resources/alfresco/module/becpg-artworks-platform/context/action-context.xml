@@ -23,7 +23,9 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
         
 	      
-	<bean id="compress-image" class="fr.becpg.artworks.action.ImageCompressorActionExecuter"  parent="transform"></bean> 
+	<bean id="compress-image" class="fr.becpg.artworks.action.ImageCompressorActionExecuter"  parent="transform">
+		<property name="ruleService" ref="ruleService" />
+	</bean> 
     
      
     <!-- I18N -->

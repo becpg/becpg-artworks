@@ -24,6 +24,7 @@ import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -55,6 +56,12 @@ public class ImageCompressorActionExecuter extends TransformActionExecuter {
 
 	private TransformationOptionsConverter converter;
 	private SynchronousTransformClient synchronousTransformClient;
+	
+	private RuleService ruleService;
+	
+	public void setRuleService(RuleService ruleService) {
+		this.ruleService = ruleService;
+	}
 
 	/**
 	 * <p>Setter for the field <code>contentService</code>.</p>
@@ -148,6 +155,7 @@ public class ImageCompressorActionExecuter extends TransformActionExecuter {
 		ContentWriter contentWriter = contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_CONTENT, true);
 
 		try {
+			ruleService.disableRules();
 			doTransform(ruleAction, actionedUponNodeRef, contentReader, actionedUponNodeRef, contentWriter);
 		} catch (NoTransformerException e) {
 			if (logger.isDebugEnabled()) {
