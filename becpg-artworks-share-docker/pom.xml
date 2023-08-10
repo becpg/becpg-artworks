@@ -10,7 +10,7 @@
     <parent>
         <groupId>fr.becpg.artworks</groupId>
         <artifactId>becpg-artworks</artifactId>
-        <version>${revision}</version> 
+      <version>4.2.1.0-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -21,7 +21,7 @@
             <groupId>fr.becpg.artworks</groupId>
             <artifactId>becpg-artworks-share</artifactId>
             <type>amp</type>
-            <version>${revision}</version> 
+            <version>${project.version}</version> 
         </dependency>
     </dependencies>
 

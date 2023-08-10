@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.becpg.artworks</groupId>
     <artifactId>becpg-artworks</artifactId>
-    <version>${revision}</version>
+    <version>4.2.1.0-SNAPSHOT</version>
     <name>beCPG Artworks</name>
     <description>beCPG Artworks parent project</description>
     <packaging>pom</packaging>
@@ -82,7 +82,6 @@
 	
     <properties>
 		
-		<revision>4.2.1.0-SNAPSHOT</revision>
         <!-- Alfresco Maven Plugin version to use -->
         <alfresco.sdk.version>4.4.0</alfresco.sdk.version>
 
@@ -458,6 +457,7 @@
 					<configuration>
 						<tagNameFormat>@{project.version}</tagNameFormat>
 						<scmCommentPrefix>[Release][skip ci]</scmCommentPrefix>
+						<autoVersionSubmodules>true</autoVersionSubmodules>
 					</configuration>
 			    </plugin>
          
