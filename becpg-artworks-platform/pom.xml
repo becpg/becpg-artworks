@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>fr.becpg.artworks</groupId>
 		<artifactId>becpg-artworks</artifactId>
-		<version>4.2.1.2-SNAPSHOT</version>
+		<version>4.2.1.2</version>
 	</parent>
 
 	<properties>
