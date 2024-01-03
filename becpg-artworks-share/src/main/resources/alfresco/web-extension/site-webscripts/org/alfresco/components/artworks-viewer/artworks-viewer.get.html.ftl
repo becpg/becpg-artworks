@@ -181,7 +181,7 @@
 										           <h3 class="thin dark" >${version.name}</h3>
 										           <span class="actions">
 										             <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}&compareTo=${version.nodeRef}&mode=text" class="compare" title="${msg("label.compare.text")}">&nbsp;</a>
-										             <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}&compareTo=${version.nodeRef}&mode=overlay"  class="compare-overlay" title="${msg("label.compare")}">&nbsp;</a>
+										             <a href="${url.context}/page/artworks-viewer?nodeRef=${nodeRef}&compareTo=${version.nodeRef}&mode=overlay"  class="compare-overlay" title="${msg("label.compare.overlay")}">&nbsp;</a>
 										           </span>
 										           <div class="clear"></div>
 										           <div class="version-details">
