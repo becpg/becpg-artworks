@@ -381,6 +381,7 @@
 						});
 					
 						instance.UI.enableFeatures([instance.UI.Feature.Measurement]);
+						instance.UI.enableFeatures([instance.UI.Feature.ContentEdit]);
 						instance.UI.enableElements(['layersPanel', 'layersPanelButton']);
 
 						documentViewer.addEventListener('annotationsLoaded', () => {
