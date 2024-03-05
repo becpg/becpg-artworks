@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -81,6 +79,7 @@ import fr.becpg.artworks.helper.NodeContentHelper;
 import fr.becpg.artworks.signature.model.SignatureContext;
 import fr.becpg.artworks.signature.model.SignatureModel;
 import fr.becpg.artworks.signature.model.SignatureStatus;
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * 
