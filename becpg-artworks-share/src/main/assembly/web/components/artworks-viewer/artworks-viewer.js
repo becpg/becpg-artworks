@@ -235,9 +235,9 @@
 						
 						const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
 
-						const createSignHereElement = instance.Annotations.SignatureWidgetAnnotation.prototype.createSignHereElement;
+						const createSignHereElement = instance.Core.Annotations.SignatureWidgetAnnotation.prototype.createSignHereElement;
 
-						instance.Annotations.SignatureWidgetAnnotation.prototype.createSignHereElement = function() {
+						instance.Core.Annotations.SignatureWidgetAnnotation.prototype.createSignHereElement = function() {
 
 							if (me.options.signatureStatus == "ReadyToSign") {
 								return null;
@@ -259,13 +259,13 @@
 							annotationManager.addEventListener('annotationChanged', (annotations, action) => {
 								
 								const signatureWidgetAnnots = annotationManager.getAnnotationsList().filter(
-									annot => annot instanceof instance.Annotations.SignatureWidgetAnnotation
+									annot => annot instanceof instance.Core.Annotations.SignatureWidgetAnnotation
 								);
 								
 								var allSigned = true;
 								
 								signatureWidgetAnnots.forEach(annot => {
-									if (annot.annot == null && (annot.Va.Ed == me.options.userId || annot.Va.Ed == (me.options.userId + "-signature"))) {
+									if (annot.annot == null && (annot.tb.Zd == me.options.userId || annot.tb.Zd == (me.options.userId + "-signature"))) {
 										allSigned = false;
 									}
 								});
