@@ -1,4 +1,4 @@
 steps:
-  - name: maven:3-jdk-17
+  - name: maven:3-openjdk-17
     entrypoint: mvn
     args: ['deploy','-DskipTests=true']
