@@ -22,10 +22,12 @@ import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import fr.becpg.artworks.signature.SignatureService;
+import fr.becpg.artworks.signature.model.SignatureModel;
 
 /**
  * Utility script methods
@@ -36,6 +38,12 @@ import fr.becpg.artworks.signature.SignatureService;
 public final class SignatureScriptHelper extends BaseScopableProcessorExtension {
 
 	private SignatureService signatureService;
+	
+	private BehaviourFilter policyBehaviourFilter;
+	
+	public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter) {
+		this.policyBehaviourFilter = policyBehaviourFilter;
+	}
 	
 	public void setSignatureService(SignatureService signatureService) {
 		this.signatureService = signatureService;
@@ -49,6 +57,14 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 	
 	public String getSignatureView(ScriptNode document, ScriptNode user, NodeRef task) {
 		return signatureService.getDocumentView(document.getNodeRef(), user == null ? null : user.getNodeRef(), task);
+	}
+	
+	public void disableSignaturePolicy() {
+		policyBehaviourFilter.disableBehaviour(SignatureModel.ASPECT_SIGNATURE);
+	}
+	
+	public void enableSignaturePolicy() {
+		policyBehaviourFilter.enableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 	}
 
 	public ScriptNode prepareForSignature(ScriptNode document, ScriptNode[] recipients, String... params) {

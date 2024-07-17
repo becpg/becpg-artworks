@@ -76,6 +76,7 @@
 		</property>
 		<property name="signatureService" ref="signatureService"/>
 		<property name="serviceRegistry" ref="ServiceRegistry" />
+		<property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
 	</bean>
 	
 	<bean id="nodeContentHelper" class="fr.becpg.artworks.helper.NodeContentHelper">
