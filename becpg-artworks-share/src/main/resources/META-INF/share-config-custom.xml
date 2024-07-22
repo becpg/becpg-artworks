@@ -207,8 +207,8 @@
 				<override>document-change-type</override>
 			</action>
     
-    		<action id="annotation-viewer" type="pagelink" icon="document-edit-properties" label="actions.document.annotation-viewer">
-				<param name="page">artworks-viewer?nodeRef={node.nodeRef}</param>
+    		<action id="annotation-viewer" type="javascript" icon="document-edit-properties" label="actions.document.annotation-viewer">
+				<param name="function">onActionCheckOutAnnotation</param>
 				<permissions>
 					<permission allow="true">Write</permission>
 				</permissions>
