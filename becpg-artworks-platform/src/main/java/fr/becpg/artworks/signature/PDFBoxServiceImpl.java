@@ -651,7 +651,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 			PDSignature signature = null;
 			
 			if (recipient != null) {
-				String userName = (String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME);
+				String userName = formatUsername(recipient);
 
 				PDField removedField = removeField(document, userName);
 				
@@ -798,7 +798,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 				
 				PDSignatureField signatureField = new PDSignatureField(acroForm);
 				
-				String fieldName = (String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME);
+				String fieldName = formatUsername(recipient);
 				
 				if (isSignatureField) {
 					fieldName += "-signature";
@@ -924,6 +924,10 @@ public class PDFBoxServiceImpl implements SignatureService {
     			}
 			}
 		}
+	}
+
+	private String formatUsername(NodeRef recipient) {
+		return ((String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME)).replace(".", "_");
 	}
 
 	private SignatureContext buildSignatureContext(List<NodeRef> nodeRecipients, List<NodeRef> recipients, String... params) {
