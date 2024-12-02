@@ -878,6 +878,13 @@ public class PDFBoxServiceImpl implements SignatureService {
 				default:
 				}
 				
+				if (x + width > page.getMediaBox().getWidth()) {
+					x = (x + width) % page.getMediaBox().getWidth();
+				}
+				if (y + height > page.getMediaBox().getHeight()) {
+					y = (y + height) % page.getMediaBox().getHeight();
+				}
+				
 				PDRectangle fieldRect = new PDRectangle(x, y, width, height);
 				
 				fieldWidget.setRectangle(fieldRect);
