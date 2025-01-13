@@ -20,7 +20,9 @@ function main() {
 	model.linkButtons = [];
 
 	if (model.nodeRef) {
-
+		
+		model.sourceNodeRef = model.nodeRef;
+		
 		var documentDetails = AlfrescoUtil.getNodeDetails(model.nodeRef, null);
 		if (documentDetails) {
 			model.document = documentDetails;
@@ -60,10 +62,16 @@ function main() {
 					cssClass: "brand-bgcolor-2"
 				});
 			}
+			
+			if (documentDetails.item.workingCopy) {
+				if (documentDetails.item.workingCopy.isWorkingCopy && documentDetails.item.workingCopy.sourceNodeRef) {
+					model.sourceNodeRef = documentDetails.item.workingCopy.sourceNodeRef;
+				}
+			}
 		}
 
 	    model.versions = [];
-		var versions = getVersions(model.nodeRef);
+		var versions = getVersions(model.sourceNodeRef);
 		if (versions) {
 			 model.versions = versions;
 		}
