@@ -653,26 +653,25 @@ public class PDFBoxServiceImpl implements SignatureService {
 			if (recipient != null) {
 				String userName = formatUsername(recipient);
 
-				PDField removedField = removeField(document, userName);
+				PDSignatureField signatureField = findSignatureField(document, userName);
 				
-				while (removedField != null) {
-					removedField = removeField(document, userName);
+				if (signatureField == null) {
+					logger.warn("The signature field for '" + userName + "' was not found.");
+					userName = (String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME);
+					signatureField = findSignatureField(document, userName);
+					if (signatureField == null) {
+						throw new IllegalStateException("The signature field for '" + userName + "' was not found.");
+					}
 				}
 				
-				PDSignatureField signatureField = findMatchingSignatureField(document, userName + "-signature");
+				// retrieve signature dictionary
+				signature = signatureField.getSignature();
 				
-				if (signatureField != null) {
-					// retrieve signature dictionary
-					signature = signatureField.getSignature();
-					
-					if (signature == null) {
-						signature = new PDSignature();
-						signatureField.getCOSObject().setItem(COSName.V, signature);
-					} else {
-						throw new IllegalStateException("The signature field for '" + userName + "' is already signed.");
-					}
+				if (signature == null) {
+					signature = new PDSignature();
+					signatureField.getCOSObject().setItem(COSName.V, signature);
 				} else {
-					throw new IllegalStateException("The signature field for '" + userName + "' was not found.");
+					throw new IllegalStateException("The signature field for '" + userName + "' is already signed.");
 				}
 			} else {
 				signature = new PDSignature();
@@ -738,6 +737,17 @@ public class PDFBoxServiceImpl implements SignatureService {
 				externalSigning.setSignature(cmsSignature);
 			}
 		}
+
+	private PDSignatureField findSignatureField(PDDocument document, String userName) throws IOException {
+		PDField removedField = removeField(document, userName);
+		
+		while (removedField != null) {
+			removedField = removeField(document, userName);
+		}
+		
+		PDSignatureField signatureField = findMatchingSignatureField(document, userName + "-signature");
+		return signatureField;
+	}
 
 	private byte[] prepareForSignature(InputStream input, SignatureContext context) throws IOException {
 
