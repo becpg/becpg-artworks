@@ -266,7 +266,7 @@
 								
 								signatureWidgetAnnots.forEach(annot => {
 									var userId = me.options.userId.replace(/\./g, "_");
-									if (annot.annot == null && (annot.tb.Zd == userId || annot.tb.Zd == (userId + "-signature"))) {
+									if (annot.isSignedByAppearance() == false && (annot.pb.Te == userId || annot.pb.Te == (userId + "-signature"))) {
 										allSigned = false;
 									}
 								});
