@@ -43,6 +43,13 @@
             <artifactId>share</artifactId>
             <classifier>classes</classifier>
         </dependency>
+        
+        <dependency>
+		    <groupId>jakarta.websocket</groupId>
+		    <artifactId>jakarta.websocket-api</artifactId>
+		    <version>2.0.0</version>
+		    <scope>provided</scope>
+		</dependency>
     </dependencies>
 
     <build>

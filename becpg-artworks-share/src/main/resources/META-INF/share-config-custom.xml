@@ -215,7 +215,7 @@
 				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.mimetype</evaluator>
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.hasSignatureAspect</evaluator>
 				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isEnabled</evaluator>
-				<evaluator negate="true">evaluator.doclib.action.notEditable</evaluator>
+				<evaluator>evaluator.becpg.doclib.action.annotation.viewer.isAnnotable</evaluator>
 			</action>
     
    			 <!-- Signature -->
@@ -263,6 +263,7 @@
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusReadyToSign</evaluator>
 				<evaluator negate="true">evaluator.becpg.doclib.action.signature.isStatusSigned</evaluator>
 				<evaluator negate="true">evaluator.becpg.doclib.action.document.isReport</evaluator>
+				<evaluator negate="true">evaluator.becpg.doclib.action.annotation.hasAnnotationAspect</evaluator>
 			</action>
 			<action id="signature-sign" type="javascript" icon="document-edit-properties" label="actions.document.signature-sign">
 				<param name="function">onActionCheckInSignature</param>

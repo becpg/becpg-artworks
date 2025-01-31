@@ -36,6 +36,7 @@
 
 	<bean id="annotationService" class="fr.becpg.artworks.annotation.PDFTronAnnotationServiceImpl">
 		<property name="checkOutCheckInService" ref="checkOutCheckInService" />
+		<property name="nodeService" ref="nodeService" />
 	</bean>
 
 	<bean id="annotationScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.annotation.jscript.AnnotationScriptHelper">

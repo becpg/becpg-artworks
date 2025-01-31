@@ -24,13 +24,22 @@ import java.util.Map;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import fr.becpg.artworks.annotation.model.AnnotationModel;
+
 public final class PDFTronAnnotationServiceImpl implements AnnotationService {
 
 	private CheckOutCheckInService checkOutCheckInService;
+	
+	private NodeService nodeService;
+	
+	public void setNodeService(NodeService nodeService) {
+		this.nodeService = nodeService;
+	}
 
 	public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
 		this.checkOutCheckInService = checkOutCheckInService;
@@ -38,13 +47,18 @@ public final class PDFTronAnnotationServiceImpl implements AnnotationService {
 
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
-		return checkOutCheckInService.checkout(nodeRef).toString();
-		
+		if (!checkOutCheckInService.isWorkingCopy(nodeRef)) {
+			NodeRef checkout = checkOutCheckInService.checkout(nodeRef);
+			nodeService.addAspect(checkout, AnnotationModel.ASPECT_ANNOTATION, null);
+			return checkout.toString();
+		}
+		return nodeRef.toString();
 	}
 
 	@Override
 	public String getDocumentView(NodeRef nodeRef, NodeRef personNodeRef, NodeRef task) {
-		return "artworks-viewer?nodeRef=" + checkOutCheckInService.getWorkingCopy(nodeRef);
+		NodeRef workingCopy = checkOutCheckInService.isWorkingCopy(nodeRef) ? nodeRef : checkOutCheckInService.getWorkingCopy(nodeRef);
+		return "artworks-viewer?nodeRef=" + workingCopy;
 	}
 
 	@Override
@@ -52,6 +66,7 @@ public final class PDFTronAnnotationServiceImpl implements AnnotationService {
 		Map<String, Serializable> versionProperties = new HashMap<>();
 		versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage("annotation.version.description"));
 		versionProperties.put(VersionBaseModel.PROP_VERSION_TYPE, VersionType.MINOR);
+		nodeService.removeAspect(nodeRef, AnnotationModel.ASPECT_ANNOTATION);
 		return checkOutCheckInService.checkin(nodeRef, versionProperties);
 	}
 

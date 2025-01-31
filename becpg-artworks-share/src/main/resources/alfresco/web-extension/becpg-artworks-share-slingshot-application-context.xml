@@ -84,6 +84,19 @@
       </property>
    </bean>
    
+   <bean id="evaluator.doclib.metadata.isNotLocked" parent="evaluator.doclib.metadata.isLocked">
+      <property name="negateOutput" value="true" />
+   </bean>
+   
+   <bean id="evaluator.becpg.doclib.action.annotation.viewer.isAnnotable" parent="evaluator.doclib.action.chainedMatchOne">
+      <property name="evaluators">
+         <list>
+            <ref bean="evaluator.doclib.metadata.isNotLocked" />
+            <ref bean="evaluator.becpg.doclib.action.annotation.hasAnnotationAspect" />
+         </list>
+      </property>
+   </bean>
+   
    <bean id="evaluator.becpg.doclib.action.signatureExternal.isEnabled" parent="evaluator.doclib.action.metadataValue">
       <property name="accessor" value="custom.artworks.signatureExternal"/>
       <property name="comparator">
