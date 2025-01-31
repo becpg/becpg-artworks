@@ -384,14 +384,61 @@
 						instance.UI.enableFeatures([instance.UI.Feature.Measurement]);
 						instance.UI.enableFeatures([instance.UI.Feature.ContentEdit]);
 						instance.UI.enableElements(['layersPanel', 'layersPanelButton']);
-
+						
+						var  isUpdating = false;
+						
 						documentViewer.addEventListener('annotationsLoaded', () => {
 							annotationManager.addEventListener('annotationChanged', (annotations, action) => {
 								me.shouldSave = true;
 								saveButton.parentElement.parentElement.classList.remove("yui-button-disabled");
 								saveButton.classList.add("should-save");
-							});
+						      // Sync annotations with server depending on the action
+						      if (action === 'add' && !isUpdating) {
+						        addAnnotations(annotations);
+						      } else if (action === 'modify' && !isUpdating) {
+						        modifyAnnotations(annotations);
+						      } else if (action === 'delete' && !isUpdating) {
+						        deleteAnnotations(annotations);
+						      }
+						    });
 						});
+						
+						async function addAnnotations(annotations) {
+						    for(const annotation of annotations) {
+						        const xfdf = await annotationManager.exportAnnotations({ annotList: [annotation] })
+						        var message = {
+				             			 type : "ADD",
+				             			 user : me.options.userId,
+				             			 xfdf : xfdf,
+				             			 id : annotation.Id
+				             	 };
+				        		  me.ws.send( JSON.stringify(message) );
+						    }
+						}
+						
+						async function modifyAnnotations(annotations) {
+						    for(const annotation of annotations) {
+						        const xfdf = await annotationManager.exportAnnotations({ annotList: [annotation] })
+						        var message = {
+				             			 type : "MODIFY",
+				             			 user : me.options.userId,
+				             			 xfdf : xfdf,
+				             			 id : annotation.Id
+				             	 };
+				        		  me.ws.send( JSON.stringify(message) );
+						    }
+						}
+						
+						function deleteAnnotations(annotations) {
+						    for(const annotation of annotations) {
+						        var message = {
+				             			 type : "DELETE",
+				             			 user : me.options.userId,
+				             			 id : annotation.Id
+				             	 };
+				        		  me.ws.send( JSON.stringify(message) );
+						    }
+						}
 						
 						const subDocument = document.getElementById('webviewer-1').contentDocument;
 						
@@ -472,6 +519,49 @@
 								colorsMenu.appendChild(lineBreak);
 								closeElements(['loadingModal']);
 							});
+							
+							var protocolPrefix = (window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+							
+							me.ws = new WebSocket(protocolPrefix + '//' + location.host + URL_CONTEXT +  "/annotws/"+me.options.nodeRef.replace(":/",""));
+							 me.ws.onmessage = async function (evt) {
+						        try {
+									isUpdating = true;
+						            const message = JSON.parse(evt.data);
+						            switch (message.type) {
+						                case "ADD":
+						                case "MODIFY":
+						                    await annotationManager.importAnnotations(message.xfdf);
+						                    console.log(`Annotation ${message.id} ${message.type.toLowerCase()}d.`);
+						                    break;
+						
+						                case "DELETE":
+						                    const annotations = annotationManager.getAnnotationsList();
+						                    const annotationToDelete = annotations.find(a => a.Id === message.id);
+						                    if (annotationToDelete) {
+												const command = `<delete><id>${message.id}</id></delete>`;
+      											annotationManager.importAnnotationCommand(command);
+						                        console.log(`Annotation ${message.id} deleted.`);
+						                    } else {
+						                        console.warn(`Annotation ${message.id} not found.`);
+						                    }
+						                    break;
+						
+						                case "SYNC":
+						                    for (const [id, xfdf] of Object.entries(message.annotations)) {
+						                        await annotationManager.importAnnotations(xfdf);
+						                        console.log(`Synced annotation ${id}`);
+						                    }
+						                    break;
+						
+						                default:
+						                    console.warn("Unknown message type received:", message);
+						            }
+						        } catch (error) {
+						            console.error("Error processing WebSocket message:", error);
+						        } finally {
+									isUpdating = false;
+								}
+						    };
 						});
 
 						documentViewer.addEventListener('pageComplete', () => {
@@ -488,7 +578,7 @@
 
 
 		},
-
+		
 		destroy: function ArtworksViewer_destroy() {
 			if (this.shouldSave) {
 				var text = this.msg["label.exit.message"]
