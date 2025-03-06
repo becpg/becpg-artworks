@@ -66,6 +66,8 @@ function main() {
 			if (documentDetails.item.workingCopy) {
 				if (documentDetails.item.workingCopy.isWorkingCopy && documentDetails.item.workingCopy.sourceNodeRef) {
 					model.sourceNodeRef = documentDetails.item.workingCopy.sourceNodeRef;
+					var sourceDetails = AlfrescoUtil.getNodeDetails(model.sourceNodeRef, null);
+					model.item.version = sourceDetails.item.version;
 				}
 			}
 		}
