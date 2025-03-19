@@ -463,4 +463,9 @@ public final class DocuSignServiceImpl implements SignatureService {
 		return nodeRef;
 	}
 
+	@Override
+	public NodeRef prepareForSignature(NodeRef nodeRef, List<NodeRef> recipientNodes, JSONObject jsonParams) {
+		throw new IllegalStateException("Not implemented");
+	}
+
 }
