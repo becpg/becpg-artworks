@@ -89,22 +89,35 @@ import jakarta.xml.bind.DatatypeConverter;
 @Service
 public class PDFBoxServiceImpl implements SignatureService {
 	
+	private static final String FROM_BOTTOM_RATIO = "fromBottomRatio";
+	private static final String FROM_LEFT_RATIO = "fromLeftRatio";
+	private static final String GAP = "gap";
+	private static final String DIRECTION = "direction";
+	private static final String HEIGHT = "height";
+	private static final String WIDTH = "width";
+	private static final String Y_POSITION = "yPosition";
+	private static final String X_POSITION = "xPosition";
+	private static final String KEYWORD = "keyword";
+	private static final String DISABLE = "disable";
+	private static final String ANCHOR = "anchor";
+	private static final String INITIALS = "initials";
+	private static final String PAGE = "page";
+	private static final String SIGNATURE = "signature";
 	private static final String NODE_REF = "nodeRef";
-
 	private static final String RECIPIENTS = "recipients";
 
 	private static final Log logger = LogFactory.getLog(PDFBoxServiceImpl.class);
 
-	private static final int RIGHT_DIRECTION = 1;
-	private static final int LEFT_DIRECTION = 2;
-	private static final int UP_DIRECTION = 3;
-	private static final int DOWN_DIRECTION = 4;
+	private static final String RIGHT_DIRECTION = "right";
+	private static final String LEFT_DIRECTION = "left";
+	private static final String UP_DIRECTION = "up";
+	private static final String DOWN_DIRECTION = "down";
 	
-	private static final int LEFT_POSITION = 0;
-	private static final int MIDDLE_POSITION = 1;
-	private static final int RIGHT_POSITION = 2;
-	private static final int BOTTOM_POSITION = 0;
-	private static final int TOP_POSITION = 2;
+	private static final String LEFT_POSITION = "left";
+	private static final String MIDDLE_POSITION = "middle";
+	private static final String RIGHT_POSITION = "right";
+	private static final String BOTTOM_POSITION = "bottom";
+	private static final String TOP_POSITION = "top";
 	
 	private static final int SIGNATURE_SIZE = 0x5000;
 
@@ -192,45 +205,157 @@ public class PDFBoxServiceImpl implements SignatureService {
 
 	@Override
 	public NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params) {
+		SignatureContext context = buildSignatureContext(params);
+		return prepareForSignature(originalNode, recipients, context);
+	}
+	
+	@Override
+	public NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, JSONObject jsonParams) {
+		SignatureContext context = buildSignatureContext(jsonParams);
+		return prepareForSignature(originalNode, recipients, context);
+	}
+	
+	private SignatureContext buildSignatureContext(String... params) {
+		SignatureContext signatureContext = new SignatureContext();
+		if (params != null && params.length > 0) {
+			signatureContext.setSignaturePage(params[0]);
+		}
+		if (params != null && params.length > 1) {
+			String[] split = params[1].split(",");
+			signatureContext.setSignatureWidth(Integer.parseInt(split[0]));
+			signatureContext.setSignatureHeight(Integer.parseInt(split[1]));
+			signatureContext.setSignatureDirection(split[2]);
+			signatureContext.setSignatureGap(Integer.parseInt(split[3]));
+			signatureContext.setSignatureFromLeftRatio(Integer.parseInt(split[4]));
+			signatureContext.setSignatureFromBottomRatio(Integer.parseInt(split[5]));
+		}
+		if (params != null && params.length > 2) {
+			String[] split = params[2].split(",");
+			signatureContext.setSignatureAnchorKeyword(split[0]);
+			signatureContext.setSignatureAnchorXPosition(split[1]);
+			signatureContext.setSignatureAnchorYPosition(split[2]);
+		}
+		if (params != null && params.length > 3) {
+			String[] split = params[3].split(",");
+			signatureContext.setInitialsWidth(Integer.parseInt(split[0]));
+			signatureContext.setInitialsHeight(Integer.parseInt(split[1]));
+			signatureContext.setInitialsDirection(split[2]);
+			signatureContext.setInitialsGap(Integer.parseInt(split[3]));
+			signatureContext.setInitialsFromLeftRatio(Integer.parseInt(split[4]));
+			signatureContext.setInitialsFromBottomRatio(Integer.parseInt(split[5]));
+		}
 		
+		if (params != null && params.length > 4) {
+			String[] split = params[4].split(",");
+			signatureContext.setInitialsAnchorKeyword(split[0]);
+			signatureContext.setInitialsAnchorXPosition(split[1]);
+			signatureContext.setInitialsAnchorYPosition(split[2]);
+		}
+		return signatureContext;
+	}
+
+	private SignatureContext buildSignatureContext(JSONObject jsonParams) {
+		SignatureContext signatureContext = new SignatureContext();
+		if (jsonParams.has(SIGNATURE)) {
+			JSONObject signatureParams = jsonParams.getJSONObject(SIGNATURE);
+			if (signatureParams.has(PAGE)) {
+				signatureContext.setSignaturePage(signatureParams.getString(PAGE));
+			}
+			if (signatureParams.has(WIDTH)) {
+				signatureContext.setSignatureWidth(signatureParams.getInt(WIDTH));
+			}
+			if (signatureParams.has(HEIGHT)) {
+				signatureContext.setSignatureHeight(signatureParams.getInt(HEIGHT));
+			}
+			if (signatureParams.has(DIRECTION)) {
+				signatureContext.setSignatureDirection(signatureParams.getString(DIRECTION));
+			}
+			if (signatureParams.has(GAP)) {
+				signatureContext.setSignatureGap(signatureParams.getInt(GAP));
+			}
+			if (signatureParams.has(FROM_LEFT_RATIO)) {
+				signatureContext.setSignatureFromLeftRatio(signatureParams.getInt(FROM_LEFT_RATIO));
+			}
+			if (signatureParams.has(FROM_BOTTOM_RATIO)) {
+				signatureContext.setSignatureFromBottomRatio(signatureParams.getInt(FROM_BOTTOM_RATIO));
+			}
+			if (signatureParams.has(ANCHOR)) {
+				JSONObject anchorParams = signatureParams.getJSONObject(ANCHOR);
+				if (anchorParams.has(KEYWORD)) {
+					signatureContext.setSignatureAnchorKeyword(anchorParams.getString(KEYWORD));
+				}
+				if (anchorParams.has(X_POSITION)) {
+					signatureContext.setSignatureAnchorXPosition(anchorParams.getString(X_POSITION));
+				}
+				if (anchorParams.has(Y_POSITION)) {
+					signatureContext.setSignatureAnchorYPosition(anchorParams.getString(Y_POSITION));
+				}
+			}
+		}
+		if (jsonParams.has(INITIALS)) {
+			JSONObject initialsParams = jsonParams.getJSONObject(INITIALS);
+			if (initialsParams.has(DISABLE)) {
+				signatureContext.setDisableInitials(initialsParams.getBoolean(DISABLE));
+			}
+			if (initialsParams.has(WIDTH)) {
+				signatureContext.setInitialsWidth(initialsParams.getInt(WIDTH));
+			}
+			if (initialsParams.has(HEIGHT)) {
+				signatureContext.setInitialsHeight(initialsParams.getInt(HEIGHT));
+			}
+			if (initialsParams.has(DIRECTION)) {
+				signatureContext.setInitialsDirection(initialsParams.getString(DIRECTION));
+			}
+			if (initialsParams.has(GAP)) {
+				signatureContext.setInitialsGap(initialsParams.getInt(GAP));
+			}
+			if (initialsParams.has(FROM_LEFT_RATIO)) {
+				signatureContext.setInitialsFromLeftRatio(initialsParams.getInt(FROM_LEFT_RATIO));
+			}
+			if (initialsParams.has(FROM_BOTTOM_RATIO)) {
+				signatureContext.setInitialsFromBottomRatio(initialsParams.getInt(FROM_BOTTOM_RATIO));
+			}
+			if (initialsParams.has(ANCHOR)) {
+				JSONObject anchorParams = initialsParams.getJSONObject(ANCHOR);
+				if (anchorParams.has(KEYWORD)) {
+					signatureContext.setInitialsAnchorKeyword(anchorParams.getString(KEYWORD));
+				}
+				if (anchorParams.has(X_POSITION)) {
+					signatureContext.setInitialsAnchorXPosition(anchorParams.getString(X_POSITION));
+				}
+				if (anchorParams.has(Y_POSITION)) {
+					signatureContext.setInitialsAnchorYPosition(anchorParams.getString(Y_POSITION));
+				}
+			}
+		}
+		return signatureContext;
+	}
+
+	private NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, SignatureContext context) {
+		List<NodeRef> nodeRecipients = new ArrayList<>();
+		if (logger.isDebugEnabled()) {
+			logger.debug("prepareForSignature : originalNode = " + originalNode + ", recipients = " + recipients + ", context = " + context);
+		}
+		nodeService.getTargetAssocs(originalNode, SignatureModel.ASSOC_RECIPIENTS).forEach(assoc -> nodeRecipients.addAll(extractPeopleFromGroup(assoc.getTargetRef())));
+		// if no recipient set : take all the recipients from node aspect
+		if (recipients.isEmpty()) {
+			recipients.addAll(nodeRecipients);
+		}
+		context.setRecipients(recipients);
+		context.setNodeRecipients(nodeRecipients);
 		try {
-			
 			policyBehaviourFilter.disableBehaviour(SignatureModel.ASPECT_SIGNATURE);
-			
-			if (logger.isDebugEnabled()) {
-				logger.debug("prepareForSignature : originalNode = " + originalNode + ", recipients = " + recipients + ", params = " + (params == null ? params : Arrays.asList(params)));
-			}
-			
-			List<NodeRef> nodeRecipients = new ArrayList<>();
-			
-			nodeService.getTargetAssocs(originalNode, SignatureModel.ASSOC_RECIPIENTS).forEach(assoc -> nodeRecipients.addAll(extractPeopleFromGroup(assoc.getTargetRef())));
-			
-			// if no recipient set : take all the recipients from node aspect
-			if (recipients.isEmpty()) {
-				recipients.addAll(nodeRecipients);
-			}
-			
-			SignatureContext context = buildSignatureContext(nodeRecipients, recipients, params);
-			
 			if (logger.isDebugEnabled()) {
 				logger.debug(context.toString());
 			}
-		
-		
 			updatePreparationInformation(originalNode, context);
-			
 			for (NodeRef recipient : recipients) {
 				nodeService.createAssociation(originalNode, recipient, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
 			}
-			
 			NodeRef workingCopyNode = checkOutCheckInService.checkout(originalNode);
-			
 			InputStream originalContentInputStream = contentService.getReader(originalNode, ContentModel.PROP_CONTENT).getContentInputStream();
-			
 			byte[] preparedDocument = prepareForSignature(originalContentInputStream, context);
-			
 			nodeContentHelper.writeContent(workingCopyNode, preparedDocument);
-			
 			return workingCopyNode;
 		} catch (IOException e) {
 			String documentName = (String) nodeService.getProperty(originalNode, ContentModel.PROP_NAME);
@@ -238,7 +363,6 @@ public class PDFBoxServiceImpl implements SignatureService {
 		} finally {
 			policyBehaviourFilter.enableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 		}
-	    
 	}
 	
 	@Override
@@ -769,10 +893,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 			// signature fields
 			addFields(document, signaturePageNumber, context, true);
 			
-			// initials fields
-			for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
-				if (pageNumber != signaturePageNumber) {
-					addFields(document, pageNumber, context, false);
+			if (!context.isDisableInitials()) {
+				// initials fields
+				for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
+					if (pageNumber != signaturePageNumber) {
+						addFields(document, pageNumber, context, false);
+					}
 				}
 			}
 			
@@ -785,9 +911,16 @@ public class PDFBoxServiceImpl implements SignatureService {
 
 	private void addFields(PDDocument document, int pageNumber, SignatureContext context, boolean isSignatureField) throws IOException {
 		
-		String[] dimensions = isSignatureField ? context.getSignatureDimensions().split(",") : context.getInitialsDimensions().split(",") ;
+		int width = isSignatureField ? context.getSignatureWidth() : context.getInitialsWidth();
+		int height = isSignatureField ? context.getSignatureHeight() : context.getInitialsHeight();
+		String direction = isSignatureField ? context.getSignatureDirection() : context.getInitialsDirection();
+		int gap = isSignatureField ? context.getSignatureGap() : context.getInitialsGap();
+		int fromLeftRatio = isSignatureField ? context.getSignatureFromLeftRatio() : context.getInitialsFromLeftRatio();
+		int fromBottomRatio = isSignatureField ? context.getSignatureFromBottomRatio() : context.getInitialsFromBottomRatio();
 		
-		String[] anchorInfo = isSignatureField ? context.getSignatureAnchorInfo().split(",") : context.getInitialsAnchorInfo().split(",") ;
+		String anchorKeyword = isSignatureField ? context.getSignatureAnchorKeyword() : context.getInitialsAnchorKeyword() ;
+		String anchorXPosition = isSignatureField ? context.getSignatureAnchorXPosition() : context.getInitialsAnchorXPosition() ;
+		String anchorYPosition = isSignatureField ? context.getSignatureAnchorYPosition() : context.getInitialsAnchorYPosition() ;
 		
 		PDPage page = document.getPage(pageNumber);
 
@@ -818,30 +951,25 @@ public class PDFBoxServiceImpl implements SignatureService {
 				
 				PDAnnotationWidget fieldWidget = signatureField.getWidgets().get(0);
 				
-				float width = Float.parseFloat(dimensions[0]);
-				float height = Float.parseFloat(dimensions[1]);
 				float x = -1;
 				float y = -1;
 				
 				boolean useAnchor = false;
 				
-				if (anchorInfo != null && anchorInfo.length == 3 && !anchorInfo[0].isBlank()) {
+				if (anchorKeyword != null && !anchorKeyword.isBlank() && anchorXPosition != null && anchorYPosition != null) {
 					
-					int xPosition = Integer.parseInt(anchorInfo[1]);
-					int yPosition = Integer.parseInt(anchorInfo[2]);
-					
-					float[] coordinates = PDFTextLocator.getCoordinates(document, anchorInfo[0], pageNumber);
+					float[] coordinates = PDFTextLocator.getCoordinates(document, anchorKeyword, pageNumber);
 					
 					if (coordinates[0] != -1 && coordinates[1] != -1 && coordinates[2] != -1 && coordinates[3] != -1) {
 						
 						useAnchor = true;
 						
-						switch (xPosition) {
+						switch (anchorXPosition) {
 						case LEFT_POSITION:
 							x = coordinates[0] - width;
 							break;
 						case MIDDLE_POSITION:
-							x = (coordinates[1] + coordinates[0]) / 2 - width / 2;
+							x = (coordinates[1] + coordinates[0]) / 2 - (float) width / 2;
 							break;
 						case RIGHT_POSITION:
 							x = coordinates[1];
@@ -849,12 +977,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 						default:
 						}
 						
-						switch (yPosition) {
+						switch (anchorYPosition) {
 						case BOTTOM_POSITION:
 							y = coordinates[2] - height;
 							break;
 						case MIDDLE_POSITION:
-							y = (coordinates[3] + coordinates[2]) / 2 - height / 2;
+							y = (coordinates[3] + coordinates[2]) / 2 - (float) height / 2;
 							break;
 						case TOP_POSITION:
 							y = coordinates[3];
@@ -865,12 +993,9 @@ public class PDFBoxServiceImpl implements SignatureService {
 				}
 				
 				if (!useAnchor) {
-					x = page.getMediaBox().getWidth() * Float.parseFloat(dimensions[4]) / 100;
-					y = page.getMediaBox().getHeight() * Float.parseFloat(dimensions[5]) / 100;
+					x = page.getMediaBox().getWidth() * fromLeftRatio / 100;
+					y = page.getMediaBox().getHeight() * fromBottomRatio / 100;
 				}
-				
-				int direction = Integer.parseInt(dimensions[2]);
-				int gap = Integer.parseInt(dimensions[3]);
 				
 				switch (direction) {
 				case RIGHT_DIRECTION:
@@ -946,39 +1071,6 @@ public class PDFBoxServiceImpl implements SignatureService {
 	private String formatUsername(NodeRef recipient) {
 		return ((String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME)).replace(".", "_");
 	}
-
-	private SignatureContext buildSignatureContext(List<NodeRef> nodeRecipients, List<NodeRef> recipients, String... params) {
-
-		SignatureContext signatureContext = new SignatureContext();
-		
-		signatureContext.setNodeRecipients(nodeRecipients);
-		
-		signatureContext.setRecipients(recipients);
-
-		if (params != null && params.length > 0) {
-			signatureContext.setSignaturePage(params[0]);
-		}
-		
-		if (params != null && params.length > 1) {
-			signatureContext.setSignatureDimensions(params[1]);
-		}
-		
-		if (params != null && params.length > 2) {
-			signatureContext.setSignatureAnchorInfo(params[2]);
-		}
-		
-		if (params != null && params.length > 3) {
-			signatureContext.setInitialsDimensions(params[3]);
-		}
-		
-		if (params != null && params.length > 4) {
-			signatureContext.setInitialsAnchorInfo(params[4]);
-		}
-		
-		return signatureContext;
-	}
- 	
-	
 
 	private PDSignatureField findMatchingSignatureField(PDDocument doc, String fieldName) {
 		PDSignatureField signatureField = null;

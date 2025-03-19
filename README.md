@@ -169,29 +169,122 @@ Internal signature support is best integrated with beCPG PLM. If you want to use
 
 | Method                                            | Description                                                  |
 | ------------------------------------------------- | ------------------------------------------------------------ |
-| prepareForSignature(document, recipients, params) | ***document*** is the ScriptNode of the PDF document you want to sign, ***recipients*** is an array of ScriptNode representing the current recipients for whom the document will be prepared, ***params*** is an optional parameter which is an array of strings, the values change the signature positioning, size, and string anchors for the signature |
+| prepareForSignature(document, recipients, params) | ***document*** is the ScriptNode of the PDF document you want to sign, ***recipients*** is an array of ScriptNode representing the current recipients for whom the document will be prepared, ***params*** is an optional parameter which is a JSON string, the values change the signature positioning, size, and string anchors for the signature |
 | signDocument(document)                            | Digitally sign the document for the prepared recipients      |
 | getSignatureView(document, userName,  task)       | Returns the signature viewer URL (must be prefixed with HOST:PORT/share/page/context/mine/) |
 
+### **Signature Properties**  
+The `params` object holds details about the signature placement on the document.  
 
+| **Field**         | **Type** | **Description**                                              |
+| ----------------- | -------- | ------------------------------------------------------------ |
+| `page`            | String   | The page number where the signature should be placed.        |
+| `width`           | Integer  | The width of the signature.                                  |
+| `height`          | Integer  | The height of the signature.                                 |
+| `direction`       | String   | Direction of signature placement. Possible values: `"right"`, `"left"`, `"up"`, `"down"`. |
+| `gap`             | Integer  | The gap between multiple signatures if applicable.           |
+| `fromLeftRatio`   | Integer  | The horizontal positioning ratio from the left.              |
+| `fromBottomRatio` | Integer  | The vertical positioning ratio from the bottom.              |
+| `anchor`          | Object   | Specifies an anchor keyword-based placement (optional).      |
+| `keyword`         | String   | The keyword that serves as an anchor point.                  |
+| `xPosition`       | String   | Horizontal position relative to the keyword. Possible values: "left", "middle", "right". |
+| `yPosition`       | String   | Vertical position relative to the keyword. Possible values: "top", "middle", "bottom". |
 
-Parameters :
+The JSON params has the following structure:
 
-The signature feature is designed so that each page of the document will contain a signature field, either a "final signature" field, or a "initials" signature. You can define in which page you want to see the final signature, among other things.
+````json
+{
+  "signature": {
+    "page": "string",
+    "width": "integer",
+    "height": "integer",
+    "direction": "string",
+    "gap": "integer",
+    "fromLeftRatio": "integer",
+    "fromBottomRatio": "integer",
+    "anchor": {
+      "keyword": "string",
+      "xPosition": "string",
+      "yPosition": "string"
+    }
+  },
+  "initials": {
+    "disable": "boolean",
+    "width": "integer",
+    "height": "integer",
+    "direction": "string",
+    "gap": "integer",
+    "fromLeftRatio": "integer",
+    "fromBottomRatio": "integer",
+    "anchor": {
+      "keyword": "string",
+      "xPosition": "string",
+      "yPosition": "string"
+    }
+  }
+}
+````
 
-The **params** of the **prepareForSignature** method have default values if nothing is set. Here is the default params structure :
+And these are the default values (if not provided):
 
-```javascript
-bSign.prepareForSignature(document, recipients, "last", "100,50,3,60,75,10", "signature,2,0", "50,25,3,30,75,10", "Page,0,2")
+```json
+{
+  "signature": {
+    "page": "last",
+    "width": 200,
+    "height": 75,
+    "direction": "up",
+    "gap": 60,
+    "fromLeftRatio": 60,
+    "fromBottomRatio": 10,
+    "anchor": {
+      "keyword": null,
+      "xPosition": null,
+      "yPosition": null
+    }
+  },
+  "initials": {
+    "disable": false,
+    "width": 100,
+    "height": 35,
+    "direction": "up",
+    "gap": 30,
+    "fromLeftRatio": 75,
+    "fromBottomRatio": 10,
+    "anchor": {
+      "keyword": null,
+      "xPosition": null,
+      "yPosition": null
+    }
+  }
+}
 ```
 
- * **last** : defines the page number of the final signature. It can be a number ("1", "14", ...) or a number from the end ("last", "last-2", ...)
- * **100,50,1,150,300,300** : defines the signature field dimensions (width,height,direction(1=right,2=left,3=up,4=down),gap,fromLeftProportion,fromBottomProportion). Direction is the direction of the multiple fields on each page (if there are multiple recipients). The margins are here to positionate the first field in case of a non-matching keyword
- * **signature,2,0** : defines the signature field anchor information (keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top))
- * "**50,25,3,30,150,150**" : defines the initials field dimensions (width,height,direction(1=right,2=left,3=up,4=down),gap,fromLeftProportion,fromBottomProportion)
- * **Page,0,2** : defines the initials field anchor information (keyWord,xposition(0=left,1=middle,2=right),yposition(0=bottom,1=middle,2=top))
+#### Example:
 
-
+```javascript
+var document = search.findNode("workspace://SpacesStore/1748e487-a0e7-4931-88e4-87a0e7393118");
+document.createAssociation(person, "sign:recipients"); // you need to set all recipients
+var recipients = []; // the recipients that will be prepared for signature (all if empty)
+var params = {
+	signature: {
+		width: 200,
+		height: 50,
+		fromLeftRatio: 50,
+		fromBottomRatio: 75
+	},
+	initials: {
+		anchor: {
+			keyword: "Page",
+			xPosition: "right",
+			yPosition: "bottom"
+		},
+		width: 80,
+		height: 60,
+	}
+}
+bSign.prepareForSignature(document, recipients, JSON.stringify(params));
+```
 
 ### Use case
 

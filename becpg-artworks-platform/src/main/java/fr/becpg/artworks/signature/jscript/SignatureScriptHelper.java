@@ -20,11 +20,13 @@ package fr.becpg.artworks.signature.jscript;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.activiti.engine.impl.util.json.JSONException;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.json.JSONObject;
 
 import fr.becpg.artworks.signature.SignatureService;
 import fr.becpg.artworks.signature.model.SignatureModel;
@@ -68,16 +70,21 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 	}
 
 	public ScriptNode prepareForSignature(ScriptNode document, ScriptNode[] recipients, String... params) {
-		
 		List<NodeRef> recipientNodes = new ArrayList<>();
-			
 		for (ScriptNode recipient : recipients) {
 			recipientNodes.add(recipient.getNodeRef());
 		}
-		
+		if (params.length == 1) {
+			try {
+				JSONObject jsonParams = new JSONObject(params[0]);
+				return new ScriptNode(signatureService.prepareForSignature(document.getNodeRef(), recipientNodes, jsonParams), serviceRegistry, getScope());
+			} catch (JSONException e) {
+				// nothing
+			}
+		}
 		return new ScriptNode(signatureService.prepareForSignature(document.getNodeRef(), recipientNodes, false, params), serviceRegistry, getScope());
 	}
-
+	
 	public void checkinDocument(ScriptNode document) {
 		signatureService.checkinDocument(document.getNodeRef());
 	}
