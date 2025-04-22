@@ -844,9 +844,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 					CMSSignedData signedData = gen.generate(msg, false);
 					
 					if (tsaUrl != null && !tsaUrl.isEmpty()) {
-						ValidationTimeStamp validation;
-						validation = new ValidationTimeStamp(tsaUrl);
-						signedData = validation.addSignedTimeStamp(signedData);
+						signedData = addTimeStamp(signedData);
 					}
 					cmsSignature = signedData.getEncoded();
 					
@@ -861,6 +859,19 @@ public class PDFBoxServiceImpl implements SignatureService {
 				externalSigning.setSignature(cmsSignature);
 			}
 		}
+
+	private CMSSignedData addTimeStamp(CMSSignedData signedData) throws NoSuchAlgorithmException, IOException {
+		for (String url : tsaUrl.split(",")) {
+			try {
+				ValidationTimeStamp validation = new ValidationTimeStamp(url);
+				signedData = validation.addSignedTimeStamp(signedData);
+				return signedData;
+			} catch (Exception e) {
+				logger.warn("tsa url '" + url + "' did not work: " + e.getMessage(), e);
+			}
+		}
+		throw new IllegalStateException("The TSA urls are not working: " + tsaUrl);
+	}
 
 	private PDSignatureField findSignatureField(PDDocument document, String userName) throws IOException {
 		PDField removedField = removeField(document, userName);
