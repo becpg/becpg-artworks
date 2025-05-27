@@ -806,11 +806,26 @@ public class PDFBoxServiceImpl implements SignatureService {
 				SignatureUtils.setMDPPermission(document, signature, 3);
 			}
 			
-			String userDisplayName = nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME) + " " + nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
+			String firstName = (String) nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME);
+			if (firstName == null) {
+				firstName = "";
+			}
+			String lastName = (String) nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
+			if (lastName == null) {
+				lastName = "";
+			}
+			String jobTitle = (String) nodeService.getProperty(recipient, ContentModel.PROP_JOBTITLE);
+			if (jobTitle != null && jobTitle.isBlank()) {
+				jobTitle = ", " + jobTitle;
+			} else {
+				jobTitle = "";
+			}
+			String userName = (String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME);
+			String signatureName = firstName + " " + lastName.toUpperCase() + jobTitle + " (" + userName + ")";
 			
 			signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
 			signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
-			signature.setName(userDisplayName);
+			signature.setName(signatureName);
 			signature.setReason(signatureReason);
 			signature.setLocation(signatureLocation);
 			signature.setContactInfo(signatureContactInfo);
