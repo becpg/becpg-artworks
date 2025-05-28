@@ -815,7 +815,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 				lastName = "";
 			}
 			String jobTitle = (String) nodeService.getProperty(recipient, ContentModel.PROP_JOBTITLE);
-			if (jobTitle != null && jobTitle.isBlank()) {
+			if (jobTitle != null && !jobTitle.isBlank()) {
 				jobTitle = ", " + jobTitle;
 			} else {
 				jobTitle = "";
