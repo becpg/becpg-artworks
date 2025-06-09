@@ -577,9 +577,9 @@ public class PDFBoxServiceImpl implements SignatureService {
     		recipientsArray.remove(indexToRemove);
     	}
     	
-    	String userDisplayName = nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME) + " " + nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
+    	String signatureName = extractSignatureName(recipient);
     	
-    	PDSignature signature = extractSignature(signedContent, userDisplayName);
+    	PDSignature signature = extractSignature(signedContent, signatureName);
     	
     	try {
     		recipientJson.put("signatureDate", extractTimeStampDate(signedContent, signature));
@@ -806,22 +806,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 				SignatureUtils.setMDPPermission(document, signature, 3);
 			}
 			
-			String firstName = (String) nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME);
-			if (firstName == null) {
-				firstName = "";
-			}
-			String lastName = (String) nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
-			if (lastName == null) {
-				lastName = "";
-			}
-			String jobTitle = (String) nodeService.getProperty(recipient, ContentModel.PROP_JOBTITLE);
-			if (jobTitle != null && !jobTitle.isBlank()) {
-				jobTitle = ", " + jobTitle;
-			} else {
-				jobTitle = "";
-			}
-			String userName = (String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME);
-			String signatureName = firstName + " " + lastName.toUpperCase() + jobTitle + " (" + userName + ")";
+			String signatureName = extractSignatureName(recipient);
 			
 			signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
 			signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
@@ -874,6 +859,25 @@ public class PDFBoxServiceImpl implements SignatureService {
 				externalSigning.setSignature(cmsSignature);
 			}
 		}
+
+	private String extractSignatureName(NodeRef recipient) {
+		String firstName = (String) nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME);
+		if (firstName == null) {
+			firstName = "";
+		}
+		String lastName = (String) nodeService.getProperty(recipient, ContentModel.PROP_LASTNAME);
+		if (lastName == null) {
+			lastName = "";
+		}
+		String jobTitle = (String) nodeService.getProperty(recipient, ContentModel.PROP_JOBTITLE);
+		if (jobTitle != null && !jobTitle.isBlank()) {
+			jobTitle = ", " + jobTitle;
+		} else {
+			jobTitle = "";
+		}
+		String userName = (String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME);
+		return firstName + " " + lastName.toUpperCase() + jobTitle + " (" + userName + ")";
+	}
 
 	private CMSSignedData addTimeStamp(CMSSignedData signedData) throws NoSuchAlgorithmException, IOException {
 		for (String url : tsaUrl.split(",")) {
