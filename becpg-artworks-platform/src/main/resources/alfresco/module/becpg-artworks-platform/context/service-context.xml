@@ -26,17 +26,12 @@
 
 	<context:component-scan base-package="fr.becpg" />
 
-<!-- 	<bean id="annotationService" class="fr.becpg.artworks.annotation.KamiServiceImpl"> -->
-<!-- 		<property name="nodeService" ref="nodeService" /> -->
-<!-- 		<property name="contentService" ref="contentService" /> -->
-<!-- 		<property name="personService" ref="personService" /> -->
-<!-- 		<property name="checkOutCheckInService" ref="checkOutCheckInService" /> -->
-<!-- 		<property name="annotationAuthorization" value="${beCPG.annotationAuthorization}" /> -->
-<!-- 	</bean> -->
-
-	<bean id="annotationService" class="fr.becpg.artworks.annotation.PDFTronAnnotationServiceImpl">
-		<property name="checkOutCheckInService" ref="checkOutCheckInService" />
+	<bean id="annotationService" class="fr.becpg.artworks.annotation.KamiServiceImpl">
 		<property name="nodeService" ref="nodeService" />
+		<property name="contentService" ref="contentService" />
+		<property name="personService" ref="personService" />
+		<property name="checkOutCheckInService" ref="checkOutCheckInService" />
+		<property name="annotationAuthorization" value="${beCPG.annotationAuthorization}" />
 	</bean>
 
 	<bean id="annotationScriptHelper" parent="baseJavaScriptExtension" class="fr.becpg.artworks.annotation.jscript.AnnotationScriptHelper">
