@@ -190,6 +190,17 @@
 
 					if (me.options.mode == "sign") {
 						
+						 const tool = instance.Core.documentViewer.getTool('AnnotationCreateSignature');
+ 						 tool.setSigningMode(instance.Core.Tools.SignatureCreateTool.SigningModes.ANNOTATION);
+
+						instance.UI.disableElements(['toolbarGroup-View']);
+						instance.UI.disableElements(['toolbarGroup-Annotate']);
+						instance.UI.disableElements(['toolbarGroup-Shapes']);
+						instance.UI.disableElements(['toolbarGroup-Insert']);
+						instance.UI.disableElements(['toolbarGroup-Measure']);
+						instance.UI.disableElements(['toolbarGroup-Edit']);
+						instance.UI.disableElements(['toolbarGroup-Forms']);
+						
 						instance.UI.disableElements(['ribbons']);
 						instance.UI.disableElements(['freeHandToolGroupButton']);
 						instance.UI.disableElements(['freeHandHighlightToolGroupButton']);
@@ -223,14 +234,21 @@
 						instance.UI.disableElements(['strikeoutToolGroupButton']);
 						instance.UI.disableElements(['squigglyToolGroupButton']);
 						instance.UI.disableElements(['stickyToolGroupButton']);
+						instance.UI.disableElements(['freeTextToolButton']);
+						instance.UI.disableElements(['rubberStampToolButton']);
+						instance.UI.disableElements(['calendarToolButton']);
+						instance.UI.disableElements(['stylePanelToggle']);
 
 						if (me.options.signatureStatus == "Signed") {
 							saveButton.style.display = "none";
-							instance.UI.openElements(['leftPanel', 'signaturePanel' ]);
-							instance.UI.disableElements(['toolsHeader']);
-							instance.UI.disableElements(['bookmarksPanelButton']);
-							instance.UI.disableElements(['outlinesPanelButton']);
-							instance.UI.disableElements(['thumbnailsPanelButton']);
+							instance.UI.openElements(['tabPanel', 'signaturePanel-tabPanel' ]);
+							instance.UI.disableElements(['tools-header']);
+							instance.UI.disableElements(['toolbarGroup-FillAndSign']);
+							instance.UI.disableElements(['layersPanel-tabPanel']);
+							instance.UI.disableElements(['thumbnailsPanel-tabPanel']);
+							instance.UI.disableElements(['bookmarksPanel-tabPanel']);
+							instance.UI.disableElements(['outlinesPanel-tabPanel']);
+							instance.UI.disableElements(['fileAttachmentPanel-tabPanel']);
 						}
 						
 						const signatureTool = documentViewer.getTool('AnnotationCreateSignature');
@@ -274,7 +292,7 @@
 								if (allSigned && action == "delete") {
 									signatureWidgetAnnots.forEach(signatureWidgetAnnot => {
 										annotations.forEach(annotation => {
-											if (signatureWidgetAnnot.annot === annotation) {
+											if (signatureWidgetAnnot.getAssociatedSignatureAnnotation() === annotation) {
 												allSigned = false;
 											}
 										});
