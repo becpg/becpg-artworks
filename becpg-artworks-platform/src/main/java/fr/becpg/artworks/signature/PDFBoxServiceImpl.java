@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -607,7 +608,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 	}
 	
 	private PDSignature extractSignature(byte[] signedContent, String userDisplayName) throws IOException {
-		try (PDDocument document = PDDocument.load(signedContent)) {
+		try (PDDocument document = Loader.loadPDF(signedContent)) {
 
 			for (PDSignature signature : document.getSignatureDictionaries()) {
 
@@ -621,7 +622,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	private Date extractTimeStampDate(byte[] signedFile, PDSignature signature) throws IOException, CMSException, TSPException {
 		
-		try (PDDocument document = PDDocument.load(signedFile)) {
+		try (PDDocument document = Loader.loadPDF(signedFile)) {
 
 			COSString contents = (COSString) signature.getCOSObject().getDictionaryObject(COSName.CONTENTS);
 
@@ -765,8 +766,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 			InputStream input = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream();
 
-			PDDocument document = PDDocument.load(input);
-			
+			ByteArrayOutputStream inputBuffer = new ByteArrayOutputStream();
+			input.transferTo(inputBuffer);
+			byte[] pdfBytes = inputBuffer.toByteArray();
+
+			PDDocument document = Loader.loadPDF(pdfBytes);
+				
 			int accessPermissions = SignatureUtils.getMDPPermission(document);
 			if (accessPermissions == 1) {
 				throw new IllegalStateException("No changes to the document are permitted due to DocMDP transform parameters dictionary");
@@ -905,9 +910,11 @@ public class PDFBoxServiceImpl implements SignatureService {
 
 	private byte[] prepareForSignature(InputStream input, SignatureContext context) throws IOException {
 
-		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-
-			PDDocument document = PDDocument.load(input);
+		try (ByteArrayOutputStream output = new ByteArrayOutputStream(); ByteArrayOutputStream inputBuffer = new ByteArrayOutputStream()) {
+			input.transferTo(inputBuffer);
+			byte[] pdfBytes = inputBuffer.toByteArray();
+			
+			PDDocument document = Loader.loadPDF(pdfBytes);
 
 			int signaturePageNumber = 0;
 
