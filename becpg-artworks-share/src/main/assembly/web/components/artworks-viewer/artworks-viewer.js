@@ -49,11 +49,12 @@
 		onReady: function ArtworksViewer_onReady() {
 			var me = this;
 
-			this.viewer = WebViewer({
+			this.viewer = WebViewer.Iframe({
 				path: URL_CONTEXT + '/res/components/artworks-viewer/pdftron/lib',
 				licenseKey: window.atob(me.options.encryptedLicenseKey),
 				documentId: me.options.nodeRef,
 				fullAPI: true,
+				ui: 'legacy',
 				initialDoc: me.options.compareContentURL == null ? PROXY_URI + me.options.contentURL : null,
 				annotationUser: USERNAME_DISPLAYNAME,
 				enableMeasurement: true,
