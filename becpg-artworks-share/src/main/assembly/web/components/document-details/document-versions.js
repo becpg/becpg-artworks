@@ -233,6 +233,7 @@
       	//beCPG #3493
         var downloadURL = Alfresco.constants.PROXY_URI + 'api/node/content/' + doc.nodeRef.replace(":/", "") + '/' + encodeURI(doc.name) + '?a=true',
             html = '';
+		var compareURL = Alfresco.constants.URL_PAGECONTEXT + 'artworks-viewer?nodeRef=' + this.options.nodeRef + '&compareTo=' + doc.nodeRef;
 
          html += '<div class="version-panel-left">'
          html += '   <span class="document-version">' + $html(doc.label) + '</span>';
@@ -246,6 +247,7 @@
          }
          html += '      <a href="' + downloadURL + '" target="_blank" class="download" title="' + this.msg("label.download") + '">&nbsp;</a>';
          html += '      <a href="#" name=".onViewHistoricPropertiesClick" rel="' + doc.nodeRef + '" class="' + this.id + ' historicProperties" title="' + this.msg("label.historicProperties") + '">&nbsp;</a>';
+         html += '      <a href="' + compareURL + '" target="_blank" class="compare" title="' + this.msg("label.compare") + '">&nbsp;</a>';
          html += '   </span>';
          html += '   <div class="clear"></div>';
          html += '   <div class="version-details">';
