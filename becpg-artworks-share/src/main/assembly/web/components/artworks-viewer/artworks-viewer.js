@@ -296,68 +296,145 @@
 					
 					} else if (me.options.compareContentURL != null) {
 						
-						documentViewer.addEventListener('documentLoaded', () => {
-							instance.UI.setLayoutMode(instance.UI.LayoutMode.FacingContinuous);
-						});
-
-						await PDFNet.initialize();
-
-						const newDoc = await PDFNet.PDFDoc.create();
-						await newDoc.lock();
-
-						const doc1 = await PDFNet.PDFDoc.createFromURL(PROXY_URI + me.options.contentURL);
-						const doc2 = await PDFNet.PDFDoc.createFromURL(PROXY_URI + me.options.compareContentURL);
-
-
-						if (me.options.mode == "overlay") {
-							const getPageArray = async (doc) => {
-								const arr = [];
-								const itr = await doc.getPageIterator(1);
-
-								for (itr; await itr.hasNext(); itr.next()) {
-									const page = await itr.current();
-									arr.push(page);
-								}
-
-								return arr;
+						async function loadDocumentWithAnnotations(url, PDFNet) {
+							const tempDoc = await PDFNet.PDFDoc.createFromURL(url);
+							await tempDoc.lock();
+							
+							// Extract XFDF annotations
+							const fdfDoc = await tempDoc.fdfExtract(1);
+							let xfdf = null;
+							
+							if (fdfDoc) {
+								xfdf = await fdfDoc.saveAsXFDFAsString();
 							}
-
-							const [doc1Pages, doc2Pages] = await Promise.all([
-								getPageArray(doc1),
-								getPageArray(doc2)
-							]);
-
-							// we'll loop over the doc with the most pages
-							const biggestLength = Math.max(doc1Pages.length, doc2Pages.length)
-
-							// we need to do the pages in order, so lets create a Promise chain
-							const chain = Promise.resolve();
-
-							for (let i = 0; i < biggestLength; i++) {
-								chain.then(async () => {
-									let page1 = doc1Pages[i];
-									let page2 = doc2Pages[i];
-
-									// handle the case where one document has more pages than the other
-									if (!page1) {
-										page1 = new PDFNet.Page(0); // create a blank page
-									}
-									if (!page2) {
-										page2 = new PDFNet.Page(0); // create a blank page
-									}
-									return newDoc.appendVisualDiff(page1, page2, null)
-								})
-							}
-
-							await chain; // wait for our chain to resolve
-						} else {
-
-							await newDoc.appendTextDiffDoc(doc1, doc2);
+							
+							await tempDoc.unlock();
+							
+							return { doc: tempDoc, xfdf: xfdf };
 						}
+						
+						documentViewer.addEventListener('documentLoaded', () => {
+								instance.UI.setLayoutMode(instance.UI.LayoutMode.FacingContinuous);
+							});
+							
+							await PDFNet.initialize();
+							
+							// Load both documents with their annotations
+							const [result1, result2] = await Promise.all([
+								loadDocumentWithAnnotations(PROXY_URI + me.options.contentURL, PDFNet),
+								loadDocumentWithAnnotations(PROXY_URI + me.options.compareContentURL, PDFNet)
+							]);
+							
+							const newDoc = await PDFNet.PDFDoc.create();
+							await newDoc.lock();
+							
+							// Create comparison document
+							if (me.options.mode == "overlay") {
+								const getPageArray = async (doc) => {
+									const arr = [];
+									const itr = await doc.getPageIterator(1);
+									for (itr; await itr.hasNext(); itr.next()) {
+										const page = await itr.current();
+										arr.push(page);
+									}
+									return arr;
+								}
+								
+								const [doc1Pages, doc2Pages] = await Promise.all([
+									getPageArray(result1.doc),
+									getPageArray(result2.doc)
+								]);
+								
+								// we'll loop over the doc with the most pages
+								const biggestLength = Math.max(doc1Pages.length, doc2Pages.length);
+								// we need to do the pages in order, so lets create a Promise chain
+								const chain = Promise.resolve();
+								for (let i = 0; i < biggestLength; i++) {
+									chain.then(async () => {
+										let page1 = doc1Pages[i];
+										let page2 = doc2Pages[i];
+										// handle the case where one document has more pages than the other
+										if (!page1) {
+											page1 = new PDFNet.Page(0); // create a blank page
+										}
+										if (!page2) {
+											page2 = new PDFNet.Page(0); // create a blank page
+										}
+										return newDoc.appendVisualDiff(page1, page2, null)
+									})
+								}
+								await chain; // wait for our chain to resolve
+							} else {
+								await newDoc.appendTextDiffDoc(result1.doc, result2.doc);
+							}
+							
+							await newDoc.unlock();
+							
+							// Load the comparison document
+							await instance.UI.loadDocument(newDoc);
+							
+							// Wait for document to be fully loaded before importing annotations
+							await new Promise(resolve => {
+								const onLoaded = () => {
+									documentViewer.removeEventListener('documentLoaded', onLoaded);
+									resolve();
+								};
+								documentViewer.addEventListener('documentLoaded', onLoaded);
+							});
+							
+							// Import annotations from both original documents into the comparison view
+							try {
+								if (result1.xfdf) {
+									// Parse the XFDF string into XML
+								   const parser = new DOMParser();
+								   const xmlDoc = parser.parseFromString(result1.xfdf, "application/xml");
 
-						await newDoc.unlock();
+								   // Select all annotations: freetext and text
+								   const annotations = xmlDoc.querySelectorAll("annots > *");
 
-						instance.UI.loadDocument(newDoc);
+								   annotations.forEach((annot) => {
+								       const pageAttr = annot.getAttribute("page");
+								       if (pageAttr !== null) {
+								           const newPage = parseInt(pageAttr, 10) * 2;
+								           annot.setAttribute("page", newPage);
+								       }
+								   });
+
+								   // Serialize XML back to string
+								   const serializer = new XMLSerializer();
+								   const newXfdf = serializer.serializeToString(xmlDoc);
+
+								   // Import modified annotations
+								   await annotationManager.importAnnotations(newXfdf);
+								   console.log('Imported annotations from document 1');		
+								}
+								if (result2.xfdf) {
+									// Parse the XFDF string into XML
+								   const parser = new DOMParser();
+								   const xmlDoc = parser.parseFromString(result2.xfdf, "application/xml");
+
+								   // Select all annotations: freetext and text
+								   const annotations = xmlDoc.querySelectorAll("annots > *");
+
+								   annotations.forEach((annot) => {
+								       const pageAttr = annot.getAttribute("page");
+								       if (pageAttr !== null) {
+								           const newPage = parseInt(pageAttr, 10) * 2 + 1;
+								           annot.setAttribute("page", newPage);
+								       }
+								   });
+
+								   // Serialize XML back to string
+								   const serializer = new XMLSerializer();
+								   const newXfdf = serializer.serializeToString(xmlDoc);
+
+								   // Import modified annotations
+								   await annotationManager.importAnnotations(newXfdf);
+								   console.log('Imported annotations from document 2');		
+								}
+							} catch (error) {
+								console.error('Error importing annotations:', error);
+							}			
 					} else {
 						
 						instance.UI.setHeaderItems(header => {
