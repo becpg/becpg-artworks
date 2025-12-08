@@ -23,6 +23,7 @@ import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -97,7 +98,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 
 		byte[] file = contentService.getReader(checkedOut, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
 
-		try (PDDocument document = PDDocument.load(file)) {
+		try (PDDocument document = Loader.loadPDF(file)) {
 			
 			for (int i = 0; i < document.getNumberOfPages() - 1; i++) {
 				List<PDAnnotation> annotations = document.getPage(i).getAnnotations();
@@ -263,7 +264,7 @@ public class SignatureServiceIT extends RepoBaseTest {
 		
 		int accessPermissions = -1;
 		
-		try (PDDocument document = PDDocument.load(file)) {
+		try (PDDocument document = Loader.loadPDF(file)) {
 			accessPermissions = SignatureUtils.getMDPPermission(document);
 		}
 		
@@ -272,11 +273,11 @@ public class SignatureServiceIT extends RepoBaseTest {
 
 	private void checkSignature(byte[] origFile, byte[] signedFile, final int signatureCount) throws IOException, CMSException, OperatorCreationException, GeneralSecurityException, CertificateVerificationException, TSPException {
 		int origPageCount;
-		try (PDDocument document = PDDocument.load(origFile)) {
+		try (PDDocument document = Loader.loadPDF(origFile)) {
 			// get string representation of pages COSObject
 			origPageCount = document.getPages().getCount();
 		}
-		try (PDDocument document = PDDocument.load(signedFile)) {
+		try (PDDocument document = Loader.loadPDF(signedFile)) {
 			// PDFBOX-4261: check that object number stays the same
 			Assert.assertEquals(origPageCount,document.getPages().getCount());
 
