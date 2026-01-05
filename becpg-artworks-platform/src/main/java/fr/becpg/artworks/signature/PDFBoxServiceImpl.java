@@ -343,26 +343,32 @@ public class PDFBoxServiceImpl implements SignatureService {
 		}
 		context.setRecipients(recipients);
 		context.setNodeRecipients(nodeRecipients);
-		try {
-			policyBehaviourFilter.disableBehaviour(SignatureModel.ASPECT_SIGNATURE);
-			if (logger.isDebugEnabled()) {
-				logger.debug(context.toString());
+		if (!checkOutCheckInService.isCheckedOut(originalNode)) {
+			try {
+				policyBehaviourFilter.disableBehaviour(SignatureModel.ASPECT_SIGNATURE);
+				if (logger.isDebugEnabled()) {
+					logger.debug(context.toString());
+				}
+				updatePreparationInformation(originalNode, context);
+				List<NodeRef> currentRecipients = nodeService.getTargetAssocs(originalNode, SignatureModel.ASSOC_PREPARED_RECIPIENTS).stream()
+						.map(t -> t.getTargetRef()).collect(Collectors.toList());
+				for (NodeRef recipient : recipients) {
+					if (!currentRecipients.contains(recipient)) {
+						nodeService.createAssociation(originalNode, recipient, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
+					}
+				}
+				NodeRef workingCopyNode = checkOutCheckInService.checkout(originalNode);
+				InputStream originalContentInputStream = contentService.getReader(originalNode, ContentModel.PROP_CONTENT).getContentInputStream();
+				byte[] preparedDocument = prepareForSignature(originalContentInputStream, context);
+				nodeContentHelper.writeContent(workingCopyNode, preparedDocument);
+			} catch (IOException e) {
+				String documentName = (String) nodeService.getProperty(originalNode, ContentModel.PROP_NAME);
+				throw new SignatureException("Error while preparing signature for '" + documentName + "' : " + e.getMessage());
+			} finally {
+				policyBehaviourFilter.enableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 			}
-			updatePreparationInformation(originalNode, context);
-			for (NodeRef recipient : recipients) {
-				nodeService.createAssociation(originalNode, recipient, SignatureModel.ASSOC_PREPARED_RECIPIENTS);
-			}
-			NodeRef workingCopyNode = checkOutCheckInService.checkout(originalNode);
-			InputStream originalContentInputStream = contentService.getReader(originalNode, ContentModel.PROP_CONTENT).getContentInputStream();
-			byte[] preparedDocument = prepareForSignature(originalContentInputStream, context);
-			nodeContentHelper.writeContent(workingCopyNode, preparedDocument);
-			return workingCopyNode;
-		} catch (IOException e) {
-			String documentName = (String) nodeService.getProperty(originalNode, ContentModel.PROP_NAME);
-			throw new SignatureException("Error while preparing signature for '" + documentName + "' : " + e.getMessage());
-		} finally {
-			policyBehaviourFilter.enableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 		}
+		return checkOutCheckInService.getWorkingCopy(originalNode);
 	}
 	
 	@Override
