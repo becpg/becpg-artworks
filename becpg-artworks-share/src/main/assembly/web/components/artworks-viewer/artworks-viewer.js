@@ -191,54 +191,68 @@
 
 					if (me.options.mode == "sign") {
 						
-						 const tool = instance.Core.documentViewer.getTool('AnnotationCreateSignature');
- 						 tool.setSigningMode(instance.Core.Tools.SignatureCreateTool.SigningModes.ANNOTATION);
+						const tool = instance.Core.documentViewer.getTool('AnnotationCreateSignature');
+						tool.setSigningMode(instance.Core.Tools.SignatureCreateTool.SigningModes.ANNOTATION);
 
-						instance.UI.disableElements(['toolbarGroup-View']);
-						instance.UI.disableElements(['toolbarGroup-Annotate']);
-						instance.UI.disableElements(['toolbarGroup-Shapes']);
-						instance.UI.disableElements(['toolbarGroup-Insert']);
-						instance.UI.disableElements(['toolbarGroup-Measure']);
-						instance.UI.disableElements(['toolbarGroup-Edit']);
-						instance.UI.disableElements(['toolbarGroup-Forms']);
-						
-						instance.UI.disableElements(['ribbons']);
-						instance.UI.disableElements(['freeHandToolGroupButton']);
-						instance.UI.disableElements(['freeHandHighlightToolGroupButton']);
-						instance.UI.disableElements(['shapeToolGroupButton']);
-						instance.UI.disableElements(['ellipseToolGroupButton']);
-						instance.UI.disableElements(['polygonToolGroupButton']);
-						instance.UI.disableElements(['polygonCloudToolGroupButton']);
-						instance.UI.disableElements(['lineToolGroupButton']);
-						instance.UI.disableElements(['polyLineToolGroupButton']);
-						instance.UI.disableElements(['arrowToolGroupButton']);
-						instance.UI.disableElements(['redoButton']);
-						instance.UI.disableElements(['eraserToolButton']);
-						instance.UI.disableElements(['rubberStampToolGroupButton']);
-						instance.UI.disableElements(['stampToolGroupButton']);
-						instance.UI.disableElements(['fileAttachmentToolGroupButton']);
-						instance.UI.disableElements(['calloutToolGroupButton']);
-						instance.UI.disableElements(['distanceToolGroupButton']);
-						instance.UI.disableElements(['perimeterToolGroupButton']);
-						instance.UI.disableElements(['areaToolGroupButton']);
-						instance.UI.disableElements(['ellipseAreaToolGroupButton']);
-						instance.UI.disableElements(['rectangleAreaToolGroupButton']);
-						instance.UI.disableElements(['cloudyRectangleAreaToolGroupButton']);
-						instance.UI.disableElements(['countToolGroupButton']);
-						instance.UI.disableElements(['dateFreeTextToolButton']);
-						instance.UI.disableElements(['dotStampToolButton']);
-						instance.UI.disableElements(['checkStampToolButton']);
-						instance.UI.disableElements(['crossStampToolButton']);
-						instance.UI.disableElements(['freeTextToolGroupButton']);
-						instance.UI.disableElements(['highlightToolGroupButton']);
-						instance.UI.disableElements(['underlineToolGroupButton']);
-						instance.UI.disableElements(['strikeoutToolGroupButton']);
-						instance.UI.disableElements(['squigglyToolGroupButton']);
-						instance.UI.disableElements(['stickyToolGroupButton']);
-						instance.UI.disableElements(['freeTextToolButton']);
-						instance.UI.disableElements(['rubberStampToolButton']);
-						instance.UI.disableElements(['calendarToolButton']);
-						instance.UI.disableElements(['stylePanelToggle']);
+						instance.UI.disableFeatures([
+							instance.UI.Feature.ContentEdit,
+							instance.UI.Feature.Measurement,
+							instance.UI.Feature.Redaction,
+							instance.UI.Feature.TextSelection,
+							instance.UI.Feature.FilePicker,
+							instance.UI.Feature.NotesPanel
+						]);
+
+						instance.UI.disableElements([
+							'toolbarGroup-View',
+							'toolbarGroup-Annotate',
+							'toolbarGroup-Shapes',
+							'toolbarGroup-Insert',
+							'toolbarGroup-Measure',
+							'toolbarGroup-Edit',
+							'toolbarGroup-Forms',
+							'ribbons',
+							'freeHandToolGroupButton',
+							'freeHandHighlightToolGroupButton',
+							'shapeToolGroupButton',
+							'ellipseToolGroupButton',
+							'polygonToolGroupButton',
+							'polygonCloudToolGroupButton',
+							'lineToolGroupButton',
+							'polyLineToolGroupButton',
+							'arrowToolGroupButton',
+							'redoButton',
+							'eraserToolButton',
+							'rubberStampToolGroupButton',
+							'stampToolGroupButton',
+							'fileAttachmentToolGroupButton',
+							'calloutToolGroupButton',
+							'distanceToolGroupButton',
+							'perimeterToolGroupButton',
+							'areaToolGroupButton',
+							'ellipseAreaToolGroupButton',
+							'rectangleAreaToolGroupButton',
+							'cloudyRectangleAreaToolGroupButton',
+							'countToolGroupButton',
+							'dateFreeTextToolButton',
+							'dotStampToolButton',
+							'checkStampToolButton',
+							'crossStampToolButton',
+							'freeTextToolGroupButton',
+							'highlightToolGroupButton',
+							'underlineToolGroupButton',
+							'strikeoutToolGroupButton',
+							'squigglyToolGroupButton',
+							'stickyToolGroupButton',
+							'freeTextToolButton',
+							'rubberStampToolButton',
+							'calendarToolButton',
+							'stylePanelToggle',
+							'textPopup',
+							'contextMenuPopup',
+							'fileAttachmentButton',
+							'stampToolButton'
+						]);
 
 						if (me.options.signatureStatus == "Signed") {
 							saveButton.style.display = "none";
