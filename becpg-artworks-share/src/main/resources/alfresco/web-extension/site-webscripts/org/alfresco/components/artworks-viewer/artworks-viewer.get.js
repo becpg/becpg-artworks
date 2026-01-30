@@ -87,7 +87,7 @@ function main() {
 			model.compareItem = documentDetails.item;
 			model.compareNode = documentDetails.item.node;
 
-			model.compareDisplayName = (model.item.displayName != null) ? model.item.displayName : model.item.fileName;
+			model.compareDisplayName = (documentDetails.item.displayName != null) ? documentDetails.item.displayName : documentDetails.item.fileName;
 		}
 
 	}
