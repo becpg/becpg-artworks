@@ -341,8 +341,8 @@
 							if (colorsButton) {
 								colorsButton.classList.remove("active");
 							}
-							if (colorsButton) {
-								colorsButton.style.display = "none";
+							if (colorsMenu) {
+								colorsMenu.style.display = "none";
 							}
 
 							var versionMenu = document.getElementById("versionMenu");
