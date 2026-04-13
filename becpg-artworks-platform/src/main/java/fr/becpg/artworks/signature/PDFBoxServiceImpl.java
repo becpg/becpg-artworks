@@ -1030,8 +1030,8 @@ public class PDFBoxServiceImpl implements SignatureService {
 				}
 				
 				if (!useAnchor) {
-					x = page.getMediaBox().getWidth() * fromLeftRatio / 100;
-					y = page.getMediaBox().getHeight() * fromBottomRatio / 100;
+					x = page.getMediaBox().getLowerLeftX() + (page.getMediaBox().getWidth() * fromLeftRatio / 100);
+					y = page.getMediaBox().getLowerLeftY() + (page.getMediaBox().getHeight() * fromBottomRatio / 100);
 				}
 				
 				switch (direction) {
@@ -1050,11 +1050,11 @@ public class PDFBoxServiceImpl implements SignatureService {
 				default:
 				}
 				
-				if (x + width > page.getMediaBox().getWidth()) {
-					x = (x + width) % page.getMediaBox().getWidth();
+				if (x + width > page.getMediaBox().getUpperRightX()) {
+					x = page.getMediaBox().getLowerLeftX() + ((x - page.getMediaBox().getLowerLeftX() + width) % page.getMediaBox().getWidth());
 				}
-				if (y + height > page.getMediaBox().getHeight()) {
-					y = (y + height) % page.getMediaBox().getHeight();
+				if (y + height > page.getMediaBox().getUpperRightY()) {
+					y = page.getMediaBox().getLowerLeftY() + ((y - page.getMediaBox().getLowerLeftY() + height) % page.getMediaBox().getHeight());
 				}
 				
 				PDRectangle fieldRect = new PDRectangle(x, y, width, height);

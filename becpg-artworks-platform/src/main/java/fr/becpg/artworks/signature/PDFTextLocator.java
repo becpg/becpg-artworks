@@ -28,8 +28,13 @@ public class PDFTextLocator extends PDFTextStripper {
 		stripper.setStartPage(page + 1);
 		stripper.setEndPage(page + 1);
 		stripper.writeText(document, new OutputStreamWriter(new ByteArrayOutputStream()));
-		stripper.y1 = document.getPage(page).getMediaBox().getHeight() - stripper.y1;
-		stripper.y2 = document.getPage(page).getMediaBox().getHeight() - stripper.y2;
+		if (stripper.y1 != -1) {
+			stripper.y1 = document.getPage(page).getMediaBox().getUpperRightY() - stripper.y1;
+			stripper.y2 = document.getPage(page).getMediaBox().getUpperRightY() - stripper.y2;
+		} else {
+			stripper.y1 = document.getPage(page).getMediaBox().getHeight() - stripper.y1;
+			stripper.y2 = document.getPage(page).getMediaBox().getHeight() - stripper.y2;
+		}
 		return new float[] { stripper.x1, stripper.x2, stripper.y1, stripper.y2 };
 	}
 
