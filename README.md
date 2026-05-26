@@ -78,7 +78,7 @@ For details on how to use internal signatures refers to API
 
 ### Prerequisites
 
--  Alfresco 7
+-  Alfresco Community 25.3
 
 ### Build
 
