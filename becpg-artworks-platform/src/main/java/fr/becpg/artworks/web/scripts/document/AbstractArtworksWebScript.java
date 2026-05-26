@@ -18,18 +18,32 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import fr.becpg.artworks.ArtworksDocumentHandler;
 
+/**
+ * <p>Abstract AbstractArtworksWebScript class.</p>
+ *
+ * @author matthieu
+ */
 public abstract class AbstractArtworksWebScript extends AbstractWebScript {
 
+	/** Constant <code>logger</code> */
 	private static final Log logger = LogFactory.getLog(AbstractArtworksWebScript.class);
 
+	/** Constant <code>ACTION_CHECKOUT="checkout"</code> */
 	private static final String ACTION_CHECKOUT = "checkout";
+	/** Constant <code>ACTION_CHECKIN="checkin"</code> */
 	private static final String ACTION_CHECKIN = "checkin";
+	/** Constant <code>ACTION_CANCEL="cancel"</code> */
 	private static final String ACTION_CANCEL = "cancel";
+	/** Constant <code>ACTION_CREATE_SESSION="create-session"</code> */
 	private static final String ACTION_CREATE_SESSION = "create-session";
 
+	/** Constant <code>PARAM_ACTION="action"</code> */
 	protected static final String PARAM_ACTION = "action";
+	/** Constant <code>PARAM_STORE_TYPE="store_type"</code> */
 	protected static final String PARAM_STORE_TYPE = "store_type";
+	/** Constant <code>PARAM_STORE_ID="store_id"</code> */
 	protected static final String PARAM_STORE_ID = "store_id";
+	/** Constant <code>PARAM_ID="id"</code> */
 	protected static final String PARAM_ID = "id";
 
 	protected ArtworksDocumentHandler documentHandler;
@@ -38,18 +52,34 @@ public abstract class AbstractArtworksWebScript extends AbstractWebScript {
 
 	protected LockService lockService;
 
+	/**
+	 * <p>Setter for the field <code>documentHandler</code>.</p>
+	 *
+	 * @param documentHandler a {@link fr.becpg.artworks.ArtworksDocumentHandler} object
+	 */
 	protected void setDocumentHandler(ArtworksDocumentHandler documentHandler) {
 		this.documentHandler = documentHandler;
 	}
 
+	/**
+	 * <p>Setter for the field <code>nodeService</code>.</p>
+	 *
+	 * @param nodeService a {@link org.alfresco.service.cmr.repository.NodeService} object
+	 */
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>lockService</code>.</p>
+	 *
+	 * @param lockService a {@link org.alfresco.service.cmr.lock.LockService} object
+	 */
 	public void setLockService(LockService lockService) {
 		this.lockService = lockService;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
 		Map<String, String> templateArgs = req.getServiceMatch().getTemplateVars();

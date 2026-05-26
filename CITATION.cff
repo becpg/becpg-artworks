@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use beCPG Artworks in your research or project, please cite it as below."
+title: "beCPG Artworks – Addon for Alfresco and beCPG PLM"
+abstract: >
+  Addon for Alfresco Content Service providing annotation, comparison and digital signature features.
+  It can be used standalone or included in beCPG PLM.
+type: software
+license: LGPL-3.0
+url: "https://www.becpg.net"
+repository-code: "https://github.com/becpg/becpg-artworks"
+keywords:
+  - beCPG
+  - Alfresco
+  - Artworks
+  - Annotation
+  - Digital Signature
+  - Comparison
+  - open source
+  - Java
+authors:
+  - name: "beCPG"
+    website: "https://www.becpg.net"

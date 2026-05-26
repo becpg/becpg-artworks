@@ -38,23 +38,36 @@ class CMSProcessableInputStream implements CMSTypedData
     private final InputStream in;
     private final ASN1ObjectIdentifier contentType;
 
+    /**
+     * <p>Constructor for CMSProcessableInputStream.</p>
+     *
+     * @param is a {@link java.io.InputStream} object
+     */
     CMSProcessableInputStream(InputStream is)
     {
         this(new ASN1ObjectIdentifier(CMSObjectIdentifiers.data.getId()), is);
     }
 
+    /**
+     * <p>Constructor for CMSProcessableInputStream.</p>
+     *
+     * @param type a {@link org.bouncycastle.asn1.ASN1ObjectIdentifier} object
+     * @param is a {@link java.io.InputStream} object
+     */
     CMSProcessableInputStream(ASN1ObjectIdentifier type, InputStream is)
     {
         contentType = type;
         in = is;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object getContent()
     {
         return in;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void write(OutputStream out) throws IOException, CMSException
     {
@@ -63,6 +76,7 @@ class CMSProcessableInputStream implements CMSTypedData
         in.close();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ASN1ObjectIdentifier getContentType()
     {

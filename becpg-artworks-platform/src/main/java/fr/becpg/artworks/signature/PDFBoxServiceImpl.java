@@ -83,43 +83,70 @@ import fr.becpg.artworks.signature.model.SignatureStatus;
 import jakarta.xml.bind.DatatypeConverter;
 
 /**
- * 
+ * <p>PDFBoxServiceImpl class.</p>
+ *
  * @author valentin
- * 
  */
 @Service
 public class PDFBoxServiceImpl implements SignatureService {
 	
+	/** Constant <code>FROM_BOTTOM_RATIO="fromBottomRatio"</code> */
 	private static final String FROM_BOTTOM_RATIO = "fromBottomRatio";
+	/** Constant <code>FROM_LEFT_RATIO="fromLeftRatio"</code> */
 	private static final String FROM_LEFT_RATIO = "fromLeftRatio";
+	/** Constant <code>GAP="gap"</code> */
 	private static final String GAP = "gap";
+	/** Constant <code>DIRECTION="direction"</code> */
 	private static final String DIRECTION = "direction";
+	/** Constant <code>HEIGHT="height"</code> */
 	private static final String HEIGHT = "height";
+	/** Constant <code>WIDTH="width"</code> */
 	private static final String WIDTH = "width";
+	/** Constant <code>Y_POSITION="yPosition"</code> */
 	private static final String Y_POSITION = "yPosition";
+	/** Constant <code>X_POSITION="xPosition"</code> */
 	private static final String X_POSITION = "xPosition";
+	/** Constant <code>KEYWORD="keyword"</code> */
 	private static final String KEYWORD = "keyword";
+	/** Constant <code>DISABLE="disable"</code> */
 	private static final String DISABLE = "disable";
+	/** Constant <code>ANCHOR="anchor"</code> */
 	private static final String ANCHOR = "anchor";
+	/** Constant <code>INITIALS="initials"</code> */
 	private static final String INITIALS = "initials";
+	/** Constant <code>PAGE="page"</code> */
 	private static final String PAGE = "page";
+	/** Constant <code>SIGNATURE="signature"</code> */
 	private static final String SIGNATURE = "signature";
+	/** Constant <code>NODE_REF="nodeRef"</code> */
 	private static final String NODE_REF = "nodeRef";
+	/** Constant <code>RECIPIENTS="recipients"</code> */
 	private static final String RECIPIENTS = "recipients";
 
+	/** Constant <code>logger</code> */
 	private static final Log logger = LogFactory.getLog(PDFBoxServiceImpl.class);
 
+	/** Constant <code>RIGHT_DIRECTION="right"</code> */
 	private static final String RIGHT_DIRECTION = "right";
+	/** Constant <code>LEFT_DIRECTION="left"</code> */
 	private static final String LEFT_DIRECTION = "left";
+	/** Constant <code>UP_DIRECTION="up"</code> */
 	private static final String UP_DIRECTION = "up";
+	/** Constant <code>DOWN_DIRECTION="down"</code> */
 	private static final String DOWN_DIRECTION = "down";
 	
+	/** Constant <code>LEFT_POSITION="left"</code> */
 	private static final String LEFT_POSITION = "left";
+	/** Constant <code>MIDDLE_POSITION="middle"</code> */
 	private static final String MIDDLE_POSITION = "middle";
+	/** Constant <code>RIGHT_POSITION="right"</code> */
 	private static final String RIGHT_POSITION = "right";
+	/** Constant <code>BOTTOM_POSITION="bottom"</code> */
 	private static final String BOTTOM_POSITION = "bottom";
+	/** Constant <code>TOP_POSITION="top"</code> */
 	private static final String TOP_POSITION = "top";
 	
+	/** Constant <code>SIGNATURE_SIZE=0x5000</code> */
 	private static final int SIGNATURE_SIZE = 0x5000;
 
 	private CheckOutCheckInService checkOutCheckInService;
@@ -154,34 +181,70 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	private NodeContentHelper nodeContentHelper;
 	
+	/**
+	 * <p>Setter for the field <code>authorityService</code>.</p>
+	 *
+	 * @param authorityService a {@link org.alfresco.service.cmr.security.AuthorityService} object
+	 */
 	public void setAuthorityService(AuthorityService authorityService) {
 		this.authorityService = authorityService;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>nodeContentHelper</code>.</p>
+	 *
+	 * @param nodeContentHelper a {@link fr.becpg.artworks.helper.NodeContentHelper} object
+	 */
 	public void setNodeContentHelper(NodeContentHelper nodeContentHelper) {
 		this.nodeContentHelper = nodeContentHelper;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>personService</code>.</p>
+	 *
+	 * @param personService a {@link org.alfresco.service.cmr.security.PersonService} object
+	 */
 	public void setPersonService(PersonService personService) {
 		this.personService = personService;
 	}
 	
+    /**
+     * <p>Setter for the field <code>checkOutCheckInService</code>.</p>
+     *
+     * @param checkOutCheckInService a {@link org.alfresco.service.cmr.coci.CheckOutCheckInService} object
+     */
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
 		this.checkOutCheckInService = checkOutCheckInService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>contentService</code>.</p>
+	 *
+	 * @param contentService a {@link org.alfresco.service.cmr.repository.ContentService} object
+	 */
 	public void setContentService(ContentService contentService) {
 		this.contentService = contentService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>nodeService</code>.</p>
+	 *
+	 * @param nodeService a {@link org.alfresco.service.cmr.repository.NodeService} object
+	 */
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>policyBehaviourFilter</code>.</p>
+	 *
+	 * @param policyBehaviourFilter a {@link org.alfresco.repo.policy.BehaviourFilter} object
+	 */
 	public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter) {
 		this.policyBehaviourFilter = policyBehaviourFilter;
 	}
 	
+	/** {@inheritDoc} */
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
 		
@@ -199,23 +262,32 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return prepareForSignature(nodeRef, new ArrayList<>(), false).toString();
 	}
 	
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef checkinDocument(NodeRef nodeRef) {
 		return signDocument(nodeRef);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, boolean notifyByMail, String... params) {
 		SignatureContext context = buildSignatureContext(params);
 		return prepareForSignature(originalNode, recipients, context);
 	}
 	
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, JSONObject jsonParams) {
 		SignatureContext context = buildSignatureContext(jsonParams);
 		return prepareForSignature(originalNode, recipients, context);
 	}
 	
+	/**
+	 * <p>buildSignatureContext.</p>
+	 *
+	 * @param params a {@link java.lang.String} object
+	 * @return a {@link fr.becpg.artworks.signature.model.SignatureContext} object
+	 */
 	private SignatureContext buildSignatureContext(String... params) {
 		SignatureContext signatureContext = new SignatureContext();
 		if (params != null && params.length > 0) {
@@ -255,6 +327,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return signatureContext;
 	}
 
+	/**
+	 * <p>buildSignatureContext.</p>
+	 *
+	 * @param jsonParams a {@link org.json.JSONObject} object
+	 * @return a {@link fr.becpg.artworks.signature.model.SignatureContext} object
+	 */
 	private SignatureContext buildSignatureContext(JSONObject jsonParams) {
 		SignatureContext signatureContext = new SignatureContext();
 		if (jsonParams.has(SIGNATURE)) {
@@ -332,6 +410,14 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return signatureContext;
 	}
 
+	/**
+	 * <p>prepareForSignature.</p>
+	 *
+	 * @param originalNode a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @param recipients a {@link java.util.List} object
+	 * @param context a {@link fr.becpg.artworks.signature.model.SignatureContext} object
+	 * @return a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 */
 	private NodeRef prepareForSignature(NodeRef originalNode, List<NodeRef> recipients, SignatureContext context) {
 		List<NodeRef> nodeRecipients = new ArrayList<>();
 		if (logger.isDebugEnabled()) {
@@ -372,6 +458,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return checkOutCheckInService.getWorkingCopy(originalNode);
 	}
 	
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef signDocument(NodeRef nodeRef) {
 
@@ -415,6 +502,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return nodeRef;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef cancelDocument(NodeRef nodeRef) {
 		
@@ -437,6 +525,7 @@ public class PDFBoxServiceImpl implements SignatureService {
         return nodeRef;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String getDocumentView(NodeRef nodeRef, NodeRef user, NodeRef task) {
 		
@@ -463,6 +552,12 @@ public class PDFBoxServiceImpl implements SignatureService {
         return "artworks-viewer" + requestParams;
 	}
 	
+	/**
+	 * <p>extractPeopleFromGroup.</p>
+	 *
+	 * @param authority a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @return a {@link java.util.List} object
+	 */
 	private List<NodeRef> extractPeopleFromGroup(NodeRef authority) {
 		Set<String> ret = new HashSet<>();
 		if (nodeService.getType(authority).equals(ContentModel.TYPE_AUTHORITY_CONTAINER)) {
@@ -475,6 +570,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return ret.stream().map(username -> personService.getPerson(username)).collect(Collectors.toList());
 	}
 				
+	/**
+	 * <p>sign.</p>
+	 *
+	 * @param nodeRef a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @param recipient a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 */
 	private void sign(NodeRef nodeRef, NodeRef recipient) {
 
 		try {
@@ -503,6 +604,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 		}
 	}
 
+	/**
+	 * <p>updatePreparationInformation.</p>
+	 *
+	 * @param originalNode a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @param context a {@link fr.becpg.artworks.signature.model.SignatureContext} object
+	 */
 	private void updatePreparationInformation(NodeRef originalNode, SignatureContext context) {
 		JSONObject recipientDataJson = new JSONObject();
 	
@@ -550,6 +657,16 @@ public class PDFBoxServiceImpl implements SignatureService {
 		nodeService.setProperty(originalNode, SignatureModel.PROP_STATUS, SignatureStatus.Prepared);
 	}
 
+	/**
+	 * <p>updateSignatureInformation.</p>
+	 *
+	 * @param nodeRef a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @param recipient a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @throws org.alfresco.service.cmr.dictionary.InvalidTypeException if any.
+	 * @throws org.alfresco.service.cmr.repository.ContentIOException if any.
+	 * @throws org.alfresco.service.cmr.repository.InvalidNodeRefException if any.
+	 * @throws java.io.IOException if any.
+	 */
 	private void updateSignatureInformation(NodeRef nodeRef, NodeRef recipient) throws InvalidTypeException, ContentIOException, InvalidNodeRefException, IOException {
 		
 		byte[] signedContent = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream().readAllBytes();
@@ -613,6 +730,14 @@ public class PDFBoxServiceImpl implements SignatureService {
     	}
 	}
 	
+	/**
+	 * <p>extractSignature.</p>
+	 *
+	 * @param signedContent an array of {@link byte} objects
+	 * @param userDisplayName a {@link java.lang.String} object
+	 * @return a {@link org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature} object
+	 * @throws java.io.IOException if any.
+	 */
 	private PDSignature extractSignature(byte[] signedContent, String userDisplayName) throws IOException {
 		try (PDDocument document = Loader.loadPDF(signedContent)) {
 
@@ -626,6 +751,16 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return null;
 	}
 	
+	/**
+	 * <p>extractTimeStampDate.</p>
+	 *
+	 * @param signedFile an array of {@link byte} objects
+	 * @param signature a {@link org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature} object
+	 * @return a {@link java.util.Date} object
+	 * @throws java.io.IOException if any.
+	 * @throws org.bouncycastle.cms.CMSException if any.
+	 * @throws org.bouncycastle.tsp.TSPException if any.
+	 */
 	private Date extractTimeStampDate(byte[] signedFile, PDSignature signature) throws IOException, CMSException, TSPException {
 		
 		try (PDDocument document = Loader.loadPDF(signedFile)) {
@@ -652,6 +787,13 @@ public class PDFBoxServiceImpl implements SignatureService {
 		}
 	}
 
+	/**
+	 * <p>allSigned.</p>
+	 *
+	 * @param nodeRef a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @param recipientsArray a {@link org.json.JSONArray} object
+	 * @return a boolean
+	 */
 	private boolean allSigned(NodeRef nodeRef, JSONArray recipientsArray) {
     	
 		List<NodeRef> nodeRecipients = new ArrayList<>();
@@ -678,6 +820,14 @@ public class PDFBoxServiceImpl implements SignatureService {
 		
 	}
 	
+	/**
+	 * <p>removeField.</p>
+	 *
+	 * @param document a {@link org.apache.pdfbox.pdmodel.PDDocument} object
+	 * @param fullFieldName a {@link java.lang.String} object
+	 * @return a {@link org.apache.pdfbox.pdmodel.interactive.form.PDField} object
+	 * @throws java.io.IOException if any.
+	 */
 	private PDField removeField(PDDocument document, String fullFieldName) throws IOException {
 	    PDDocumentCatalog documentCatalog = document.getDocumentCatalog();
 	    PDAcroForm acroForm = documentCatalog.getAcroForm();
@@ -732,6 +882,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 	    return targetField;
 	}
 	
+	/**
+	 * <p>removeWidgets.</p>
+	 *
+	 * @param targetField a {@link org.apache.pdfbox.pdmodel.interactive.form.PDField} object
+	 * @throws java.io.IOException if any.
+	 */
 	private void removeWidgets(PDField targetField) throws IOException {
 	    if (targetField instanceof PDTerminalField) {
 	        List<PDAnnotationWidget> widgets = ((PDTerminalField)targetField).getWidgets();
@@ -768,6 +924,13 @@ public class PDFBoxServiceImpl implements SignatureService {
 	    }
 	}
 	
+	/**
+	 * <p>signContent.</p>
+	 *
+	 * @param nodeRef a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @param recipient a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @throws java.io.IOException if any.
+	 */
 	private void signContent(NodeRef nodeRef, NodeRef recipient) throws IOException {
 	
 			InputStream input = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream();
@@ -867,6 +1030,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 			}
 		}
 
+	/**
+	 * <p>extractSignatureName.</p>
+	 *
+	 * @param recipient a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @return a {@link java.lang.String} object
+	 */
 	private String extractSignatureName(NodeRef recipient) {
 		String firstName = (String) nodeService.getProperty(recipient, ContentModel.PROP_FIRSTNAME);
 		if (firstName == null) {
@@ -886,6 +1055,14 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return firstName + " " + lastName.toUpperCase() + jobTitle + " (" + userName + ")";
 	}
 
+	/**
+	 * <p>addTimeStamp.</p>
+	 *
+	 * @param signedData a {@link org.bouncycastle.cms.CMSSignedData} object
+	 * @return a {@link org.bouncycastle.cms.CMSSignedData} object
+	 * @throws java.security.NoSuchAlgorithmException if any.
+	 * @throws java.io.IOException if any.
+	 */
 	private CMSSignedData addTimeStamp(CMSSignedData signedData) throws NoSuchAlgorithmException, IOException {
 		for (String url : tsaUrl.split(",")) {
 			try {
@@ -899,6 +1076,14 @@ public class PDFBoxServiceImpl implements SignatureService {
 		throw new IllegalStateException("The TSA urls are not working: " + tsaUrl);
 	}
 
+	/**
+	 * <p>findSignatureField.</p>
+	 *
+	 * @param document a {@link org.apache.pdfbox.pdmodel.PDDocument} object
+	 * @param userName a {@link java.lang.String} object
+	 * @return a {@link org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField} object
+	 * @throws java.io.IOException if any.
+	 */
 	private PDSignatureField findSignatureField(PDDocument document, String userName) throws IOException {
 		PDField removedField = removeField(document, userName);
 		
@@ -910,6 +1095,14 @@ public class PDFBoxServiceImpl implements SignatureService {
 		return signatureField;
 	}
 
+	/**
+	 * <p>prepareForSignature.</p>
+	 *
+	 * @param input a {@link java.io.InputStream} object
+	 * @param context a {@link fr.becpg.artworks.signature.model.SignatureContext} object
+	 * @return an array of {@link byte} objects
+	 * @throws java.io.IOException if any.
+	 */
 	private byte[] prepareForSignature(InputStream input, SignatureContext context) throws IOException {
 
 		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
@@ -946,6 +1139,15 @@ public class PDFBoxServiceImpl implements SignatureService {
 		}
 	}
 
+	/**
+	 * <p>addFields.</p>
+	 *
+	 * @param document a {@link org.apache.pdfbox.pdmodel.PDDocument} object
+	 * @param pageNumber a int
+	 * @param context a {@link fr.becpg.artworks.signature.model.SignatureContext} object
+	 * @param isSignatureField a boolean
+	 * @throws java.io.IOException if any.
+	 */
 	private void addFields(PDDocument document, int pageNumber, SignatureContext context, boolean isSignatureField) throws IOException {
 		
 		int width = isSignatureField ? context.getSignatureWidth() : context.getInitialsWidth();
@@ -1105,10 +1307,23 @@ public class PDFBoxServiceImpl implements SignatureService {
 		}
 	}
 
+	/**
+	 * <p>formatUsername.</p>
+	 *
+	 * @param recipient a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @return a {@link java.lang.String} object
+	 */
 	private String formatUsername(NodeRef recipient) {
 		return ((String) nodeService.getProperty(recipient, ContentModel.PROP_USERNAME)).replace(".", "_");
 	}
 
+	/**
+	 * <p>findMatchingSignatureField.</p>
+	 *
+	 * @param doc a {@link org.apache.pdfbox.pdmodel.PDDocument} object
+	 * @param fieldName a {@link java.lang.String} object
+	 * @return a {@link org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField} object
+	 */
 	private PDSignatureField findMatchingSignatureField(PDDocument doc, String fieldName) {
 		PDSignatureField signatureField = null;
 		PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();

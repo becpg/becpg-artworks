@@ -18,12 +18,20 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 
+/**
+ * <p>AnnotationWSHandler class.</p>
+ *
+ * @author matthieu
+ */
 @ServerEndpoint(value = "/annotws/{store_type}/{store_id}/{id}")
 public class AnnotationWSHandler {
 
+	/** Constant <code>userSessions</code> */
 	private static final Map<String, Session> userSessions = new ConcurrentHashMap<>();
+	/** Constant <code>storedAnnotations</code> */
 	private static final Map<String, Map<String, String>> storedAnnotations = new ConcurrentHashMap<>();
 	
+	/** Constant <code>logger</code> */
 	private static final Log logger = LogFactory.getLog(AnnotationWSHandler.class);
 
 	/**
@@ -31,7 +39,6 @@ public class AnnotationWSHandler {
 	 *
 	 * @param session a {@link jakarta.websocket.Session} object.
 	 * @param room a {@link java.lang.String} object.
-	 * @param annot a {@link java.lang.String} object.
 	 */
 	@OnOpen
 	public void onOpen(Session session, @PathParam("id") final String room) {
@@ -120,6 +127,12 @@ public class AnnotationWSHandler {
 		}
 	}
 	
+	/**
+	 * <p>isRoomStillInUse.</p>
+	 *
+	 * @param room a {@link java.lang.String} object
+	 * @return a boolean
+	 */
 	private boolean isRoomStillInUse(String room) {
 		for (Session s : AnnotationWSHandler.userSessions.values()) {
 			if (s.isOpen() && room.equals(s.getUserProperties().get("room"))) {

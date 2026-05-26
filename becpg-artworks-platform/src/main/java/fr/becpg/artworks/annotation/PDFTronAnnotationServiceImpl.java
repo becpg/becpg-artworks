@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2010-2018 beCPG.
+ * Copyright (C) 2010-2026 beCPG.
  *
  * This file is part of beCPG
  *
@@ -31,20 +31,36 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 import fr.becpg.artworks.annotation.model.AnnotationModel;
 
+/**
+ * <p>PDFTronAnnotationServiceImpl class.</p>
+ *
+ * @author matthieu
+ */
 public final class PDFTronAnnotationServiceImpl implements AnnotationService {
 
 	private CheckOutCheckInService checkOutCheckInService;
 	
 	private NodeService nodeService;
 	
+	/**
+	 * <p>Setter for the field <code>nodeService</code>.</p>
+	 *
+	 * @param nodeService a {@link org.alfresco.service.cmr.repository.NodeService} object
+	 */
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>checkOutCheckInService</code>.</p>
+	 *
+	 * @param checkOutCheckInService a {@link org.alfresco.service.cmr.coci.CheckOutCheckInService} object
+	 */
 	public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
 		this.checkOutCheckInService = checkOutCheckInService;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
 		if (!checkOutCheckInService.isWorkingCopy(nodeRef)) {
@@ -55,12 +71,14 @@ public final class PDFTronAnnotationServiceImpl implements AnnotationService {
 		return nodeRef.toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String getDocumentView(NodeRef nodeRef, NodeRef personNodeRef, NodeRef task) {
 		NodeRef workingCopy = checkOutCheckInService.isWorkingCopy(nodeRef) ? nodeRef : checkOutCheckInService.getWorkingCopy(nodeRef);
 		return "artworks-viewer?nodeRef=" + workingCopy;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef checkinDocument(NodeRef nodeRef) {
 		Map<String, Serializable> versionProperties = new HashMap<>();
@@ -70,6 +88,7 @@ public final class PDFTronAnnotationServiceImpl implements AnnotationService {
 		return checkOutCheckInService.checkin(nodeRef, versionProperties);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef cancelDocument(NodeRef nodeRef) {
 		return checkOutCheckInService.cancelCheckout(nodeRef);

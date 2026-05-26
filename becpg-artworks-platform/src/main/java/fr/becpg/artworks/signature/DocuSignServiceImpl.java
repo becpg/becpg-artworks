@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2010-2021 beCPG.
+ * Copyright (C) 2010-2026 beCPG.
  *
  * This file is part of beCPG
  *
@@ -64,27 +64,35 @@ import fr.becpg.artworks.helper.NodeContentHelper;
 import fr.becpg.artworks.signature.model.SignatureModel;
 
 /**
+ * <p>DocuSignServiceImpl class.</p>
  *
  * @author valentin.leblanc
- *
  */
 @Service
 public final class DocuSignServiceImpl implements SignatureService {
 
+	/** Constant <code>DOCUSIGN_BASE_URL="https://demo.docusign.net/restapi/v2.1/"{trunked}</code> */
 	private static final String DOCUSIGN_BASE_URL = "https://demo.docusign.net/restapi/v2.1/accounts/";
 
+	/** Constant <code>ENVELOPES="/envelopes/"</code> */
 	private static final String ENVELOPES = "/envelopes/";
 
+	/** Constant <code>ENVELOPE_ID="envelopeId"</code> */
 	private static final String ENVELOPE_ID = "envelopeId";
 
+	/** Constant <code>BEARER="Bearer "</code> */
 	private static final String BEARER = "Bearer ";
 
+	/** Constant <code>FAIL_TO_PARSE_JSON="Fail to parse JSON"</code> */
 	private static final String FAIL_TO_PARSE_JSON = "Fail to parse JSON";
 
+	/** Constant <code>AUTHORIZATION="Authorization"</code> */
 	private static final String AUTHORIZATION = "Authorization";
 
+	/** Constant <code>EMAIL_SUBJECT="beCPG Document signing"</code> */
 	private static final String EMAIL_SUBJECT = "beCPG Document signing";
 
+	/** Constant <code>logger</code> */
 	private static Log logger = LogFactory.getLog(DocuSignServiceImpl.class);
 
 	private NodeService nodeService;
@@ -105,47 +113,94 @@ public final class DocuSignServiceImpl implements SignatureService {
 	
 	private BehaviourFilter policyBehaviourFilter;
 
+	/**
+	 * <p>Setter for the field <code>policyBehaviourFilter</code>.</p>
+	 *
+	 * @param policyBehaviourFilter a {@link org.alfresco.repo.policy.BehaviourFilter} object
+	 */
 	public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter) {
 		this.policyBehaviourFilter = policyBehaviourFilter;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>nodeContentHelper</code>.</p>
+	 *
+	 * @param nodeContentHelper a {@link fr.becpg.artworks.helper.NodeContentHelper} object
+	 */
 	public void setNodeContentHelper(NodeContentHelper nodeContentHelper) {
 		this.nodeContentHelper = nodeContentHelper;
 	}
 
+	/**
+	 * <p>Setter for the field <code>sysAdminParams</code>.</p>
+	 *
+	 * @param sysAdminParams a {@link org.alfresco.repo.admin.SysAdminParams} object
+	 */
 	public void setSysAdminParams(SysAdminParams sysAdminParams) {
 		this.sysAdminParams = sysAdminParams;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>nodeService</code>.</p>
+	 *
+	 * @param nodeService a {@link org.alfresco.service.cmr.repository.NodeService} object
+	 */
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>contentService</code>.</p>
+	 *
+	 * @param contentService a {@link org.alfresco.service.cmr.repository.ContentService} object
+	 */
 	public void setContentService(ContentService contentService) {
 		this.contentService = contentService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>personService</code>.</p>
+	 *
+	 * @param personService a {@link org.alfresco.service.cmr.security.PersonService} object
+	 */
 	public void setPersonService(PersonService personService) {
 		this.personService = personService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>checkOutCheckInService</code>.</p>
+	 *
+	 * @param checkOutCheckInService a {@link org.alfresco.service.cmr.coci.CheckOutCheckInService} object
+	 */
 	public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
 		this.checkOutCheckInService = checkOutCheckInService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>signatureAuthorization</code>.</p>
+	 *
+	 * @param signatureAuthorization a {@link java.lang.String} object
+	 */
 	public void setSignatureAuthorization(String signatureAuthorization) {
 		this.signatureAuthorization = signatureAuthorization;
 	}
 
+	/**
+	 * <p>Setter for the field <code>mimetypeService</code>.</p>
+	 *
+	 * @param mimetypeService a {@link org.alfresco.service.cmr.repository.MimetypeService} object
+	 */
 	public void setMimetypeService(MimetypeService mimetypeService) {
 		this.mimetypeService = mimetypeService;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
 		return prepareForSignature(nodeRef, null, true).toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef prepareForSignature(NodeRef nodeRef, List<NodeRef> recipients, boolean notifyByMail, String... params) {
 
@@ -276,6 +331,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 		return nodeRef;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String getDocumentView(NodeRef nodeRef, NodeRef personNodeRef, NodeRef task) {
 		
@@ -333,11 +389,13 @@ public final class DocuSignServiceImpl implements SignatureService {
 		return null;
 	}
 	
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef checkinDocument(NodeRef nodeRef) {
 		return signDocument(nodeRef);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef signDocument(NodeRef nodeRef) {
 
@@ -427,6 +485,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 		
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef cancelDocument(NodeRef nodeRef) {
 
@@ -463,6 +522,7 @@ public final class DocuSignServiceImpl implements SignatureService {
 		return nodeRef;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef prepareForSignature(NodeRef nodeRef, List<NodeRef> recipientNodes, JSONObject jsonParams) {
 		throw new IllegalStateException("Not implemented");

@@ -22,8 +22,14 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * <p>NodeContentHelper class.</p>
+ *
+ * @author matthieu
+ */
 public class NodeContentHelper {
 
+	/** Constant <code>logger</code> */
 	private static final Log logger = LogFactory.getLog(NodeContentHelper.class);
 
 	private ContentService contentService;
@@ -32,18 +38,39 @@ public class NodeContentHelper {
 	
 	private NodeService nodeService;
 	
+	/**
+	 * <p>Setter for the field <code>nodeService</code>.</p>
+	 *
+	 * @param nodeService a {@link org.alfresco.service.cmr.repository.NodeService} object
+	 */
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>contentService</code>.</p>
+	 *
+	 * @param contentService a {@link org.alfresco.service.cmr.repository.ContentService} object
+	 */
 	public void setContentService(ContentService contentService) {
 		this.contentService = contentService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>mimetypeService</code>.</p>
+	 *
+	 * @param mimetypeService a {@link org.alfresco.service.cmr.repository.MimetypeService} object
+	 */
 	public void setMimetypeService(MimetypeService mimetypeService) {
 		this.mimetypeService = mimetypeService;
 	}
 
+	/**
+	 * <p>writeContent.</p>
+	 *
+	 * @param nodeRef a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @param ret an array of {@link byte} objects
+	 */
 	public void writeContent(NodeRef nodeRef, byte[] ret) {
 		ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
 
@@ -63,6 +90,13 @@ public class NodeContentHelper {
 		}
 	}
 	
+	/**
+	 * <p>createContentFile.</p>
+	 *
+	 * @param entity a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @return a {@link java.io.File} object
+	 * @throws java.io.IOException if any.
+	 */
 	public File createContentFile(NodeRef entity) throws IOException {
 		String name = (String) nodeService.getProperty(entity, ContentModel.PROP_NAME);
 		
@@ -77,6 +111,12 @@ public class NodeContentHelper {
 		return file;
 	}
 	
+	/**
+	 * <p>deleteFile.</p>
+	 *
+	 * @param file a {@link java.io.File} object
+	 * @throws java.io.IOException if any.
+	 */
 	public void deleteFile(File file) throws IOException {
 		try {
 			Files.delete(file.toPath());

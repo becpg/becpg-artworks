@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2011 beCPG. All rights reserved.
+ *  Copyright (C) 2010-2026 beCPG. All rights reserved.
  */
 package fr.becpg.artworks.action;
 
@@ -44,9 +44,12 @@ public class ImageCompressorActionExecuter extends TransformActionExecuter {
 	/** Constant <code>PARAM_CONVERT_COMMAND="convert-command"</code> */
 	public static final String PARAM_CONVERT_COMMAND = "convert-command";
 
+	/** Constant <code>logger</code> */
 	private static final Log logger = LogFactory.getLog(ImageCompressorActionExecuter.class);
 
+	/** Constant <code>CONTENT_READER_NOT_FOUND_MESSAGE="Can not find Content Reader for documen"{trunked}</code> */
 	private static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Can not find Content Reader for document. Operation can't be performed";
+	/** Constant <code>TRANSFORMING_ERROR_MESSAGE="Some error occurred during document tra"{trunked}</code> */
 	private static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
 
 	private ContentService contentService;
@@ -59,14 +62,19 @@ public class ImageCompressorActionExecuter extends TransformActionExecuter {
 	
 	private RuleService ruleService;
 	
+	/**
+	 * <p>Setter for the field <code>ruleService</code>.</p>
+	 *
+	 * @param ruleService a {@link org.alfresco.service.cmr.rule.RuleService} object
+	 */
 	public void setRuleService(RuleService ruleService) {
 		this.ruleService = ruleService;
 	}
 
 	/**
-	 * <p>Setter for the field <code>contentService</code>.</p>
+	 * {@inheritDoc}
 	 *
-	 * @param contentService a {@link org.alfresco.service.cmr.repository.ContentService} object.
+	 * <p>Setter for the field <code>contentService</code>.</p>
 	 */
 	@Override
 	public void setContentService(ContentService contentService) {
@@ -74,24 +82,28 @@ public class ImageCompressorActionExecuter extends TransformActionExecuter {
 		this.contentService = contentService;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setDictionaryService(DictionaryService dictionaryService) {
 		super.setDictionaryService(dictionaryService);
 		this.dictionaryService = dictionaryService;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setNodeService(NodeService nodeService) {
 		super.setNodeService(nodeService);
 		this.nodeService = nodeService;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setConverter(TransformationOptionsConverter converter) {
 		super.setConverter(converter);
 		this.converter = converter;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setSynchronousTransformClient(SynchronousTransformClient synchronousTransformClient) {
 		super.setSynchronousTransformClient(synchronousTransformClient);
@@ -170,6 +182,7 @@ public class ImageCompressorActionExecuter extends TransformActionExecuter {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected TransformationOptions newTransformationOptions(Action ruleAction, NodeRef sourceNodeRef) {
 		ImageTransformationOptions options = new ImageTransformationOptions();

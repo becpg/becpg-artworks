@@ -22,17 +22,30 @@ package fr.becpg.artworks.signature;
 /**
  * Copied from Apache CXF 2.4.9, initial version:
  * https://svn.apache.org/repos/asf/cxf/tags/cxf-2.4.9/distribution/src/main/release/samples/sts_issue_operation/src/main/java/demo/sts/provider/cert/
- * 
+ *
+ * @author matthieu
  */
 public class CertificateVerificationException extends Exception
 {
+    /** Constant <code>serialVersionUID=1L</code> */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * <p>Constructor for CertificateVerificationException.</p>
+     *
+     * @param message a {@link java.lang.String} object
+     * @param cause a {@link java.lang.Throwable} object
+     */
     public CertificateVerificationException(String message, Throwable cause)
     {
         super(message, cause);
     }
 
+    /**
+     * <p>Constructor for CertificateVerificationException.</p>
+     *
+     * @param message a {@link java.lang.String} object
+     */
     public CertificateVerificationException(String message)
     {
         super(message);

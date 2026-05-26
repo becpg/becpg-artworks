@@ -9,8 +9,8 @@ import org.alfresco.repo.jscript.app.CustomResponse;
 
 /**
  * Return current state of Annotation module
- * @author quere
  *
+ * @author quere
  */
 public class ArtworksCustomResponse implements CustomResponse {
 
@@ -22,22 +22,43 @@ public class ArtworksCustomResponse implements CustomResponse {
 	
 	private String issuerCertificateURL;
 	
+	/**
+	 * <p>Setter for the field <code>annotationViewerLicenseKey</code>.</p>
+	 *
+	 * @param annotationViewerLicenseKey a {@link java.lang.String} object
+	 */
 	public void setAnnotationViewerLicenseKey(String annotationViewerLicenseKey) {
 		this.annotationViewerLicenseKey = annotationViewerLicenseKey;
 	}
 
+	/**
+	 * <p>Setter for the field <code>annotationAuthorization</code>.</p>
+	 *
+	 * @param annotationAuthorization a {@link java.lang.String} object
+	 */
 	public void setAnnotationAuthorization(String annotationAuthorization) {
 		this.annotationAuthorization = annotationAuthorization;
 	}
 
+	/**
+	 * <p>Setter for the field <code>signatureAuthorization</code>.</p>
+	 *
+	 * @param signatureAuthorization a {@link java.lang.String} object
+	 */
 	public void setSignatureAuthorization(String signatureAuthorization) {
 		this.signatureAuthorization = signatureAuthorization;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>issuerCertificateURL</code>.</p>
+	 *
+	 * @param issuerCertificateURL a {@link java.lang.String} object
+	 */
 	public void setIssuerCertificateURL(String issuerCertificateURL) {
 		this.issuerCertificateURL = issuerCertificateURL;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Serializable populate() {
 		boolean annotationExternalEnabled = false;

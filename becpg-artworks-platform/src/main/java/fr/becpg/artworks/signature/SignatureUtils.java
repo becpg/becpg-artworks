@@ -51,31 +51,41 @@ import org.springframework.stereotype.Service;
 
 /**
  * Utility class for the signature / timestamp examples.
- * 
+ *
  * @author Tilman Hausherr, Valentin Leblanc
  */
 
 @Service
 public class SignatureUtils {
 	
+    	/** Constant <code>REFERENCE="Reference"</code> */
     	private static final String REFERENCE = "Reference";
 
+	/** Constant <code>TRANSFORM_METHOD="TransformMethod"</code> */
 	private static final String TRANSFORM_METHOD = "TransformMethod";
 
+	/** Constant <code>TRANSFORM_PARAMS="TransformParams"</code> */
 	private static final String TRANSFORM_PARAMS = "TransformParams";
 
+	/** Constant <code>logger</code> */
 	private static final Log logger = LogFactory.getLog(SignatureUtils.class);
 
+	/** Constant <code>encryptionKeystoreType=""</code> */
 	private static String encryptionKeystoreType;
 	
+	/** Constant <code>encryptionKeystoreLocation=""</code> */
 	private static String encryptionKeystoreLocation;
 	
+	/** Constant <code>metadataEncryptionPassword=""</code> */
 	private static String metadataEncryptionPassword;
 
+	/** Constant <code>alfrescoKeyStore</code> */
 	private static KeyStore alfrescoKeyStore;
 	
+	/** Constant <code>signaturePrivateKeyCache</code> */
 	private static Map<String, PrivateKey> signaturePrivateKeyCache = new HashMap<>();
 	
+	/** Constant <code>certificateChainCache</code> */
 	private static Map<String, Certificate[]> certificateChainCache = new HashMap<>();
 	
 	static {
@@ -84,10 +94,18 @@ public class SignatureUtils {
 		metadataEncryptionPassword = System.getProperty("metadata-keystore.password");
 	}
 	
+	/**
+	 * <p>Constructor for SignatureUtils.</p>
+	 */
 	private SignatureUtils() {
 		
 	}
 	
+	/**
+	 * <p>Getter for the field <code>alfrescoKeyStore</code>.</p>
+	 *
+	 * @return a {@link java.security.KeyStore} object
+	 */
 	private static KeyStore getAlfrescoKeyStore() {
 		
 		if (alfrescoKeyStore == null) {
@@ -112,6 +130,13 @@ public class SignatureUtils {
 		return alfrescoKeyStore;
 	}
 	
+	/**
+	 * <p>getSignaturePrivateKey.</p>
+	 *
+	 * @param alias a {@link java.lang.String} object
+	 * @param password a {@link java.lang.String} object
+	 * @return a {@link java.security.PrivateKey} object
+	 */
 	public static PrivateKey getSignaturePrivateKey(String alias, String password) {
 		
 		if (signaturePrivateKeyCache.get(alias) == null) {
@@ -125,6 +150,12 @@ public class SignatureUtils {
 		return signaturePrivateKeyCache.get(alias);
 	}
 	
+	/**
+	 * <p>getCertificateChain.</p>
+	 *
+	 * @param alias a {@link java.lang.String} object
+	 * @return an array of {@link java.security.cert.Certificate} objects
+	 */
 	public static Certificate[] getCertificateChain(String alias) {
 		
 		if (alias != null && certificateChainCache.get(alias) == null) {
@@ -138,7 +169,7 @@ public class SignatureUtils {
 		return certificateChainCache.getOrDefault(alias, certificateChainCache.values().iterator().next());
 	}
 	
-	 /**
+    /**
      * Get the access permissions granted for this document in the DocMDP transform parameters
      * dictionary. Details are described in the table "Entries in the DocMDP transform parameters
      * dictionary" in the PDF specification.
@@ -196,8 +227,7 @@ public class SignatureUtils {
      * @param doc The document.
      * @param signature The signature object.
      * @param accessPermissions The permission value (1, 2 or 3).
-     *
-     * @throws IOException if a signature exists.
+     * @throws java.io.IOException if a signature exists.
      */
     public static void setMDPPermission(PDDocument doc, PDSignature signature, int accessPermissions)
             throws IOException
@@ -250,8 +280,8 @@ public class SignatureUtils {
      * Log if the certificate is not valid for signature usage. Doing this
      * anyway results in Adobe Reader failing to validate the PDF.
      *
-     * @param x509Certificate 
-     * @throws java.security.cert.CertificateParsingException 
+     * @param x509Certificate a {@link java.security.cert.X509Certificate} object
+     * @throws java.security.cert.CertificateParsingException
      */
     public static void checkCertificateUsage(X509Certificate x509Certificate)
             throws CertificateParsingException
@@ -285,8 +315,8 @@ public class SignatureUtils {
     /**
      * Log if the certificate is not valid for timestamping.
      *
-     * @param x509Certificate 
-     * @throws java.security.cert.CertificateParsingException 
+     * @param x509Certificate a {@link java.security.cert.X509Certificate} object
+     * @throws java.security.cert.CertificateParsingException
      */
     public static void checkTimeStampCertificateUsage(X509Certificate x509Certificate)
             throws CertificateParsingException
@@ -303,8 +333,8 @@ public class SignatureUtils {
     /**
      * Log if the certificate is not valid for responding.
      *
-     * @param x509Certificate 
-     * @throws java.security.cert.CertificateParsingException 
+     * @param x509Certificate a {@link java.security.cert.X509Certificate} object
+     * @throws java.security.cert.CertificateParsingException
      */
     public static void checkResponderCertificateUsage(X509Certificate x509Certificate)
             throws CertificateParsingException
@@ -320,10 +350,10 @@ public class SignatureUtils {
 
     /**
      * Gets the last relevant signature in the document, i.e. the one with the highest offset.
-     * 
+     *
      * @param document to get its last signature
      * @return last signature or null when none found
-     * @throws IOException 
+     * @throws java.io.IOException
      */
     public static PDSignature getLastRelevantSignature(PDDocument document) throws IOException
     {
@@ -349,6 +379,15 @@ public class SignatureUtils {
         return null;
     }
 
+    /**
+     * <p>extractTimeStampTokenFromSignerInformation.</p>
+     *
+     * @param signerInformation a {@link org.bouncycastle.cms.SignerInformation} object
+     * @return a {@link org.bouncycastle.tsp.TimeStampToken} object
+     * @throws org.bouncycastle.cms.CMSException if any.
+     * @throws java.io.IOException if any.
+     * @throws org.bouncycastle.tsp.TSPException if any.
+     */
     public static TimeStampToken extractTimeStampTokenFromSignerInformation(SignerInformation signerInformation)
             throws CMSException, IOException, TSPException
     {
@@ -369,6 +408,15 @@ public class SignatureUtils {
         return new TimeStampToken(signedTSTData);
     }
 
+    /**
+     * <p>validateTimestampToken.</p>
+     *
+     * @param timeStampToken a {@link org.bouncycastle.tsp.TimeStampToken} object
+     * @throws org.bouncycastle.tsp.TSPException if any.
+     * @throws java.security.cert.CertificateException if any.
+     * @throws org.bouncycastle.operator.OperatorCreationException if any.
+     * @throws java.io.IOException if any.
+     */
     public static void validateTimestampToken(TimeStampToken timeStampToken)
             throws TSPException, CertificateException, OperatorCreationException, IOException
     {
@@ -384,12 +432,11 @@ public class SignatureUtils {
 
     /**
      * Get certificate of a TSA.
-     * 
+     *
      * @param tsaUrl URL
      * @return the X.509 certificate.
-     *
-     * @throws GeneralSecurityException
-     * @throws IOException 
+     * @throws java.security.GeneralSecurityException
+     * @throws java.io.IOException
      */
     public static X509Certificate getTsaCertificate(String tsaUrl)
             throws GeneralSecurityException, IOException
@@ -403,9 +450,10 @@ public class SignatureUtils {
 
     /**
      * Extract X.509 certificate from a timestamp
-     * @param timeStampToken
+     *
+     * @param timeStampToken a {@link org.bouncycastle.tsp.TimeStampToken} object
      * @return the X.509 certificate.
-     * @throws CertificateException 
+     * @throws java.security.cert.CertificateException
      */
     public static X509Certificate getCertificateFromTimeStampToken(TimeStampToken timeStampToken)
             throws CertificateException

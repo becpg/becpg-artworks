@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2010-2021 beCPG.
+ * Copyright (C) 2010-2026 beCPG.
  *
  * This file is part of beCPG
  *
@@ -43,32 +43,69 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 	
 	private BehaviourFilter policyBehaviourFilter;
 	
+	/**
+	 * <p>Setter for the field <code>policyBehaviourFilter</code>.</p>
+	 *
+	 * @param policyBehaviourFilter a {@link org.alfresco.repo.policy.BehaviourFilter} object
+	 */
 	public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter) {
 		this.policyBehaviourFilter = policyBehaviourFilter;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>signatureService</code>.</p>
+	 *
+	 * @param signatureService a {@link fr.becpg.artworks.signature.SignatureService} object
+	 */
 	public void setSignatureService(SignatureService signatureService) {
 		this.signatureService = signatureService;
 	}
 	
 	private ServiceRegistry serviceRegistry;
 	
+	/**
+	 * <p>Setter for the field <code>serviceRegistry</code>.</p>
+	 *
+	 * @param serviceRegistry a {@link org.alfresco.service.ServiceRegistry} object
+	 */
 	public void setServiceRegistry(ServiceRegistry serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
 	}
 	
+	/**
+	 * <p>getSignatureView.</p>
+	 *
+	 * @param document a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 * @param user a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 * @param task a {@link org.alfresco.service.cmr.repository.NodeRef} object
+	 * @return a {@link java.lang.String} object
+	 */
 	public String getSignatureView(ScriptNode document, ScriptNode user, NodeRef task) {
 		return signatureService.getDocumentView(document.getNodeRef(), user == null ? null : user.getNodeRef(), task);
 	}
 	
+	/**
+	 * <p>disableSignaturePolicy.</p>
+	 */
 	public void disableSignaturePolicy() {
 		policyBehaviourFilter.disableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 	}
 	
+	/**
+	 * <p>enableSignaturePolicy.</p>
+	 */
 	public void enableSignaturePolicy() {
 		policyBehaviourFilter.enableBehaviour(SignatureModel.ASPECT_SIGNATURE);
 	}
 
+	/**
+	 * <p>prepareForSignature.</p>
+	 *
+	 * @param document a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 * @param recipients an array of {@link org.alfresco.repo.jscript.ScriptNode} objects
+	 * @param params a {@link java.lang.String} object
+	 * @return a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 */
 	public ScriptNode prepareForSignature(ScriptNode document, ScriptNode[] recipients, String... params) {
 		List<NodeRef> recipientNodes = new ArrayList<>();
 		for (ScriptNode recipient : recipients) {
@@ -85,14 +122,31 @@ public final class SignatureScriptHelper extends BaseScopableProcessorExtension 
 		return new ScriptNode(signatureService.prepareForSignature(document.getNodeRef(), recipientNodes, false, params), serviceRegistry, getScope());
 	}
 	
+	/**
+	 * <p>checkinDocument.</p>
+	 *
+	 * @param document a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 */
 	public void checkinDocument(ScriptNode document) {
 		signatureService.checkinDocument(document.getNodeRef());
 	}
 	
+	/**
+	 * <p>signDocument.</p>
+	 *
+	 * @param document a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 * @return a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 */
 	public ScriptNode signDocument(ScriptNode document) {
 		return new ScriptNode(signatureService.signDocument(document.getNodeRef()), serviceRegistry, getScope());
 	}
 	
+	/**
+	 * <p>cancelSignature.</p>
+	 *
+	 * @param document a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 * @return a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 */
 	public ScriptNode cancelSignature(ScriptNode document) {
 		return new ScriptNode(signatureService.cancelDocument(document.getNodeRef()), serviceRegistry, getScope());
 	}

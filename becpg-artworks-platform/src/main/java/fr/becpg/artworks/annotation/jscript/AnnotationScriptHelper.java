@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2010-2018 beCPG.
+ * Copyright (C) 2010-2026 beCPG.
  *
  * This file is part of beCPG
  *
@@ -26,29 +26,55 @@ import fr.becpg.artworks.annotation.AnnotationService;
  * Annotation script methods
  *
  * @author Philippe
- *
  */
 public final class AnnotationScriptHelper extends BaseScopableProcessorExtension {
 
 	private AnnotationService annotationService;
 
+	/**
+	 * <p>Setter for the field <code>annotationService</code>.</p>
+	 *
+	 * @param annotationService a {@link fr.becpg.artworks.annotation.AnnotationService} object
+	 */
 	public void setAnnotationService(AnnotationService annotationService) {
 		this.annotationService = annotationService;
 	}
 	
 	
+	/**
+	 * <p>checkoutDocument.</p>
+	 *
+	 * @param scriptNode a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 * @return a {@link java.lang.String} object
+	 */
 	public String checkoutDocument(ScriptNode scriptNode) {
 		return annotationService.checkoutDocument(scriptNode.getNodeRef());
 	}
 
+	/**
+	 * <p>getOrCreateRemoteView.</p>
+	 *
+	 * @param scriptNode a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 * @return a {@link java.lang.String} object
+	 */
 	public String getOrCreateRemoteView(ScriptNode scriptNode) {
 		return annotationService.getDocumentView(scriptNode.getNodeRef(), null ,null);
 	}
 
+	/**
+	 * <p>checkinDocument.</p>
+	 *
+	 * @param scriptNode a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 */
 	public void checkinDocument(ScriptNode scriptNode) {
 		annotationService.checkinDocument(scriptNode.getNodeRef());
 	}
 
+	/**
+	 * <p>cancelDocument.</p>
+	 *
+	 * @param scriptNode a {@link org.alfresco.repo.jscript.ScriptNode} object
+	 */
 	public void cancelDocument(ScriptNode scriptNode) {
 		annotationService.cancelDocument(scriptNode.getNodeRef());
 	}

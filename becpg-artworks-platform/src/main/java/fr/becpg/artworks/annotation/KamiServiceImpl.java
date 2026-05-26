@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2010-2018 beCPG.
+ * Copyright (C) 2010-2026 beCPG.
  *
  * This file is part of beCPG
  *
@@ -68,14 +68,16 @@ import fr.becpg.artworks.annotation.model.AnnotationModel;
  * Annotation service
  *
  * @author Philippe
- *
  */
 public final class KamiServiceImpl implements AnnotationService {
 
+	/** Constant <code>FAIL_TO_PARSE_JSON="Fail to parse JSON"</code> */
 	private static final String FAIL_TO_PARSE_JSON = "Fail to parse JSON";
 
+	/** Constant <code>AUTHORIZATION="Authorization"</code> */
 	private static final String AUTHORIZATION = "Authorization";
 
+	/** Constant <code>logger</code> */
 	private static Log logger = LogFactory.getLog(KamiServiceImpl.class);
 
 	private NodeService nodeService;
@@ -90,34 +92,64 @@ public final class KamiServiceImpl implements AnnotationService {
 
 	private Integer sessionDurationInDays = 1;
 
+	/**
+	 * <p>Setter for the field <code>nodeService</code>.</p>
+	 *
+	 * @param nodeService a {@link org.alfresco.service.cmr.repository.NodeService} object
+	 */
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>contentService</code>.</p>
+	 *
+	 * @param contentService a {@link org.alfresco.service.cmr.repository.ContentService} object
+	 */
 	public void setContentService(ContentService contentService) {
 		this.contentService = contentService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>personService</code>.</p>
+	 *
+	 * @param personService a {@link org.alfresco.service.cmr.security.PersonService} object
+	 */
 	public void setPersonService(PersonService personService) {
 		this.personService = personService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>checkOutCheckInService</code>.</p>
+	 *
+	 * @param checkOutCheckInService a {@link org.alfresco.service.cmr.coci.CheckOutCheckInService} object
+	 */
 	public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService) {
 		this.checkOutCheckInService = checkOutCheckInService;
 	}
 
+	/**
+	 * <p>Setter for the field <code>annotationAuthorization</code>.</p>
+	 *
+	 * @param annotationAuthorization a {@link java.lang.String} object
+	 */
 	public void setAnnotationAuthorization(String annotationAuthorization) {
 		this.annotationAuthorization = annotationAuthorization;
 	}
 
+	/**
+	 * <p>Setter for the field <code>sessionDurationInDays</code>.</p>
+	 *
+	 * @param sessionDurationInDays a {@link java.lang.Integer} object
+	 */
 	public void setSessionDurationInDays(Integer sessionDurationInDays) {
 		this.sessionDurationInDays = sessionDurationInDays;
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Upload a document to Kami
-	 * @param scriptNode
-	 * @return documentIdentifier
 	 */
 	@Override
 	public String checkoutDocument(NodeRef nodeRef) {
@@ -179,11 +211,9 @@ public final class KamiServiceImpl implements AnnotationService {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Creates a time-limited session and returns a URL
-	 * @param documentIdentifier
-	 * @param userId
-	 * @param sessionDurationInDays
-	 * @return
 	 */
 	@Override
 	public String getDocumentView(NodeRef nodeRef, NodeRef personNodeRef, NodeRef task) {
@@ -230,10 +260,9 @@ public final class KamiServiceImpl implements AnnotationService {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Export and delete document from Kami
-	 * @param scriptNode
-	 * @return
-	 * @throws InterruptedException
 	 */
 	@Override
 	public NodeRef checkinDocument(NodeRef nodeRef) {
@@ -317,6 +346,13 @@ public final class KamiServiceImpl implements AnnotationService {
 		return nodeRef;
 	}
 
+	/**
+	 * <p>copyContent.</p>
+	 *
+	 * @param fileUrl a {@link java.lang.String} object
+	 * @param writer a {@link org.alfresco.service.cmr.repository.ContentWriter} object
+	 * @throws java.net.MalformedURLException if any.
+	 */
 	private void copyContent(String fileUrl, ContentWriter writer) throws MalformedURLException {
 		logger.debug("Load file from url " + fileUrl);
 		URL targetUrl = new URL(fileUrl);
@@ -330,6 +366,7 @@ public final class KamiServiceImpl implements AnnotationService {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public NodeRef cancelDocument(NodeRef nodeRef) {
 		logger.debug("deleteDocument");

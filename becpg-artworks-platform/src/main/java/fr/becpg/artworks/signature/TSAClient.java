@@ -43,13 +43,16 @@ import org.bouncycastle.tsp.TimeStampToken;
 
 /**
  * Time Stamping Authority (TSA) Client [RFC 3161].
+ *
  * @author Vakhtang Koroghlishvili
  * @author John Hewson
  */
 public class TSAClient
 {
+    /** Constant <code>LOG</code> */
     private static final Log LOG = LogFactory.getLog(TSAClient.class);
 
+    /** Constant <code>ALGORITHM_OID_FINDER</code> */
     private static final DigestAlgorithmIdentifierFinder ALGORITHM_OID_FINDER =
             new DefaultDigestAlgorithmIdentifierFinder();
 
@@ -59,9 +62,11 @@ public class TSAClient
     private final MessageDigest digest;
 
     // SecureRandom.getInstanceStrong() would be better, but sometimes blocks on Linux
+    /** Constant <code>RANDOM</code> */
     private static final Random RANDOM = new SecureRandom();
 
     /**
+     * <p>Constructor for TSAClient.</p>
      *
      * @param url the URL of the TSA service
      * @param username user name of TSA
@@ -77,10 +82,11 @@ public class TSAClient
     }
 
     /**
+     * <p>getTimeStampToken.</p>
      *
-     * @param content
+     * @param content a {@link java.io.InputStream} object
      * @return the time stamp token
-     * @throws IOException if there was an error with the connection or data from the TSA server,
+     * @throws java.io.IOException if there was an error with the connection or data from the TSA server,
      *                     or if the time stamp response could not be validated
      */
     public TimeStampToken getTimeStampToken(InputStream content) throws IOException
@@ -130,6 +136,13 @@ public class TSAClient
 
     // gets response data for the given encoded TimeStampRequest data
     // throws IOException if a connection to the TSA cannot be established
+    /**
+     * <p>getTSAResponse.</p>
+     *
+     * @param request an array of {@link byte} objects
+     * @return an array of {@link byte} objects
+     * @throws java.io.IOException if any.
+     */
     private byte[] getTSAResponse(byte[] request) throws IOException
     {
         LOG.debug("Opening connection to TSA server");

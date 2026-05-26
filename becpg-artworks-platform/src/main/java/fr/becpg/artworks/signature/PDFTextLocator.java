@@ -9,8 +9,18 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
 
+/**
+ * <p>PDFTextLocator class.</p>
+ *
+ * @author matthieu
+ */
 public class PDFTextLocator extends PDFTextStripper {
 
+	/**
+	 * <p>Constructor for PDFTextLocator.</p>
+	 *
+	 * @throws java.io.IOException if any.
+	 */
 	public PDFTextLocator() throws IOException {
 		super();
 	}
@@ -21,6 +31,15 @@ public class PDFTextLocator extends PDFTextStripper {
 	private float y1 = -1;
 	private float y2 = -1;
 
+	/**
+	 * <p>getCoordinates.</p>
+	 *
+	 * @param document a {@link org.apache.pdfbox.pdmodel.PDDocument} object
+	 * @param phrase a {@link java.lang.String} object
+	 * @param page a int
+	 * @return an array of {@link float} objects
+	 * @throws java.io.IOException if any.
+	 */
 	public static float[] getCoordinates(PDDocument document, String phrase, int page) throws IOException {
 		PDFTextLocator stripper = new PDFTextLocator();
 		stripper.keyString = phrase;
@@ -38,6 +57,7 @@ public class PDFTextLocator extends PDFTextStripper {
 		return new float[] { stripper.x1, stripper.x2, stripper.y1, stripper.y2 };
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected void writeString(String string, List<TextPosition> textPositions) throws IOException {
 		if (string.contains(keyString)) {
@@ -51,6 +71,13 @@ public class PDFTextLocator extends PDFTextStripper {
 		}
 	}
 	
+	/**
+	 * <p>getXBegin.</p>
+	 *
+	 * @param keyString a {@link java.lang.String} object
+	 * @param textPositions a {@link java.util.List} object
+	 * @return a int
+	 */
 	private int getXBegin(String keyString, List<TextPosition> textPositions) {
 		
 		char[] keyArray = keyString.toCharArray();
@@ -76,6 +103,13 @@ public class PDFTextLocator extends PDFTextStripper {
 		return firstX;
 	}
 	
+	/**
+	 * <p>getXEnd.</p>
+	 *
+	 * @param keyString a {@link java.lang.String} object
+	 * @param textPositions a {@link java.util.List} object
+	 * @return a int
+	 */
 	private int getXEnd(String keyString, List<TextPosition> textPositions) {
 		
 		char[] keyArray = keyString.toCharArray();

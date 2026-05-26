@@ -14,26 +14,45 @@ import org.alfresco.service.cmr.repository.NodeService;
 import fr.becpg.artworks.signature.model.SignatureModel;
 import fr.becpg.artworks.signature.model.SignatureStatus;
 
+/**
+ * <p>SignatureContentPolicy class.</p>
+ *
+ * @author matthieu
+ */
 public class SignatureContentPolicy implements ContentServicePolicies.OnContentUpdatePolicy {
 
 	private PolicyComponent policyComponent;
 	
 	private NodeService nodeService;
 
+	/**
+	 * <p>Setter for the field <code>policyComponent</code>.</p>
+	 *
+	 * @param policyComponent a {@link org.alfresco.repo.policy.PolicyComponent} object
+	 */
 	public void setPolicyComponent(PolicyComponent policyComponent) {
 		this.policyComponent = policyComponent;
 	}
 	
+	/**
+	 * <p>Setter for the field <code>nodeService</code>.</p>
+	 *
+	 * @param nodeService a {@link org.alfresco.service.cmr.repository.NodeService} object
+	 */
 	public void setNodeService(NodeService nodeService) {
 		this.nodeService = nodeService;
 	}
 	
+	/**
+	 * <p>init.</p>
+	 */
 	public void init() {
 		this.policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME,
 				SignatureModel.ASPECT_SIGNATURE,
 				new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void onContentUpdate(NodeRef nodeRef, boolean newContent) {
 		
