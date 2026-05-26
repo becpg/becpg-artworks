@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -613,7 +614,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 	}
 	
 	private PDSignature extractSignature(byte[] signedContent, String userDisplayName) throws IOException {
-		try (PDDocument document = PDDocument.load(signedContent)) {
+		try (PDDocument document = Loader.loadPDF(signedContent)) {
 
 			for (PDSignature signature : document.getSignatureDictionaries()) {
 
@@ -627,7 +628,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 	private Date extractTimeStampDate(byte[] signedFile, PDSignature signature) throws IOException, CMSException, TSPException {
 		
-		try (PDDocument document = PDDocument.load(signedFile)) {
+		try (PDDocument document = Loader.loadPDF(signedFile)) {
 
 			COSString contents = (COSString) signature.getCOSObject().getDictionaryObject(COSName.CONTENTS);
 
@@ -771,7 +772,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 	
 			InputStream input = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentInputStream();
 
-			PDDocument document = PDDocument.load(input);
+			PDDocument document = Loader.loadPDF(input.readAllBytes());
 			
 			int accessPermissions = SignatureUtils.getMDPPermission(document);
 			if (accessPermissions == 1) {
@@ -913,7 +914,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 
 		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
 
-			PDDocument document = PDDocument.load(input);
+			PDDocument document = Loader.loadPDF(input.readAllBytes());
 
 			int signaturePageNumber = 0;
 

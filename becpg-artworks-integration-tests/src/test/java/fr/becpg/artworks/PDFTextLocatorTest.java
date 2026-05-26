@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -18,7 +19,7 @@ public class PDFTextLocatorTest {
 		
         ClassPathResource resource = new ClassPathResource("becpg/repo/document/sample1.pdf");
 
-        try (PDDocument document = PDDocument.load(resource.getInputStream())) {
+        try (PDDocument document = Loader.loadPDF(resource.getInputStream().readAllBytes())) {
 			
         	float[] coordinates = PDFTextLocator.getCoordinates(document, "Exemple", 0);
         	
