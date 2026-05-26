@@ -23,13 +23,37 @@ It empowers users to annotate, compare, and digitally sign documents directly wi
 
 ## 📸 Screenshots
 
-### Annotation Feature
+### 🖋️ Annotation Feature
 ![Annotation](docs/images/annotation3.png)
 *Collaborative annotation on PDF documents*
 
-### Comparison Feature
+<p align="center">
+  <img src="docs/images/text-comparison.png" width="30%" alt="Text Comparison" />
+  <img src="docs/images/image-comparison.png" width="30%" alt="Image Comparison" />
+  <img src="docs/images/colors.png" width="30%" alt="Color Extraction" />
+</p>
+<p align="center">
+  <img src="docs/images/layers.png" width="45%" alt="Layers" />
+  <img src="docs/images/measure.png" width="45%" alt="Measurements" />
+</p>
+
+### 🔍 Comparison Feature
 ![Comparison](docs/images/comparison.png)
 *Side-by-side comparison of document versions*
+
+<p align="center">
+  <img src="docs/images/comparison2.png" width="45%" alt="Comparison 2" />
+  <img src="docs/images/comparison3.png" width="45%" alt="Comparison 3" />
+</p>
+
+### ✍️ Digital Signature Feature
+<p align="center">
+  <img src="docs/images/signature1.png" width="22%" alt="Add aspect" />
+  <img src="docs/images/signature2.png" width="22%" alt="Add recipients" />
+  <img src="docs/images/signature3.png" width="22%" alt="Send for signature" />
+  <img src="docs/images/signature4.png" width="22%" alt="Signed document" />
+</p>
+*Step-by-step digital signature process*
 
 ---
 
