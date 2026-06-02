@@ -149,6 +149,8 @@ public class TSAClient
 
         // todo: support proxy servers
         URLConnection connection = url.openConnection();
+        connection.setConnectTimeout(10000);
+        connection.setReadTimeout(10000);
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestProperty("Content-Type", "application/timestamp-query");
