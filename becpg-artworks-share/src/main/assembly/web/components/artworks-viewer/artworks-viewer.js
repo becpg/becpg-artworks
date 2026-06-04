@@ -328,6 +328,7 @@
 					
 					} else {
 						
+						const headerItems = [];
 						const header = instance.UI.getModularHeader('default-top-header');
 						const newItem = {		
 						  type: 'toggleButton',
@@ -336,7 +337,8 @@
 						  title: 'Versions',
 						  onClick: (e) => {
 							e.stopPropagation();
-							var colorsButton =  document.querySelector('apryse-webviewer').shadowRoot.querySelector("[data-element='colorsButton']");
+							var webViewerEl = document.querySelector('apryse-webviewer');
+							var colorsButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='colorsButton']") : null;
 							var colorsMenu = document.getElementById("colorsMenu");
 							if (colorsButton) {
 								colorsButton.classList.remove("active");
@@ -344,26 +346,122 @@
 							if (colorsMenu) {
 								colorsMenu.style.display = "none";
 							}
+							
+							var alignButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='alignButton']") : null;
+							var alignMenu = document.getElementById("alignMenu");
+							if (alignButton) {
+								alignButton.classList.remove("active");
+							}
+							if (alignMenu) {
+								alignMenu.style.display = "none";
+							}
 
 							var versionMenu = document.getElementById("versionMenu");
 
-							var versionButton = document.querySelector('apryse-webviewer').shadowRoot.querySelector("[data-element='versionButton']");
-							if (!versionButton.classList.contains("active")) {
-								
-								var buttonRect = versionButton.getBoundingClientRect();
-								versionMenu.style.top = (buttonRect.bottom + 5) + "px";  // 5px gap below button
-								versionMenu.style.right = (window.innerWidth - buttonRect.right) + "px";
+							var versionButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='versionButton']") : null;
+							if (versionButton) {
+								if (!versionButton.classList.contains("active")) {
+									var buttonRect = versionButton.getBoundingClientRect();
+									versionMenu.style.top = (buttonRect.bottom + 5) + "px";  // 5px gap below button
+									versionMenu.style.right = (window.innerWidth - buttonRect.right) + "px";
 
-								versionButton.classList.add("active");
-							    versionMenu.style.display = "block";  // Show it
-							} else {
-								versionButton.classList.remove("active");
-								versionMenu.style.display = "none";
+									versionButton.classList.add("active");
+									versionMenu.style.display = "block";  // Show it
+								} else {
+									versionButton.classList.remove("active");
+									versionMenu.style.display = "none";
+								}
 							}
 						  }
 					  }
 						
-						header.setItems([...header.getItems(), newItem]);
+						headerItems.push(newItem);
+						
+						if (me.options.compareContentURL != null && me.options.mode == "overlay") {
+							const newItemAlign = {
+							  type: 'toggleButton',
+							  dataElement: 'alignButton',
+							  img: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18px" height="22px" viewBox="0 0 22 22" version="1.1"> <g id="surface1"> <path style=" stroke:none;fill-rule:nonzero;fill-opacity:1;fill:currentColor;" d="M 4 2 L 14 2 C 15.1 2 16 2.9 16 4 L 16 14 C 16 15.1 15.1 16 14 16 L 4 16 C 2.9 16 2 15.1 2 14 L 2 4 C 2 2.9 2.9 2 4 2 Z M 18 6 L 20 6 C 21.1 6 22 6.9 22 8 L 22 18 C 22 19.1 21.1 20 20 20 L 10 20 C 8.9 20 8 19.1 8 18 L 8 16 M 4 4 L 4 14 L 14 14 L 14 4 Z" /> </g> </svg>',
+							  title: me.msg["label.alignOverlay"] || 'Align Overlay',
+							  onClick: (e) => {
+								e.stopPropagation();
+								var webViewerEl = document.querySelector('apryse-webviewer');
+								var colorsButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='colorsButton']") : null;
+								var colorsMenu = document.getElementById("colorsMenu");
+								if (colorsButton) colorsButton.classList.remove("active");
+								if (colorsMenu) colorsMenu.style.display = "none";
+								
+								var versionButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='versionButton']") : null;
+								var versionMenu = document.getElementById("versionMenu");
+								if (versionButton) versionButton.classList.remove("active");
+								if (versionMenu) versionMenu.style.display = "none";
+
+								var alignMenu = document.getElementById("alignMenu");
+								var alignButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='alignButton']") : null;
+
+								if (alignButton && !alignButton.classList.contains("active")) {
+									alignButton.classList.add("active");
+									var buttonRect = alignButton.getBoundingClientRect();
+									alignMenu.style.top = (buttonRect.bottom + 5) + "px";
+									alignMenu.style.right = (window.innerWidth - buttonRect.right) + "px";
+									alignMenu.style.display = "block";
+								} else if (alignButton) {
+									alignButton.classList.remove("active");
+									alignMenu.style.display = "none";
+								}
+							  }
+							};
+							headerItems.push(newItemAlign);
+						}
+						
+						if (me.options.compareContentURL == null) {
+							const newItemColor = {
+							  type: 'toggleButton',
+							  dataElement: 'colorsButton',
+							  img: '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="18px" height="22px" viewBox="0 0 100.000000 100.000000" preserveAspectRatio="xMidYMid meet"> <g transform="translate(0.000000,100.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none"> <path d="M313 975 c-219 -59 -339 -244 -306 -471 33 -231 249 -433 507 -474 109 -17 246 11 296 62 43 43 46 84 10 185 -32 94 -38 154 -16 172 21 18 43 3 76 -50 63 -104 133 -40 116 107 -13 110 -75 225 -173 321 -133 130 -347 192 -510 148z m72 -140 c54 -53 13 -145 -64 -145 -30 0 -70 40 -77 77 -5 27 -1 37 24 63 39 38 83 40 117 5z m276 -14 c26 -32 20 -88 -12 -113 -51 -42 -139 -4 -139 60 0 81 101 116 151 53z m-432 -201 c31 -16 46 -65 31 -100 -15 -37 -37 -50 -84 -50 -66 0 -98 79 -55 134 22 28 72 36 108 16z m130 -226 c40 -33 43 -83 6 -119 -34 -35 -78 -33 -117 5 -25 26 -29 36 -24 62 7 36 22 57 51 68 34 14 52 11 84 -16z"/> </g> </svg>',
+							  title: 'Colors',
+							  onClick: (e) => {
+								e.stopPropagation();
+								var webViewerEl = document.querySelector('apryse-webviewer');
+								var versionMenu = document.getElementById("versionMenu");
+								var versionButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='versionButton']") : null;
+								if (versionButton) {
+									versionButton.classList.remove("active");
+								}
+								if (versionMenu) {
+									versionMenu.style.display = "none";
+								}
+								
+								var alignButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='alignButton']") : null;
+								var alignMenu = document.getElementById("alignMenu");
+								if (alignButton) {
+									alignButton.classList.remove("active");
+								}
+								if (alignMenu) {
+									alignMenu.style.display = "none";
+								}
+
+								var colorsMenu = document.getElementById("colorsMenu");
+								var colorsButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='colorsButton']") : null;
+
+								if (colorsButton) {
+									if (!colorsButton.classList.contains("active")) {
+										colorsButton.classList.add("active");
+										var buttonRect = colorsButton.getBoundingClientRect();
+										colorsMenu.style.top = (buttonRect.bottom + 5) + "px";  // 5px gap below button
+										colorsMenu.style.right = (window.innerWidth - buttonRect.right) + "px";
+										colorsMenu.style.display = "block";
+									} else {
+										colorsButton.classList.remove("active");
+										colorsMenu.style.display = "none";
+									}
+								}
+							  }
+							};
+							headerItems.push(newItemColor);
+						}
+						
+						header.setItems([...header.getItems(), ...headerItems]);
 						
 						documentViewer.addEventListener('documentLoaded', () => {
 							var versionMenu = document.getElementById("versionMenu");
@@ -399,8 +497,9 @@
 							}
 							
 							var closeVersionMenu = function(e) {
-								var versionButton =  document.querySelector('apryse-webviewer').shadowRoot.querySelector("[data-element='versionButton']");
-								if (e.target != versionButton && !versionMenu.contains(e.target)) {
+								var webViewerEl = document.querySelector('apryse-webviewer');
+								var versionButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='versionButton']") : null;
+								if (versionButton && e.target != versionButton && !versionMenu.contains(e.target)) {
 									versionButton.classList.remove("active");
 									versionMenu.style.display = "none";
 								}
@@ -409,6 +508,124 @@
 							document.addEventListener('click', closeVersionMenu);
 						});
 						if (me.options.compareContentURL != null) {
+							
+							let offsetX = 0;
+							let offsetY = 0;
+							let rotation = 0;
+							const originalBoxes = [];
+							
+							const getPageArray = async (doc) => {
+								const arr = [];
+								const itr = await doc.getPageIterator(1);
+								for (itr; await itr.hasNext(); itr.next()) {
+									const page = await itr.current();
+									arr.push(page);
+								}
+								return arr;
+							}
+							
+							async function recreateDiff() {
+								instance.UI.openElements(['loadingModal']);
+								
+								const newDoc = await PDFNet.PDFDoc.create();
+								await newDoc.lock();
+								
+								const [doc1Pages, doc2Pages] = await Promise.all([
+									getPageArray(result1.doc),
+									getPageArray(result2.doc)
+								]);
+								
+								const biggestLength = Math.max(doc1Pages.length, doc2Pages.length);
+								let chain = Promise.resolve();
+								for (let i = 0; i < biggestLength; i++) {
+									const index = i;
+									chain = chain.then(async () => {
+										let page1 = doc1Pages[index];
+										let page2 = doc2Pages[index];
+										if (!page1) {
+											page1 = new PDFNet.Page(0);
+										}
+										if (!page2) {
+											page2 = new PDFNet.Page(0);
+										} else if (originalBoxes[index]) {
+											const orig = originalBoxes[index];
+											
+											// Reset and apply offset
+											const cropRect = await PDFNet.Rect.init(
+												orig.cropBox.x1 + offsetX, 
+												orig.cropBox.y1 + offsetY, 
+												orig.cropBox.x2 + offsetX, 
+												orig.cropBox.y2 + offsetY
+											);
+											await page2.setCropBox(cropRect);
+											
+											const mediaRect = await PDFNet.Rect.init(
+												orig.mediaBox.x1 + offsetX, 
+												orig.mediaBox.y1 + offsetY, 
+												orig.mediaBox.x2 + offsetX, 
+												orig.mediaBox.y2 + offsetY
+											);
+											await page2.setMediaBox(mediaRect);
+											
+											// Apply rotation
+											const rotEnum = (orig.rotation + Math.floor((rotation % 360) / 90)) % 4;
+											await page2.setRotation(rotEnum);
+										}
+										return newDoc.appendVisualDiff(page1, page2, null);
+									});
+								}
+								await chain;
+								await newDoc.unlock();
+								
+								await instance.UI.loadDocument(newDoc);
+								
+								// Wait for document to be fully loaded before importing annotations
+								await new Promise(resolve => {
+									const onLoaded = () => {
+										documentViewer.removeEventListener('documentLoaded', onLoaded);
+										resolve();
+									};
+									documentViewer.addEventListener('documentLoaded', onLoaded);
+								});
+								
+								// Import annotations from both original documents into the comparison view
+								try {
+									if (result1.xfdf) {
+									   const parser = new DOMParser();
+									   const xmlDoc = parser.parseFromString(result1.xfdf, "application/xml");
+									   const annotations = xmlDoc.querySelectorAll("annots > *");
+									   annotations.forEach((annot) => {
+									       const pageAttr = annot.getAttribute("page");
+									       if (pageAttr !== null) {
+									           const newPage = parseInt(pageAttr, 10) * 2;
+									           annot.setAttribute("page", newPage);
+									       }
+									   });
+									   const serializer = new XMLSerializer();
+									   const newXfdf = serializer.serializeToString(xmlDoc);
+									   await annotationManager.importAnnotations(newXfdf);
+									}
+									if (result2.xfdf) {
+									   const parser = new DOMParser();
+									   const xmlDoc = parser.parseFromString(result2.xfdf, "application/xml");
+									   const annotations = xmlDoc.querySelectorAll("annots > *");
+									   annotations.forEach((annot) => {
+									       const pageAttr = annot.getAttribute("page");
+									       if (pageAttr !== null) {
+									           const newPage = parseInt(pageAttr, 10) * 2 + 1;
+									           annot.setAttribute("page", newPage);
+									       }
+									   });
+									   const serializer = new XMLSerializer();
+									   const newXfdf = serializer.serializeToString(xmlDoc);
+									   await annotationManager.importAnnotations(newXfdf);
+									}
+								} catch (error) {
+									console.error('Error importing annotations:', error);
+								}
+								
+								instance.UI.closeElements(['loadingModal']);
+							}
 							
 							async function loadDocumentWithAnnotations(url, PDFNet) {
 								const tempDoc = await PDFNet.PDFDoc.createFromURL(url);
@@ -439,147 +656,212 @@
 									loadDocumentWithAnnotations(PROXY_URI + me.options.compareContentURL, PDFNet)
 								]);
 								
-								const newDoc = await PDFNet.PDFDoc.create();
-								await newDoc.lock();
+								if (me.options.mode == "overlay") {
+									const doc2PagesForOriginals = await getPageArray(result2.doc);
+									for (let i = 0; i < doc2PagesForOriginals.length; i++) {
+										const page = doc2PagesForOriginals[i];
+										const cropBox = await page.getCropBox();
+										const cropCoords = await cropBox.get();
+										const mediaBox = await page.getMediaBox();
+										const mediaCoords = await mediaBox.get();
+										const rot = await page.getRotation();
+										originalBoxes.push({
+											cropBox: { x1: cropCoords.x1, x2: cropCoords.x2, y1: cropCoords.y1, y2: cropCoords.y2 },
+											mediaBox: { x1: mediaCoords.x1, x2: mediaCoords.x2, y1: mediaCoords.y1, y2: mediaCoords.y2 },
+											rotation: rot
+										});
+									}
+									
+									var alignMenu = document.getElementById("alignMenu");
+									if (!alignMenu) {
+										alignMenu = document.createElement("div");
+										alignMenu.id = 'alignMenu';
+										alignMenu.setAttribute("aria-label", me.msg["label.alignOverlay"] || "Align Overlay");
+										alignMenu.style.position = "fixed";
+										alignMenu.style.left = "auto";
+										alignMenu.style.display = "none";
+										alignMenu.style.backgroundColor = "white";
+										alignMenu.style.border = "1px solid #ccc";
+										alignMenu.style.padding = "10px";
+										alignMenu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+										alignMenu.style.zIndex = "1000";
+										alignMenu.style.width = "180px";
+										alignMenu.style.fontFamily = "Lato, sans-serif";
+										alignMenu.style.fontWeight = "400";
+										alignMenu.style.fontSize = "14px";
+										alignMenu.style.color = "#485056";
+										alignMenu.classList.add("Overlay", "FlyoutMenu", "closed");
+										alignMenu.setAttribute("data-element", "alignMenu");
+										
+										alignMenu.innerHTML = `
+											<div style="font-weight: bold; margin-bottom: 8px; text-align: center; font-family: inherit;">${me.msg["label.shiftOverlay"] || "Shift Overlay"}</div>
+											<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 12px; justify-items: center; align-items: center; font-family: inherit;">
+												<div></div>
+												<button id="align-up" title="${me.msg["label.moveUp"] || "Move Up"}" style="width: 36px; height: 36px; border: 1px solid #ccc; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-family: inherit;">
+													<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+												</button>
+												<div></div>
+												<button id="align-left" title="${me.msg["label.moveLeft"] || "Move Left"}" style="width: 36px; height: 36px; border: 1px solid #ccc; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-family: inherit;">
+													<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+												</button>
+												<div style="font-size: 11px; text-align: center; color: #666; font-family: inherit;" id="align-nudge-val">0,0</div>
+												<button id="align-right" title="${me.msg["label.moveRight"] || "Move Right"}" style="width: 36px; height: 36px; border: 1px solid #ccc; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-family: inherit;">
+													<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+												</button>
+												<div></div>
+												<button id="align-down" title="${me.msg["label.moveDown"] || "Move Down"}" style="width: 36px; height: 36px; border: 1px solid #ccc; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-family: inherit;">
+													<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+												</button>
+												<div></div>
+											</div>
+											<div style="font-weight: bold; margin-bottom: 8px; text-align: center; font-family: inherit;">${me.msg["label.rotateOverlay"] || "Rotate Overlay"}</div>
+											<div style="display: flex; justify-content: space-around; margin-bottom: 12px; font-family: inherit;">
+												<button id="align-rot-ccw" title="${me.msg["label.rotateCounterclockwise"] || "Rotate Counterclockwise"}" style="width: 44px; height: 36px; border: 1px solid #ccc; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-family: inherit;">
+													<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+												</button>
+												<div style="font-size: 11px; align-self: center; color: #666; font-family: inherit;" id="align-rot-val">0°</div>
+												<button id="align-rot-cw" title="${me.msg["label.rotateClockwise"] || "Rotate Clockwise"}" style="width: 44px; height: 36px; border: 1px solid #ccc; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-family: inherit;">
+													<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+												</button>
+											</div>
+											<button id="align-reset" style="width: 100%; height: 36px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px; font-family: inherit; font-size: inherit; font-weight: inherit; color: inherit;">
+												<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> ${me.msg["label.reset"] || "Reset"}
+											</button>
+										`;
+										document.body.appendChild(alignMenu);
+										
+										const nudgeStep = 2;
+										const updateLabels = () => {
+											document.getElementById("align-nudge-val").innerText = offsetX + "," + offsetY;
+											document.getElementById("align-rot-val").innerText = rotation + "°";
+										};
+										
+										document.getElementById("align-up").onclick = async () => {
+											offsetY -= nudgeStep;
+											updateLabels();
+											await recreateDiff();
+										};
+										document.getElementById("align-down").onclick = async () => {
+											offsetY += nudgeStep;
+											updateLabels();
+											await recreateDiff();
+										};
+										document.getElementById("align-left").onclick = async () => {
+											offsetX += nudgeStep;
+											updateLabels();
+											await recreateDiff();
+										};
+										document.getElementById("align-right").onclick = async () => {
+											offsetX -= nudgeStep;
+											updateLabels();
+											await recreateDiff();
+										};
+										document.getElementById("align-rot-ccw").onclick = async () => {
+											rotation = (rotation - 90 + 360) % 360;
+											updateLabels();
+											await recreateDiff();
+										};
+										document.getElementById("align-rot-cw").onclick = async () => {
+											rotation = (rotation + 90) % 360;
+											updateLabels();
+											await recreateDiff();
+										};
+										document.getElementById("align-reset").onclick = async () => {
+											offsetX = 0;
+											offsetY = 0;
+											rotation = 0;
+											updateLabels();
+											await recreateDiff();
+										};
+									}
+									
+									var closeAlignMenu = function(e) {
+										var webViewerEl = document.querySelector('apryse-webviewer');
+										var alignButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='alignButton']") : null;
+										if (alignButton && e.target != alignButton && !alignMenu.contains(e.target)) {
+											alignButton.classList.remove("active");
+											alignMenu.style.display = "none";
+										}
+									};
+									document.addEventListener('click', closeAlignMenu);
+								}
 								
 								// Create comparison document
 								if (me.options.mode == "overlay") {
-									const getPageArray = async (doc) => {
-										const arr = [];
-										const itr = await doc.getPageIterator(1);
-										for (itr; await itr.hasNext(); itr.next()) {
-											const page = await itr.current();
-											arr.push(page);
-										}
-										return arr;
-									}
-									
-									const [doc1Pages, doc2Pages] = await Promise.all([
-										getPageArray(result1.doc),
-										getPageArray(result2.doc)
-									]);
-									
-									// we'll loop over the doc with the most pages
-									const biggestLength = Math.max(doc1Pages.length, doc2Pages.length);
-									// we need to do the pages in order, so lets create a Promise chain
-									const chain = Promise.resolve();
-									for (let i = 0; i < biggestLength; i++) {
-										chain.then(async () => {
-											let page1 = doc1Pages[i];
-											let page2 = doc2Pages[i];
-											// handle the case where one document has more pages than the other
-											if (!page1) {
-												page1 = new PDFNet.Page(0); // create a blank page
-											}
-											if (!page2) {
-												page2 = new PDFNet.Page(0); // create a blank page
-											}
-											return newDoc.appendVisualDiff(page1, page2, null)
-										})
-									}
-									await chain; // wait for our chain to resolve
+									await recreateDiff();
 								} else {
+									const newDoc = await PDFNet.PDFDoc.create();
+									await newDoc.lock();
 									await newDoc.appendTextDiffDoc(result1.doc, result2.doc);
+									await newDoc.unlock();
+									
+									// Load the comparison document
+									await instance.UI.loadDocument(newDoc);
+									
+									// Wait for document to be fully loaded before importing annotations
+									await new Promise(resolve => {
+										const onLoaded = () => {
+											documentViewer.removeEventListener('documentLoaded', onLoaded);
+											resolve();
+										};
+										documentViewer.addEventListener('documentLoaded', onLoaded);
+									});
+									
+									// Import annotations from both original documents into the comparison view
+									try {
+										if (result1.xfdf) {
+											// Parse the XFDF string into XML
+										   const parser = new DOMParser();
+										   const xmlDoc = parser.parseFromString(result1.xfdf, "application/xml");
+
+										   // Select all annotations: freetext and text
+										   const annotations = xmlDoc.querySelectorAll("annots > *");
+
+										   annotations.forEach((annot) => {
+										       const pageAttr = annot.getAttribute("page");
+										       if (pageAttr !== null) {
+										           const newPage = parseInt(pageAttr, 10) * 2;
+										           annot.setAttribute("page", newPage);
+										       }
+										   });
+
+										   // Serialize XML back to string
+										   const serializer = new XMLSerializer();
+										   const newXfdf = serializer.serializeToString(xmlDoc);
+
+										   // Import modified annotations
+										   await annotationManager.importAnnotations(newXfdf);
+										   console.log('Imported annotations from document 1');		
+										}
+										if (result2.xfdf) {
+											// Parse the XFDF string into XML
+										   const parser = new DOMParser();
+										   const xmlDoc = parser.parseFromString(result2.xfdf, "application/xml");
+
+										   // Select all annotations: freetext and text
+										   const annotations = xmlDoc.querySelectorAll("annots > *");
+
+										   annotations.forEach((annot) => {
+										       const pageAttr = annot.getAttribute("page");
+										       if (pageAttr !== null) {
+										           const newPage = parseInt(pageAttr, 10) * 2 + 1;
+										           annot.setAttribute("page", newPage);
+										       }
+										   });
+
+										   // Serialize XML back to string
+										   const serializer = new XMLSerializer();
+										   const newXfdf = serializer.serializeToString(xmlDoc);
+
+										   // Import modified annotations
+										   await annotationManager.importAnnotations(newXfdf);
+										   console.log('Imported annotations from document 2');		
+										}
+									} catch (error) {
+										console.error('Error importing annotations:', error);
+									}
 								}
-								
-								await newDoc.unlock();
-								
-								// Load the comparison document
-								await instance.UI.loadDocument(newDoc);
-								
-								// Wait for document to be fully loaded before importing annotations
-								await new Promise(resolve => {
-									const onLoaded = () => {
-										documentViewer.removeEventListener('documentLoaded', onLoaded);
-										resolve();
-									};
-									documentViewer.addEventListener('documentLoaded', onLoaded);
-								});
-								
-								// Import annotations from both original documents into the comparison view
-								try {
-									if (result1.xfdf) {
-										// Parse the XFDF string into XML
-									   const parser = new DOMParser();
-									   const xmlDoc = parser.parseFromString(result1.xfdf, "application/xml");
-
-									   // Select all annotations: freetext and text
-									   const annotations = xmlDoc.querySelectorAll("annots > *");
-
-									   annotations.forEach((annot) => {
-									       const pageAttr = annot.getAttribute("page");
-									       if (pageAttr !== null) {
-									           const newPage = parseInt(pageAttr, 10) * 2;
-									           annot.setAttribute("page", newPage);
-									       }
-									   });
-
-									   // Serialize XML back to string
-									   const serializer = new XMLSerializer();
-									   const newXfdf = serializer.serializeToString(xmlDoc);
-
-									   // Import modified annotations
-									   await annotationManager.importAnnotations(newXfdf);
-									   console.log('Imported annotations from document 1');		
-									}
-									if (result2.xfdf) {
-										// Parse the XFDF string into XML
-									   const parser = new DOMParser();
-									   const xmlDoc = parser.parseFromString(result2.xfdf, "application/xml");
-
-									   // Select all annotations: freetext and text
-									   const annotations = xmlDoc.querySelectorAll("annots > *");
-
-									   annotations.forEach((annot) => {
-									       const pageAttr = annot.getAttribute("page");
-									       if (pageAttr !== null) {
-									           const newPage = parseInt(pageAttr, 10) * 2 + 1;
-									           annot.setAttribute("page", newPage);
-									       }
-									   });
-
-									   // Serialize XML back to string
-									   const serializer = new XMLSerializer();
-									   const newXfdf = serializer.serializeToString(xmlDoc);
-
-									   // Import modified annotations
-									   await annotationManager.importAnnotations(newXfdf);
-									   console.log('Imported annotations from document 2');		
-									}
-								} catch (error) {
-									console.error('Error importing annotations:', error);
-								}							
 						} else {
-							
-							const newItemColor = {
-							  type: 'toggleButton',
-							  dataElement: 'colorsButton',
-							  img: '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="18px" height="22px" viewBox="0 0 100.000000 100.000000" preserveAspectRatio="xMidYMid meet"> <g transform="translate(0.000000,100.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none"> <path d="M313 975 c-219 -59 -339 -244 -306 -471 33 -231 249 -433 507 -474 109 -17 246 11 296 62 43 43 46 84 10 185 -32 94 -38 154 -16 172 21 18 43 3 76 -50 63 -104 133 -40 116 107 -13 110 -75 225 -173 321 -133 130 -347 192 -510 148z m72 -140 c54 -53 13 -145 -64 -145 -30 0 -70 40 -77 77 -5 27 -1 37 24 63 39 38 83 40 117 5z m276 -14 c26 -32 20 -88 -12 -113 -51 -42 -139 -4 -139 60 0 81 101 116 151 53z m-432 -201 c31 -16 46 -65 31 -100 -15 -37 -37 -50 -84 -50 -66 0 -98 79 -55 134 22 28 72 36 108 16z m130 -226 c40 -33 43 -83 6 -119 -34 -35 -78 -33 -117 5 -25 26 -29 36 -24 62 7 36 22 57 51 68 34 14 52 11 84 -16z"/> </g> </svg>',
-							  title: 'Colors',
-							  onClick: (e) => {
-								e.stopPropagation();
-								var versionMenu = document.getElementById("versionMenu");
-								var versionButton =  document.querySelector('apryse-webviewer').shadowRoot.querySelector("[data-element='versionButton']");
-								versionButton.classList.remove("active");
-								versionMenu.style.display = "none";
-
-								var colorsMenu = document.getElementById("colorsMenu");
-								var colorsButton = document.querySelector('apryse-webviewer').shadowRoot.querySelector("[data-element='colorsButton']");
-
-								if (!colorsButton.classList.contains("active")) {
-									colorsButton.classList.add("active");
-									var buttonRect = colorsButton.getBoundingClientRect();
-									colorsMenu.style.top = (buttonRect.bottom + 5) + "px";  // 5px gap below button
-									colorsMenu.style.right = (window.innerWidth - buttonRect.right) + "px";
-									colorsMenu.style.display = "block";
-								} else {
-									colorsButton.classList.remove("active");
-									colorsMenu.style.display = "none";
-								}
-							  }
-						  }
-
-							header.setItems([...header.getItems(), newItemColor]);
 
 							instance.UI.enableFeatures([instance.UI.Feature.Measurement]);
 							instance.UI.enableFeatures([instance.UI.Feature.ContentEdit]);
@@ -660,8 +942,9 @@
 									document.body.appendChild(colorsMenu);
 								}
 								var closeColorsMenu = function(e) {
-									var colorsButton =  document.querySelector('apryse-webviewer').shadowRoot.querySelector("[data-element='colorsButton']");
-									if (e.target != colorsButton && !colorsMenu.contains(e.target)) {
+									var webViewerEl = document.querySelector('apryse-webviewer');
+									var colorsButton = webViewerEl && webViewerEl.shadowRoot ? webViewerEl.shadowRoot.querySelector("[data-element='colorsButton']") : null;
+									if (colorsButton && e.target != colorsButton && !colorsMenu.contains(e.target)) {
 										colorsButton.classList.remove("active");
 										colorsMenu.style.display = "none";
 									}
