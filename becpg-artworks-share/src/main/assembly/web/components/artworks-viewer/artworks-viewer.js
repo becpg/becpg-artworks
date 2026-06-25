@@ -72,6 +72,20 @@
 						VerificationOptions.addTrustedCertificates([me.options.issuerCertificateURL]);
 					
   					});
+					
+					 function getFirefoxVersion() {
+					  const ua = navigator.userAgent;
+					  const match = ua.match(/Firefox\/(\d+)\./);
+					  return match ? parseInt(match[1], 10) : null;
+					}
+					
+					const version = getFirefoxVersion();
+
+					  if(version && version > 145) {
+					    console.log('Disabling virtual display mode for Firefox version', version);
+					    const displayMode = documentViewer.getDisplayModeManager();
+					    displayMode.disableVirtualDisplayMode();
+					  }
 										
 					instance.UI.setLanguage(JS_LOCALE);
 					instance.UI.enableElements(['bookmarksPanel', 'bookmarksPanelButton', 'richTextPopup']);
