@@ -14,23 +14,23 @@ public class SignatureContext {
 	// ex: "0","3","last","last-1"
 	private String signaturePage = "last";
 	
-	private int signatureWidth = 200;
-	private int signatureHeight = 75;
+	private int signatureWidth = 120;
+	private int signatureHeight = 40;
 	private String signatureDirection = "up";
-	private int signatureGap = 60;
-	private int signatureFromLeftRatio = 60;
+	private int signatureGap = 40;
+	private int signatureFromLeftRatio = 70;
 	private int signatureFromBottomRatio = 10;
 	
-	private String signatureAnchorKeyword = null;
-	private String signatureAnchorXPosition = null;
-	private String signatureAnchorYPosition = null;
+	private String signatureAnchorKeyword = "Signature";
+	private String signatureAnchorXPosition = "right";
+	private String signatureAnchorYPosition = "middle";
 	
-	private int initialsWidth = 100;
-	private int initialsHeight = 35;
+	private int initialsWidth = 80;
+	private int initialsHeight = 25;
 	private String initialsDirection = "up";
-	private int initialsGap = 30;
-	private int initialsFromLeftRatio = 75;
-	private int initialsFromBottomRatio = 10;
+	private int initialsGap = 25;
+	private int initialsFromLeftRatio = 15;
+	private int initialsFromBottomRatio = 5;
 
 	
 	private String initialsAnchorKeyword = null;
