@@ -653,6 +653,12 @@ public class PDFBoxServiceImpl implements SignatureService {
 			}
 		}
 		
+		recipientDataJson.put("initialsSizeFactor", context.getInitialsSizeFactor());
+		recipientDataJson.put("signatureWidth", context.getSignatureWidth());
+		recipientDataJson.put("signatureHeight", context.getSignatureHeight());
+		recipientDataJson.put("initialsWidth", context.getInitialsWidth());
+		recipientDataJson.put("initialsHeight", context.getInitialsHeight());
+		
 		nodeService.setProperty(originalNode, SignatureModel.PROP_RECIPIENTS_DATA, recipientDataJson.toString());
 		nodeService.setProperty(originalNode, SignatureModel.PROP_STATUS, SignatureStatus.Prepared);
 	}
@@ -1205,13 +1211,13 @@ public class PDFBoxServiceImpl implements SignatureService {
 						
 						switch (anchorXPosition) {
 						case LEFT_POSITION:
-							x = coordinates[0] - width;
+							x = coordinates[0] - width - width / 3;
 							break;
 						case MIDDLE_POSITION:
 							x = (coordinates[1] + coordinates[0]) / 2 - (float) width / 2;
 							break;
 						case RIGHT_POSITION:
-							x = coordinates[1];
+							x = coordinates[1] + width / 3;
 							break;
 						default:
 						}
@@ -1221,7 +1227,7 @@ public class PDFBoxServiceImpl implements SignatureService {
 							y = coordinates[2] - height;
 							break;
 						case MIDDLE_POSITION:
-							y = (coordinates[3] + coordinates[2]) / 2 - (float) height / 2;
+							y = (coordinates[3] + coordinates[2]) / 2 - (float) height / 4;
 							break;
 						case TOP_POSITION:
 							y = coordinates[3];

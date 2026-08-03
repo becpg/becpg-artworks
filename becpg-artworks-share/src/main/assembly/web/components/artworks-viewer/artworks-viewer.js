@@ -275,12 +275,40 @@
 								return null;
 							}
 							
+							const isInitials = this.fieldName && !this.fieldName.endsWith("-signature");
+
 							// signHereElement is the default one with dark blue background
 							const signHereElement = createSignHereElement.apply(this, arguments);
 
 							signHereElement.style.background = 'red';
+
+							if (isInitials) {
+								const i18n = instance.UI.i18n;
+								if (i18n && i18n.t) {
+									signHereElement.textContent = i18n.t('formField.formFieldPopup.indicatorPlaceHolders.SignatureFormField.initialsSignature');
+								} else {
+									signHereElement.textContent = 'Initial here';
+								}
+							}
+
 							return signHereElement;
-						}
+						};
+
+						const originalSpa = instance.Core.Annotations.SignatureWidgetAnnotation.prototype.spa;
+
+						instance.Core.Annotations.SignatureWidgetAnnotation.prototype.spa = function(n) {
+							if (originalSpa) {
+								originalSpa.apply(this, arguments);
+							}
+							const isInitials = this.fieldName && !this.fieldName.endsWith("-signature");
+							if (isInitials && this.rg) {
+								const fontSize = parseFloat(this.rg.style.fontSize);
+								if (!isNaN(fontSize) && fontSize > 0) {
+									const sizeFactor = (me.options && me.options.initialsSizeFactor != null) ? parseFloat(me.options.initialsSizeFactor) : 0.714;
+									this.rg.style.fontSize = (fontSize * sizeFactor) + 'px';
+								}
+							}
+						};
 							
 						signatureTool.addEventListener('locationSelected', () => {
 							signatureTool.addSignature();

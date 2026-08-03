@@ -92,6 +92,22 @@ function main() {
 
 	}
 	
+	var initialsSizeFactor = 0.714;
+	if (page.url.args.initialsSizeFactor != null) {
+		initialsSizeFactor = parseFloat(page.url.args.initialsSizeFactor);
+	} else if (model.node && model.node.properties && model.node.properties["sign:recipientsData"]) {
+		try {
+			var recipientsData = JSON.parse(model.node.properties["sign:recipientsData"]);
+			if (recipientsData && recipientsData.initialsSizeFactor != null) {
+				initialsSizeFactor = parseFloat(recipientsData.initialsSizeFactor);
+			} else if (recipientsData && recipientsData.initialsHeight && recipientsData.signatureHeight) {
+				initialsSizeFactor = parseFloat(recipientsData.initialsHeight) / parseFloat(recipientsData.signatureHeight);
+			}
+		} catch (e) {
+			// ignore JSON parse error
+		}
+	}
+
 	  // Widget instantiation metadata...
    var widget = {
       id : "ArtworksViewer", 
@@ -100,6 +116,7 @@ function main() {
          nodeRef :  (page.url.args.nodeRef != null) ? page.url.args.nodeRef : "",
          mode :  (model.mode != null) ? model.mode : "annotation",
          signatureStatus :  model.signatureStatus != null ? model.signatureStatus : null,
+         initialsSizeFactor : initialsSizeFactor,
          compareContentURL : model.compareContentURL!=null ? model.compareContentURL : null,
 		 contentURL : model.contentURL!=null ? model.contentURL : null,
 	     fileName : model.displayName,

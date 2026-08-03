@@ -14,8 +14,8 @@ public class SignatureContext {
 	// ex: "0","3","last","last-1"
 	private String signaturePage = "last";
 	
-	private int signatureWidth = 120;
-	private int signatureHeight = 40;
+	private int signatureWidth = 100;
+	private int signatureHeight = 28;
 	private String signatureDirection = "up";
 	private int signatureGap = 40;
 	private int signatureFromLeftRatio = 70;
@@ -25,12 +25,12 @@ public class SignatureContext {
 	private String signatureAnchorXPosition = "right";
 	private String signatureAnchorYPosition = "middle";
 	
-	private int initialsWidth = 80;
-	private int initialsHeight = 25;
+	private int initialsWidth = 60;
+	private int initialsHeight = 20;
 	private String initialsDirection = "up";
 	private int initialsGap = 25;
-	private int initialsFromLeftRatio = 15;
-	private int initialsFromBottomRatio = 5;
+	private int initialsFromLeftRatio = 10;
+	private int initialsFromBottomRatio = 3;
 
 	
 	private String initialsAnchorKeyword = null;
@@ -383,6 +383,18 @@ public class SignatureContext {
 	 */
 	public void setInitialsHeight(int initialsHeight) {
 		this.initialsHeight = initialsHeight;
+	}
+
+	/**
+	 * <p>Getter for the field <code>initialsSizeFactor</code>.</p>
+	 *
+	 * @return a double size factor between initial field and signature field
+	 */
+	public double getInitialsSizeFactor() {
+		if (signatureHeight > 0) {
+			return (double) initialsHeight / (double) signatureHeight;
+		}
+		return 0.714;
 	}
 
 	/**
