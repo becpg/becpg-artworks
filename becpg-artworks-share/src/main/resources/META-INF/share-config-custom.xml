@@ -60,7 +60,9 @@
                <field id="sign:validator" set="signature"/>
                <field id="sign:preparationDate" set="signature"/>
                <field id="sign:validationDate" set="signature"/>
-               <field id="sign:recipientsData" set="signature"/>
+               <field id="sign:recipientsData" set="signature">
+                  <control template="/org/alfresco/components/form/controls/signature-info.ftl" />
+               </field>
                <field id="sign:certificateThumbprint" set="signature"/>
             </appearance>
          </form>
@@ -112,7 +114,9 @@
                <field id="sign:recipients" set="signature"/>
                <field id="sign:validator" set="signature"/>
                <field id="sign:validationDate" set="signature"/>
-               <field id="sign:recipientsData" set="signature"/>
+               <field id="sign:recipientsData" set="signature">
+                  <control template="/org/alfresco/components/form/controls/signature-info.ftl" />
+               </field>
             </appearance>
          </form>
 		</forms>
