@@ -4,8 +4,8 @@
     <groupId>fr.becpg.artworks</groupId>
     <artifactId>becpg-artworks</artifactId>
     <version>25.3.0.13-SNAPSHOT</version>
-    <name>beCPG Artworks</name>
-    <description>beCPG Artworks parent project</description>
+    <name>becpg-artworks</name>
+    <description>Annotation, comparison and digital signature of artworks for Alfresco and beCPG</description>
     <packaging>pom</packaging>
     
 	<organization>
