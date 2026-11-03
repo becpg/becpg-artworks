@@ -71,67 +71,38 @@ public class PDFTextLocator extends PDFTextStripper {
 		}
 	}
 	
-	/**
-	 * <p>getXBegin.</p>
-	 *
-	 * @param keyString a {@link java.lang.String} object
-	 * @param textPositions a {@link java.util.List} object
-	 * @return a int
-	 */
 	private int getXBegin(String keyString, List<TextPosition> textPositions) {
-		
-		char[] keyArray = keyString.toCharArray();
-		
-		int firstX = 0;
-		
-		for (int i = 0; i < textPositions.size(); i++) {
-			int k = 0;
-			for (int j = i; j < i + keyArray.length; j++) {
-				if (textPositions.get(j).getUnicode().toCharArray()[0] == keyArray[k]) {
-					k++;
-					continue;
-				}
-				break;
-			}
-			
-			if (k == keyArray.length) {
-				firstX = i;
-				break;
-			}
-		}
-		
-		return firstX;
+		return Math.max(indexOfKey(keyString, textPositions), 0);
 	}
-	
-	/**
-	 * <p>getXEnd.</p>
-	 *
-	 * @param keyString a {@link java.lang.String} object
-	 * @param textPositions a {@link java.util.List} object
-	 * @return a int
-	 */
+
 	private int getXEnd(String keyString, List<TextPosition> textPositions) {
-		
+		int keyStart = indexOfKey(keyString, textPositions);
+		return keyStart < 0 ? 0 : keyStart + keyString.length() - 1;
+	}
+
+	/**
+	 * Finds the first text position where the key string starts, one character per position.
+	 *
+	 * @param keyString the searched string
+	 * @param textPositions the text positions of the line, in reading order
+	 * @return the index of the first position of the key, or -1 when the key is not found
+	 */
+	static int indexOfKey(String keyString, List<TextPosition> textPositions) {
 		char[] keyArray = keyString.toCharArray();
-		
-		int lastX = 0;
-		
-		for (int i = 0; i < textPositions.size(); i++) {
-			int k = 0;
-			for (int j = i; j < i + keyArray.length; j++) {
-				if (textPositions.get(j).getUnicode().toCharArray()[0] == keyArray[k]) {
-					k++;
-					continue;
-				}
-				break;
-			}
-			
-			if (k == keyArray.length) {
-				lastX = i + k - 1;
-				break;
+		for (int start = 0; start <= textPositions.size() - keyArray.length; start++) {
+			if (matchesAt(keyArray, textPositions, start)) {
+				return start;
 			}
 		}
-		
-		return lastX;
+		return -1;
+	}
+
+	private static boolean matchesAt(char[] keyArray, List<TextPosition> textPositions, int start) {
+		for (int k = 0; k < keyArray.length; k++) {
+			if (textPositions.get(start + k).getUnicode().charAt(0) != keyArray[k]) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
