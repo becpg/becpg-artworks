@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.becpg.artworks</groupId>
     <artifactId>becpg-artworks</artifactId>
-    <version>25.3.0.13</version>
+    <version>25.3.0.14-SNAPSHOT</version>
     <name>becpg-artworks</name>
     <description>Annotation, comparison and digital signature of artworks for Alfresco and beCPG</description>
     <packaging>pom</packaging>
@@ -32,7 +32,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/becpg/becpg-artworks.git</connection>
 		<url>https://github.com/becpg/becpg-artworks</url>
-      <tag>25.3.0.13</tag>
+      <tag>25.3.0.12</tag>
     </scm>
 	
 	<licenses>
