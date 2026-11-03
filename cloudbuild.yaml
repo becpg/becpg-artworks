@@ -1,4 +1,20 @@
 steps:
   - name: maven:3-openjdk-17
     entrypoint: mvn
-    args: ['deploy','-DskipTests=true']
+    args: ['deploy','-DskipITs=true']
+  - name: maven:3-openjdk-17
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+         mvn sonar:sonar -Dsonar.host.url=https://sonar.becpg.fr -Dsonar.token=$$SONAR_LOGIN
+    secretEnv: ['SONAR_LOGIN']
+availableSecrets:
+  secretManager:
+  - versionName: projects/${_REGISTRY_PROJECT_ID}/secrets/becpg-sonar-login/versions/latest
+    env: 'SONAR_LOGIN'
+substitutions:
+  _REGISTRY_PROJECT_ID: becpg-314807
+options:
+  dynamic_substitutions: true
+  logging: CLOUD_LOGGING_ONLY
