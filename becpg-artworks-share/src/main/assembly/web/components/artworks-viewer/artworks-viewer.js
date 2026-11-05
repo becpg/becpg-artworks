@@ -65,6 +65,8 @@
 
 					const { documentViewer, annotationManager, PDFNet } = instance.Core;
 
+					me.pointCommentIconToAnchor(instance.Core.Annotations);
+
 					documentViewer.addEventListener('documentLoaded', async () => {
 
 						const { VerificationOptions } = instance.UI;
@@ -1085,6 +1087,54 @@
 
 		},
 		
+		/**
+		 * Mirrors the default comment icon vertically so that its tail points to the top-left corner.
+		 * A sticky note does not scale with the zoom and stays pinned to the top-left corner of its rect,
+		 * which cannot be changed in WebViewer; the default icon tail points to the bottom-left corner instead,
+		 * so the comment seemed to drift away from the commented point when zooming.
+		 * Only the rendering is changed: the annotation position and the saved PDF are left untouched.
+		 *
+		 * @param {Object} Annotations the WebViewer Core.Annotations namespace
+		 */
+		pointCommentIconToAnchor: function ArtworksViewer_pointCommentIconToAnchor(Annotations) {
+			var me = this;
+
+			Annotations.setCustomDrawHandler(Annotations.StickyAnnotation, function(ctx, pageMatrix, rotation, options) {
+				var annotation = options.annotation;
+
+				if (!me.isCommentIcon(Annotations.StickyAnnotation.IconNames, annotation.Icon)) {
+					options.originalDraw(ctx, pageMatrix, rotation);
+					return;
+				}
+
+				ctx.save();
+				ctx.translate(0, 2 * annotation.Y + annotation.Height);
+				ctx.scale(1, -1);
+				options.originalDraw(ctx, pageMatrix, rotation);
+				ctx.restore();
+			}, { generateAppearance: false });
+		},
+
+		/**
+		 * Tells whether WebViewer draws the given icon as the default comment bubble,
+		 * which is the case for the Comment icon and for any icon it does not know.
+		 *
+		 * @param {Object} iconNames the WebViewer StickyAnnotation.IconNames enumeration
+		 * @param {String} icon the icon of the sticky note
+		 * @return {Boolean} true if the comment bubble is drawn
+		 */
+		isCommentIcon: function ArtworksViewer_isCommentIcon(iconNames, icon) {
+			if (icon === iconNames.COMMENT) {
+				return true;
+			}
+			for (var key in iconNames) {
+				if (iconNames[key] === icon) {
+					return false;
+				}
+			}
+			return true;
+		},
+
 		destroy: function ArtworksViewer_destroy() {
 			if (this.shouldSave) {
 				var text = this.msg["label.exit.message"]
