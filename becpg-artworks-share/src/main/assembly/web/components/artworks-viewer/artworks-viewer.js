@@ -543,7 +543,38 @@
 							let offsetY = 0;
 							let rotation = 0;
 							const originalBoxes = [];
-							
+
+							// Overlay shifts are expressed in PDF points (1/72 inch)
+							const MIN_NUDGE_STEP = 1;
+							const MAX_NUDGE_STEP = 500;
+							const DEFAULT_NUDGE_STEP = 2;
+							const NUDGE_STEP_STORAGE_KEY = "becpg.artworks.compare.nudgeStep";
+
+							const toValidNudgeStep = (value) => {
+								const step = Number(value);
+								if (!Number.isInteger(step) || step < MIN_NUDGE_STEP) {
+									return DEFAULT_NUDGE_STEP;
+								}
+								return Math.min(step, MAX_NUDGE_STEP);
+							};
+
+							// Storage can be unavailable (private browsing, blocked site data): fall back to the default step
+							const readStoredNudgeStep = () => {
+								try {
+									return toValidNudgeStep(window.localStorage.getItem(NUDGE_STEP_STORAGE_KEY));
+								} catch (e) {
+									return DEFAULT_NUDGE_STEP;
+								}
+							};
+
+							const storeNudgeStep = (step) => {
+								try {
+									window.localStorage.setItem(NUDGE_STEP_STORAGE_KEY, step);
+								} catch (e) {
+									console.warn("Cannot store the overlay nudge step", e);
+								}
+							};
+
 							const getPageArray = async (doc) => {
 								const arr = [];
 								const itr = await doc.getPageIterator(1);
@@ -606,18 +637,14 @@
 								}
 								await chain;
 								await newDoc.unlock();
-								
+
+								const viewState = captureViewState();
+								// Listen before loading so that a fast load cannot fire the event before we wait for it
+								const documentLoaded = waitForDocumentLoaded();
 								await instance.UI.loadDocument(newDoc);
-								
-								// Wait for document to be fully loaded before importing annotations
-								await new Promise(resolve => {
-									const onLoaded = () => {
-										documentViewer.removeEventListener('documentLoaded', onLoaded);
-										resolve();
-									};
-									documentViewer.addEventListener('documentLoaded', onLoaded);
-								});
-								
+								await documentLoaded;
+								await restoreViewState(viewState);
+
 								// Import annotations from both original documents into the comparison view
 								try {
 									if (result1.xfdf) {
@@ -656,7 +683,43 @@
 								
 								instance.UI.closeElements(['loadingModal']);
 							}
-							
+
+							function waitForDocumentLoaded() {
+								return new Promise(resolve => {
+									const onLoaded = () => {
+										documentViewer.removeEventListener('documentLoaded', onLoaded);
+										resolve();
+									};
+									documentViewer.addEventListener('documentLoaded', onLoaded);
+								});
+							}
+
+							// Reloading the diff document resets the viewer, so the zoom and position are kept across reloads
+							function captureViewState() {
+								if (!documentViewer.getDocument()) {
+									return null;
+								}
+								const scrollView = documentViewer.getScrollViewElement();
+								return {
+									zoom: documentViewer.getZoomLevel(),
+									scrollTop: scrollView ? scrollView.scrollTop : 0,
+									scrollLeft: scrollView ? scrollView.scrollLeft : 0
+								};
+							}
+
+							async function restoreViewState(viewState) {
+								if (!viewState) {
+									return;
+								}
+								documentViewer.zoomTo(viewState.zoom);
+								await new Promise(resolve => requestAnimationFrame(resolve));
+								const scrollView = documentViewer.getScrollViewElement();
+								if (scrollView) {
+									scrollView.scrollTop = viewState.scrollTop;
+									scrollView.scrollLeft = viewState.scrollLeft;
+								}
+							}
+
 							async function loadDocumentWithAnnotations(url, PDFNet) {
 								const tempDoc = await PDFNet.PDFDoc.createFromURL(url);
 								await tempDoc.lock();
@@ -744,6 +807,10 @@
 												</button>
 												<div></div>
 											</div>
+											<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-family: inherit;">
+												<label for="align-nudge-step">${me.msg["label.nudgeStep"] || "Step (pt)"}</label>
+												<input id="align-nudge-step" type="number" min="${MIN_NUDGE_STEP}" max="${MAX_NUDGE_STEP}" step="1" inputmode="numeric" style="width: 64px; height: 28px; box-sizing: border-box; padding: 0 6px; border: 1px solid #ccc; border-radius: 4px; background: white; font-family: inherit; font-size: inherit; color: inherit;" />
+											</div>
 											<div style="font-weight: bold; margin-bottom: 8px; text-align: center; font-family: inherit;">${me.msg["label.rotateOverlay"] || "Rotate Overlay"}</div>
 											<div style="display: flex; justify-content: space-around; margin-bottom: 12px; font-family: inherit;">
 												<button id="align-rot-ccw" title="${me.msg["label.rotateCounterclockwise"] || "Rotate Counterclockwise"}" style="width: 44px; height: 36px; border: 1px solid #ccc; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-family: inherit;">
@@ -760,32 +827,33 @@
 										`;
 										document.body.appendChild(alignMenu);
 										
-										const nudgeStep = 2;
+										const stepInput = document.getElementById("align-nudge-step");
+										stepInput.value = String(readStoredNudgeStep());
+										// Normalise on change so that an empty, decimal or out of range entry never reaches the offsets
+										stepInput.onchange = () => {
+											const step = toValidNudgeStep(stepInput.value);
+											stepInput.value = String(step);
+											storeNudgeStep(step);
+										};
+
 										const updateLabels = () => {
 											document.getElementById("align-nudge-val").innerText = offsetX + "," + offsetY;
 											document.getElementById("align-rot-val").innerText = rotation + "°";
 										};
-										
-										document.getElementById("align-up").onclick = async () => {
-											offsetY -= nudgeStep;
+
+										const shiftOverlay = async (directionX, directionY) => {
+											const step = toValidNudgeStep(stepInput.value);
+											offsetX += directionX * step;
+											offsetY += directionY * step;
 											updateLabels();
 											await recreateDiff();
 										};
-										document.getElementById("align-down").onclick = async () => {
-											offsetY += nudgeStep;
-											updateLabels();
-											await recreateDiff();
-										};
-										document.getElementById("align-left").onclick = async () => {
-											offsetX += nudgeStep;
-											updateLabels();
-											await recreateDiff();
-										};
-										document.getElementById("align-right").onclick = async () => {
-											offsetX -= nudgeStep;
-											updateLabels();
-											await recreateDiff();
-										};
+
+										// Shifting the crop box moves the content the opposite way, hence the inverted directions
+										document.getElementById("align-up").onclick = () => shiftOverlay(0, -1);
+										document.getElementById("align-down").onclick = () => shiftOverlay(0, 1);
+										document.getElementById("align-left").onclick = () => shiftOverlay(1, 0);
+										document.getElementById("align-right").onclick = () => shiftOverlay(-1, 0);
 										document.getElementById("align-rot-ccw").onclick = async () => {
 											rotation = (rotation - 90 + 360) % 360;
 											updateLabels();
