@@ -36,6 +36,11 @@
 
 		msg: {},
 
+		/**
+		 * Custom data key of a sticky note holding the signature of the icon saved as its appearance.
+		 */
+		COMMENT_ICON_DATA_KEY: "becpg-comment-icon",
+
 		setOptions: function ArtworksViewer_setOptions(obj) {
 			Object.assign(this.options, obj);
 			return this;
@@ -86,7 +91,7 @@
 					// Save
 					saveButton.onclick = async e => {
 						const doc = documentViewer.getDocument();
-						const xfdfString = await annotationManager.exportAnnotations();
+						const xfdfString = await me.exportAnnotationsWithCommentIcons(instance.Core, annotationManager);
 						const data = await doc.getFileData({
 							// saves the document with annotations in it
 							xfdfString,
@@ -1156,11 +1161,12 @@
 		},
 		
 		/**
-		 * Mirrors the default comment icon vertically so that its tail points to the top-left corner.
-		 * A sticky note does not scale with the zoom and stays pinned to the top-left corner of its rect,
-		 * which cannot be changed in WebViewer; the default icon tail points to the bottom-left corner instead,
-		 * so the comment seemed to drift away from the commented point when zooming.
-		 * Only the rendering is changed: the annotation position and the saved PDF are left untouched.
+		 * Replaces the default comment icon with a bubble whose tail tip lies exactly on the top-left corner of the sticky note.
+		 * A sticky note does not scale with the zoom and stays pinned to the top-left corner of its rect, which is also
+		 * the clicked point; the default icon tail points to the bottom-left corner instead, so the comment seemed to
+		 * drift away from the commented point when zooming.
+		 * Only the rendering in the viewer is changed here: the icon is written to the PDF when the document is saved,
+		 * see exportAnnotationsWithCommentIcons. The annotation position is left untouched.
 		 *
 		 * @param {Object} Annotations the WebViewer Core.Annotations namespace
 		 */
@@ -1168,19 +1174,203 @@
 			var me = this;
 
 			Annotations.setCustomDrawHandler(Annotations.StickyAnnotation, function(ctx, pageMatrix, rotation, options) {
-				var annotation = options.annotation;
-
-				if (!me.isCommentIcon(Annotations.StickyAnnotation.IconNames, annotation.Icon)) {
+				if (!me.hasCommentIcon(Annotations, options.annotation)) {
 					options.originalDraw(ctx, pageMatrix, rotation);
 					return;
 				}
 
-				ctx.save();
-				ctx.translate(0, 2 * annotation.Y + annotation.Height);
-				ctx.scale(1, -1);
-				options.originalDraw(ctx, pageMatrix, rotation);
-				ctx.restore();
+				me.drawCommentIcon(ctx, options.annotation);
 			}, { generateAppearance: false });
+		},
+
+		/**
+		 * Exports the annotations of the document as XFDF, with the comment icon drawn by the viewer embedded as the
+		 * appearance of the comments, so that other PDF readers display the same icon once the document is saved.
+		 * Replies get an empty appearance, as they are not drawn in the viewer either.
+		 * The appearance is only attached during the export: WebViewer would otherwise render it instead of the
+		 * icon drawn by the viewer, and scale it with the zoom.
+		 *
+		 * @param {Object} Core the WebViewer Core namespace
+		 * @param {Object} annotationManager the WebViewer annotation manager
+		 * @return {Promise} a promise resolved with the XFDF string
+		 */
+		exportAnnotationsWithCommentIcons: function ArtworksViewer_exportAnnotationsWithCommentIcons(Core, annotationManager) {
+			var me = this,
+				annotations = annotationManager.getAnnotationsList(),
+				comments = [],
+				appearances = [];
+
+			for (var i = 0; i < annotations.length; i++) {
+				if (annotations[i] instanceof Core.Annotations.StickyAnnotation
+						&& (annotations[i].isReply() || me.hasCommentIcon(Core.Annotations, annotations[i]))) {
+					comments.push(annotations[i]);
+					appearances.push(me.addCommentIconAppearance(Core, annotations[i]));
+				}
+			}
+
+			function removeAppearances() {
+				for (var j = 0; j < comments.length; j++) {
+					comments[j].removeCustomAppearance();
+				}
+			}
+
+			return Promise.all(appearances).then(function() {
+				return annotationManager.exportAnnotations();
+			}).then(function(xfdfString) {
+				removeAppearances();
+				return xfdfString;
+			}, function(error) {
+				removeAppearances();
+				throw error;
+			});
+		},
+
+		/**
+		 * Renders the comment icon of a sticky note, or nothing for a reply, and sets it as the custom appearance
+		 * of the annotation. The annotation is flagged as modified, otherwise WebViewer exports a comment loaded
+		 * from the document as it was read, without the appearance.
+		 * The icon written to the document is recorded in the custom data of the annotation: as long as it is
+		 * unchanged, the modification date is kept, so the comment is not rewritten on each save. A comment
+		 * whose saved icon is missing or outdated gets a new modification date, which is what makes WebViewer
+		 * write it again.
+		 *
+		 * @param {Object} Core the WebViewer Core namespace
+		 * @param {Object} annotation the sticky note
+		 * @return {Promise} a promise resolved once the appearance is set
+		 */
+		addCommentIconAppearance: function ArtworksViewer_addCommentIconAppearance(Core, annotation) {
+			var me = this,
+				scale = 4,
+				canvas = document.createElement("canvas"),
+				ctx;
+
+			canvas.width = annotation.Width * scale;
+			canvas.height = annotation.Height * scale;
+			if (!annotation.isReply()) {
+				ctx = canvas.getContext("2d");
+				ctx.scale(scale, scale);
+				ctx.translate(-annotation.X, -annotation.Y);
+				me.drawCommentIcon(ctx, annotation);
+			}
+
+			return new Promise(function(resolve, reject) {
+				canvas.toBlob(function(blob) {
+					if (blob) {
+						resolve(blob);
+					} else {
+						reject(new Error("Unable to render the comment icon"));
+					}
+				}, "image/png");
+			}).then(function(blob) {
+				return Core.createDocument(blob, { extension: "png", loadAsPDF: true });
+			}).then(function(iconDocument) {
+				return me.resizeIconDocument(iconDocument, annotation.Width);
+			}).then(function(iconDocument) {
+				var dateModified = annotation.DateModified,
+					icon = me.getCommentIconSignature(annotation);
+
+				annotation.setModified(true);
+				if (annotation.getCustomData(me.COMMENT_ICON_DATA_KEY) === icon) {
+					annotation.DateModified = dateModified;
+				} else {
+					annotation.setCustomData(me.COMMENT_ICON_DATA_KEY, icon);
+				}
+				return annotation.addCustomAppearance(iconDocument, { pageNumber: 1 });
+			});
+		},
+
+		/**
+		 * Identifies the icon drawn for a sticky note: its design version and what it depends on.
+		 *
+		 * @param {Object} annotation the sticky note
+		 * @return {String} the signature of the icon
+		 */
+		getCommentIconSignature: function ArtworksViewer_getCommentIconSignature(annotation) {
+			if (annotation.isReply()) {
+				return "1:reply";
+			}
+			return ["1", annotation.StrokeColor.toString(), annotation.Opacity].join(":");
+		},
+
+		/**
+		 * Scales the single page of an icon document down to the size of the sticky note. A sticky note is not
+		 * zoomable, and some PDF readers then display its appearance at its own size instead of fitting it in
+		 * the annotation rect.
+		 *
+		 * @param {Object} iconDocument the WebViewer document holding the icon
+		 * @param {Number} size the width of the sticky note, in PDF points
+		 * @return {Promise} a promise resolved with the resized document
+		 */
+		resizeIconDocument: function ArtworksViewer_resizeIconDocument(iconDocument, size) {
+			return iconDocument.getPDFDoc().then(function(pdfDoc) {
+				return pdfDoc.getPage(1);
+			}).then(function(page) {
+				return page.getPageWidth().then(function(pageWidth) {
+					return page.scale(size / pageWidth);
+				});
+			}).then(function() {
+				return iconDocument;
+			});
+		},
+
+		/**
+		 * Tells whether the viewer draws the comment bubble for the given sticky note, which is the case for a
+		 * comment that is not a reply (replies are not drawn) and that uses the default comment icon.
+		 *
+		 * @param {Object} Annotations the WebViewer Core.Annotations namespace
+		 * @param {Object} annotation the sticky note
+		 * @return {Boolean} true if the comment bubble is drawn
+		 */
+		hasCommentIcon: function ArtworksViewer_hasCommentIcon(Annotations, annotation) {
+			return !annotation.isReply() && this.isCommentIcon(Annotations.StickyAnnotation.IconNames, annotation.Icon);
+		},
+
+		/**
+		 * Draws the comment bubble of a sticky note, with the tip of its tail on the top-left corner of the annotation rect.
+		 * The tail prolongs the left edge of the bubble, so the bubble stays aligned with the commented point.
+		 *
+		 * @param {CanvasRenderingContext2D} ctx the canvas context, in page coordinates
+		 * @param {Object} annotation the sticky note to draw
+		 */
+		drawCommentIcon: function ArtworksViewer_drawCommentIcon(ctx, annotation) {
+			var size = annotation.Width,
+				color = annotation.StrokeColor,
+				isDark = color.R < 40 && color.G < 40 && color.B < 40,
+				margin = 2,
+				radius = 5,
+				left = 0.5,
+				top = 0.25 * size,
+				right = size - margin,
+				bottom = size - margin,
+				lineStart = 0.16 * size,
+				lineEnd = 0.79 * size;
+
+			ctx.save();
+			ctx.translate(annotation.X, annotation.Y);
+			ctx.globalAlpha = annotation.Opacity === 0 ? 0 : annotation.Opacity || 1;
+			ctx.fillStyle = color.toString();
+			ctx.strokeStyle = isDark ? "#FFFFFF" : "rgb(0, 0, 0)";
+
+			ctx.beginPath();
+			ctx.moveTo(0, 0);
+			ctx.lineTo(0.28 * size, top);
+			ctx.lineTo(right - radius, top);
+			ctx.quadraticCurveTo(right, top, right, top + radius);
+			ctx.lineTo(right, bottom - radius);
+			ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
+			ctx.lineTo(left + radius, bottom);
+			ctx.quadraticCurveTo(left, bottom, left, bottom - radius);
+			ctx.closePath();
+			ctx.fill();
+
+			ctx.moveTo(lineStart, 0.43 * size);
+			ctx.lineTo(lineEnd, 0.43 * size);
+			ctx.moveTo(lineStart, 0.59 * size);
+			ctx.lineTo(lineEnd, 0.59 * size);
+			ctx.moveTo(lineStart, 0.75 * size);
+			ctx.lineTo(0.64 * size, 0.75 * size);
+			ctx.stroke();
+			ctx.restore();
 		},
 
 		/**
