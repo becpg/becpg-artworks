@@ -544,9 +544,12 @@
            <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
         </repository>
         <repository>
-			<id>becpg-registry</id>
-			<url>artifactregistry://europe-west1-maven.pkg.dev/becpg-314807/becpg-mvn</url>
-		</repository>
+			<id>becpg-public</id>
+			<url>https://europe-maven.pkg.dev/becpg-314807/becpg-mvn-public</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -567,11 +570,11 @@
     <distributionManagement>
      	<repository>
 			<id>becpg-registry</id>
-			<url>artifactregistry://europe-west1-maven.pkg.dev/becpg-314807/becpg-mvn</url>
+			<url>artifactregistry://europe-maven.pkg.dev/becpg-314807/becpg-mvn-public</url>
 		</repository>
 		<snapshotRepository>
 			<id>becpg-registry</id>
-			<url>artifactregistry://europe-west1-maven.pkg.dev/becpg-314807/becpg-mvn</url>
+			<url>artifactregistry://europe-maven.pkg.dev/becpg-314807/becpg-mvn-snapshots</url>
 		</snapshotRepository>
     </distributionManagement>
   <modules>
